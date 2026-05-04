@@ -19,7 +19,7 @@ func (s Service) getVideoInfo(ctx context.Context, stepParam *types.SubtitleTask
 			err                error
 			title, description string
 		)
-		// 获取标题
+		// Get video title
 		titleCmdArgs := []string{"--skip-download", "--encoding", "utf-8", "--get-title", stepParam.Link}
 		descriptionCmdArgs := []string{"--skip-download", "--encoding", "utf-8", "--get-description", stepParam.Link}
 		titleCmdArgs = append(titleCmdArgs, "--cookies", "./cookies.txt")
@@ -38,7 +38,7 @@ func (s Service) getVideoInfo(ctx context.Context, stepParam *types.SubtitleTask
 		if err != nil {
 			log.GetLogger().Error("getVideoInfo yt-dlp error", zap.Any("stepParam", stepParam), zap.String("output", string(output)), zap.Error(err))
 			output = []byte{}
-			// 不需要整个流程退出
+			// No need to terminate the entire process
 		}
 		title = string(output)
 		cmd = exec.Command(storage.YtdlpPath, descriptionCmdArgs...)
@@ -49,7 +49,7 @@ func (s Service) getVideoInfo(ctx context.Context, stepParam *types.SubtitleTask
 		}
 		description = string(output)
 		log.GetLogger().Debug("getVideoInfo title and description", zap.String("title", title), zap.String("description", description))
-		// 翻译
+		// Translation
 		var result string
 		result, err = s.ChatCompleter.ChatCompletion(fmt.Sprintf(types.TranslateVideoTitleAndDescriptionPrompt, types.GetStandardLanguageName(stepParam.TargetLanguage), title+"####"+description))
 		if err != nil {

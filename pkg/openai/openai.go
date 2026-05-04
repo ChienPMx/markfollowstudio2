@@ -70,13 +70,24 @@ func (c *Client) Text2Speech(text, voice string, outputFile string) error {
 	}
 	url := baseUrl + "/audio/speech"
 
-	// 创建HTTP请求
+	// Create HTTP request
+	model := config.Conf.Tts.Openai.Model
+	if model == "" {
+		model = "tts-1"
+	}
+	if voice == "" {
+		voice = config.Conf.Tts.Openai.Voice
+	}
+	if voice == "" {
+		voice = "alloy"
+	}
+
 	reqBody := fmt.Sprintf(`{
-		"model": "tts-1",
+		"model": "%s",
 		"input": "%s",
 		"voice":"%s",
 		"response_format": "wav"
-	}`, text, voice)
+	}`, model, text, voice)
 	req, err := http.NewRequest("POST", url, strings.NewReader(reqBody))
 	if err != nil {
 		return err
@@ -85,7 +96,7 @@ func (c *Client) Text2Speech(text, voice string, outputFile string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", config.Conf.Tts.Openai.ApiKey))
 
-	// 发送HTTP请求
+	// Send HTTP request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

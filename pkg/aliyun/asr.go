@@ -102,24 +102,24 @@ func (c *AsrClient) Transcription(audioFile, language, workDir string) (*types.T
 		statusQueueing    = "QUEUEING"
 	)
 
-	// 处理音频
+	// Process audio
 	processedAudioFile, err := util.ProcessAudio(audioFile)
 	if err != nil {
-		log.GetLogger().Error("处理音频失败", zap.Error(err), zap.String("audio file", audioFile))
+		log.GetLogger().Error("Failed to process audio", zap.Error(err), zap.String("audio file", audioFile))
 		return nil, err
 	}
 
-	// 上传音频文件
+	// Upload audio file
 	fileKey := util.GenerateRandStringWithUpperLowerNum(5) + filepath.Ext(audioFile)
 	err = c.ossClient.UploadFile(context.Background(), fileKey, processedAudioFile, c.ossClient.Bucket)
 	if err != nil {
 		log.GetLogger().Error("StartVideoSubtitleTask UploadFile err", zap.Any("audio file", audioFile), zap.Error(err))
-		return nil, errors.New("上传声音克隆源失败")
+		return nil, errors.New("Failed to upload voice cloning source")
 	}
 	audioUrl := fmt.Sprintf("https://%s.oss-cn-shanghai.aliyuncs.com/%s", c.ossClient.Bucket, fileKey)
-	log.GetLogger().Info("上传待转录音频到阿里云oss成功", zap.String("local file name", audioFile), zap.String("oss url", audioUrl))
+	log.GetLogger().Info("Successfully uploaded audio for transcription to Aliyun OSS", zap.String("local file name", audioFile), zap.String("oss url", audioUrl))
 
-	// 提交识别任务
+	// Submit recognition task
 	taskParams := map[string]string{
 		"appkey":       c.appKey,
 		"file_link":    audioUrl,
@@ -164,7 +164,7 @@ func (c *AsrClient) Transcription(audioFile, language, workDir string) (*types.T
 		return nil, fmt.Errorf("empty task ID in response")
 	}
 
-	// 查询识别结果
+	// Query recognition results
 	getRequest := requests.NewCommonRequest()
 	getRequest.Domain = c.domain
 	getRequest.Version = c.apiVersion
@@ -204,7 +204,7 @@ func (c *AsrClient) Transcription(audioFile, language, workDir string) (*types.T
 				return nil, fmt.Errorf("empty recognition result")
 			}
 
-			// 构建返回结果
+			// Construct return results
 			resultData = &types.TranscriptionData{
 				Language: language,
 			}
@@ -218,7 +218,7 @@ func (c *AsrClient) Transcription(audioFile, language, workDir string) (*types.T
 				for i, v := range getResult.Result.Words {
 					words = append(words, types.Word{
 						Num:   i,
-						Text:  strings.TrimSpace(v.Word), // 阿里云这边的word后面会有空格
+						Text:  strings.TrimSpace(v.Word), // Aliyun's word may have trailing spaces
 						Start: v.BeginTime / 1000,
 						End:   v.EndTime / 1000,
 					})

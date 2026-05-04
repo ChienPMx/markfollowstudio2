@@ -53,16 +53,16 @@ func GetBilibiliVideoId(url string) string {
 	re := regexp.MustCompile(`https://(?:www\.)?bilibili\.com/(?:video/|video/av\d+/)(BV[a-zA-Z0-9]+)`)
 	matches := re.FindStringSubmatch(url)
 	if len(matches) > 1 {
-		// 返回匹配到的BV号
+		// Return matched BV number
 		return matches[1]
 	}
 	return ""
 }
 
-// 将浮点数秒数转换为HH:MM:SS,SSS格式的字符串
+// Convert float seconds to HH:MM:SS,SSS format string
 func FormatTime(seconds float32) string {
-	totalSeconds := int(math.Floor(float64(seconds)))             // 获取总秒数
-	milliseconds := int((seconds - float32(totalSeconds)) * 1000) // 获取毫秒部分
+	totalSeconds := int(math.Floor(float64(seconds)))             // Get total seconds
+	milliseconds := int((seconds - float32(totalSeconds)) * 1000) // Get milliseconds part
 
 	hours := totalSeconds / 3600
 	minutes := (totalSeconds % 3600) / 60
@@ -70,7 +70,7 @@ func FormatTime(seconds float32) string {
 	return fmt.Sprintf("%02d:%02d:%02d,%03d", hours, minutes, secs, milliseconds)
 }
 
-// 判断字符串是否是纯数字（字幕编号）
+// Check if string is purely numeric (subtitle index)
 func IsNumber(s string) bool {
 	_, err := strconv.Atoi(s)
 	return err == nil
@@ -79,13 +79,13 @@ func IsNumber(s string) bool {
 func Unzip(zipFile, destDir string) error {
 	zipReader, err := zip.OpenReader(zipFile)
 	if err != nil {
-		return fmt.Errorf("打开zip文件失败: %v", err)
+		return fmt.Errorf("Failed to open zip file: %v", err)
 	}
 	defer zipReader.Close()
 
 	err = os.MkdirAll(destDir, 0755)
 	if err != nil {
-		return fmt.Errorf("创建目标目录失败: %v", err)
+		return fmt.Errorf("Failed to create target directory: %v", err)
 	}
 
 	for _, file := range zipReader.File {
@@ -94,26 +94,26 @@ func Unzip(zipFile, destDir string) error {
 		if file.FileInfo().IsDir() {
 			err := os.MkdirAll(filePath, file.Mode())
 			if err != nil {
-				return fmt.Errorf("创建目录失败: %v", err)
+				return fmt.Errorf("Failed to create directory: %v", err)
 			}
 			continue
 		}
 
 		destFile, err := os.Create(filePath)
 		if err != nil {
-			return fmt.Errorf("创建文件失败: %v", err)
+			return fmt.Errorf("Failed to create file: %v", err)
 		}
 		defer destFile.Close()
 
 		zipFileReader, err := file.Open()
 		if err != nil {
-			return fmt.Errorf("打开zip文件内容失败: %v", err)
+			return fmt.Errorf("Failed to open zip file content: %v", err)
 		}
 		defer zipFileReader.Close()
 
 		_, err = io.Copy(destFile, zipFileReader)
 		if err != nil {
-			return fmt.Errorf("复制文件内容失败: %v", err)
+			return fmt.Errorf("Failed to copy file content: %v", err)
 		}
 	}
 
@@ -124,7 +124,7 @@ func GenerateID() string {
 	return strings.ReplaceAll(uuid.New().String(), "-", "")
 }
 
-// ChangeFileExtension 修改文件后缀
+// ChangeFileExtension changes the file extension
 func ChangeFileExtension(path string, newExt string) string {
 	ext := filepath.Ext(path)
 	return path[:len(path)-len(ext)] + newExt
@@ -137,18 +137,18 @@ func CleanPunction(word string) string {
 }
 
 func IsAlphabetic(r rune) bool {
-	if unicode.IsLetter(r) { // 中文在IsLetter中会返回true
+	if unicode.IsLetter(r) { // CJK characters return true in IsLetter
 		switch {
-		// 英语及其他拉丁字母的范围
+		// English and other Latin letter ranges
 		case r >= 'A' && r <= 'Z', r >= 'a' && r <= 'z':
 			return true
-		// 扩展拉丁字母（法语、西班牙语等使用的附加字符）
+		// Extended Latin letters (additional characters used in French, Spanish, etc.)
 		case r >= '\u00C0' && r <= '\u024F':
 			return true
-		// 希腊字母
+		// Greek letters
 		case r >= '\u0370' && r <= '\u03FF':
 			return true
-		// 西里尔字母（俄语等）
+		// Cyrillic letters (Russian, etc.)
 		case r >= '\u0400' && r <= '\u04FF':
 			return true
 		default:
@@ -167,7 +167,7 @@ func ContainsAlphabetic(text string) bool {
 	return false
 }
 
-// CopyFile 复制文件
+// CopyFile copies a file
 func CopyFile(src, dst string) error {
 	sourceFile, err := os.Open(src)
 	if err != nil {
@@ -189,30 +189,30 @@ func CopyFile(src, dst string) error {
 	return destinationFile.Sync()
 }
 
-// SanitizePathName 清理字符串，使其成为合法路径名
+// SanitizePathName cleans a string to make it a valid path name
 func SanitizePathName(name string) string {
 	name = strings.ReplaceAll(name, ".", "_")
 
 	var illegalChars *regexp.Regexp
 	if runtime.GOOS == "windows" {
-		// Windows 特殊字符，包括方括号（会影响 filepath.Glob）
+		// Windows special characters, including brackets (affects filepath.Glob)
 		illegalChars = regexp.MustCompile(`[<>:"/\\|?*\[\]\x00-\x1F]`)
 	} else {
-		// POSIX 系统：禁用 /、空字节、方括号和问号（会影响 filepath.Glob 和 ffmpeg）
+		// POSIX systems: Disable /, null bytes, brackets, and question marks (affects filepath.Glob and FFmpeg)
 		illegalChars = regexp.MustCompile(`[/\[\]\x00?]`)
 	}
 
 	sanitized := illegalChars.ReplaceAllString(name, "_")
 
-	// 去除前后空格
+	// Remove leading/trailing spaces
 	sanitized = strings.TrimSpace(sanitized)
 
-	// 防止空字符串
+	// Prevent empty string
 	if sanitized == "" {
 		sanitized = "unnamed"
 	}
 
-	// 避免 Windows 下的保留文件名
+	// Avoid reserved filenames in Windows
 	reserved := map[string]bool{
 		"CON": true, "PRN": true, "AUX": true, "NUL": true,
 		"COM1": true, "COM2": true, "COM3": true, "COM4": true,
@@ -227,16 +227,16 @@ func SanitizePathName(name string) string {
 	return sanitized
 }
 
-// FindClosestConsecutiveWords 查找 words 中 Num 连续递增的一组词，使得其拼接后的文本与 inputStr 的编辑距离最小。
+// FindClosestConsecutiveWords finds a sequence of words with consecutive Nums such that their concatenated text has the minimum Levenshtein distance to inputStr.
 func FindClosestConsecutiveWords(words []types.Word, inputStr string) []types.Word {
 	if len(words) == 0 {
 		return nil
 	}
 
-	// 先将输入按 Num 排序（如果你已经保证是有序的可跳过此步骤）
+	// Sort input by Num (skip if already sorted)
 	// sort.Slice(words, func(i, j int) bool { return words[i].Num < words[j].Num })
 
-	// Step 1: 获取所有 Num 连续递增的 []types.Word 组合
+	// Step 1: Get all []types.Word combinations with consecutive Nums
 	var groups [][]types.Word
 	var currentGroup []types.Word
 
@@ -259,7 +259,7 @@ func FindClosestConsecutiveWords(words []types.Word, inputStr string) []types.Wo
 		groups = append(groups, currentGroup)
 	}
 
-	// Step 2: 比较编辑距离，找最接近 inputStr 的那个组
+	// Step 2: Compare edit distances and find the group closest to inputStr
 	minDistance := -1
 	var bestGroup []types.Word
 
@@ -289,7 +289,7 @@ func SaveToDisk(data any, filename string) error {
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ") // 美化输出
+	encoder.SetIndent("", "  ") // Beautify output
 	return encoder.Encode(data)
 }
 
@@ -306,7 +306,7 @@ func LoadFromDisk(filename string) (any, error) {
 	return data, err
 }
 
-// 清理 Markdown 的 ```json 标记
+// Clean Markdown ```json markers
 func CleanMarkdownCodeBlock(response string) string {
 	re := regexp.MustCompile("(?m)^```(json|[a-zA-Z]*)?\n?|```$")
 	cleaned := re.ReplaceAllString(response, "")

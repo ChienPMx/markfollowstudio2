@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// 用于显示下载进度，实现io.Writer
+// progressWriter displays download progress, implements io.Writer
 type progressWriter struct {
 	Total      uint64
 	Downloaded uint64
@@ -22,7 +22,7 @@ func (pw *progressWriter) Write(p []byte) (int, error) {
 	n := len(p)
 	pw.Downloaded += uint64(n)
 
-	// 初始化开始时间
+	// Initialize start time
 	if pw.StartTime.IsZero() {
 		pw.StartTime = time.Now()
 	}
@@ -31,7 +31,7 @@ func (pw *progressWriter) Write(p []byte) (int, error) {
 	elapsed := time.Since(pw.StartTime).Seconds()
 	speed := float64(pw.Downloaded) / 1024 / 1024 / elapsed
 
-	fmt.Printf("\r下载进度: %.2f%% (%.2f MB / %.2f MB) | 速度: %.2f MB/s",
+	fmt.Printf("\rDownload Progress: %.2f%% (%.2f MB / %.2f MB) | Speed: %.2f MB/s",
 		percent,
 		float64(pw.Downloaded)/1024/1024,
 		float64(pw.Total)/1024/1024,
@@ -40,9 +40,9 @@ func (pw *progressWriter) Write(p []byte) (int, error) {
 	return n, nil
 }
 
-// DownloadFile 下载文件并保存到指定路径，支持代理
+// DownloadFile downloads a file and saves it to a specified path, supports proxy
 func DownloadFile(urlStr, filepath, proxyAddr string) error {
-	log.GetLogger().Info("开始下载文件", zap.String("url", urlStr))
+	log.GetLogger().Info("Start downloading file", zap.String("url", urlStr))
 	client := &http.Client{}
 	if proxyAddr != "" {
 		client.Transport = &http.Transport{
@@ -57,7 +57,7 @@ func DownloadFile(urlStr, filepath, proxyAddr string) error {
 	defer resp.Body.Close()
 
 	size := resp.ContentLength
-	fmt.Printf("文件大小: %.2f MB\n", float64(size)/1024/1024)
+	fmt.Printf("File Size: %.2f MB\n", float64(size)/1024/1024)
 
 	out, err := os.Create(filepath)
 	if err != nil {
@@ -65,7 +65,7 @@ func DownloadFile(urlStr, filepath, proxyAddr string) error {
 	}
 	defer out.Close()
 
-	// 带有进度的 Reader
+	// Reader with progress tracking
 	progress := &progressWriter{
 		Total: uint64(size),
 	}
@@ -75,8 +75,8 @@ func DownloadFile(urlStr, filepath, proxyAddr string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n") // 进度信息结束，换新行
+	fmt.Printf("\n") // End of progress info, newline
 
-	log.GetLogger().Info("文件下载完成", zap.String("路径", filepath))
+	log.GetLogger().Info("File download complete", zap.String("Path", filepath))
 	return nil
 }

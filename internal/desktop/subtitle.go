@@ -20,17 +20,18 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 	"go.uber.org/zap"
 )
 
-// SubtitleManager 字幕管理器
+// SubtitleManager subtitle manager
 type SubtitleManager struct {
 	window             fyne.Window
 	handler            *handler.Handler
-	videoUrl           string   // 统一使用这个字段存储视频URL（本地上传后的URL或直接输入的URL）
-	videoPaths         []string // 存储多个视频路径
+	videoUrl           string   // Unified field to store video URL (uploaded or input)
+	videoPaths         []string // Stores multiple video paths
 	audioPath          string
 	uploadedAudioURL   string
 	sourceLang         string
@@ -38,31 +39,33 @@ type SubtitleManager struct {
 	bilingualEnabled   bool
 	bilingualPosition  int
 	voiceoverEnabled   bool
-	ttsVoiceCode       string // 声音代码
+	ttsVoiceCode       string // Voice code
 	fillerFilter       bool
+	enableReview       bool   // Pause pipeline for subtitle review before TTS
 	wordReplacements   []api.WordReplacement
 	embedSubtitle      string // none, horizontal, vertical, all
 	verticalTitles     [2]string
 	progressBar        *widget.ProgressBar
-	progressLabel      *widget.Label // 进度百分比标签
+	progressLabel      *widget.Label // Progress percentage label
 	downloadContainer  *fyne.Container
 	tipsLabel          *widget.Label
 	onVideoSelected    func(string)
-	onVideosSelected   func([]string) // 多文件选择回调
+	onVideosSelected   func([]string) // Multi-file selection callback
 	onAudioSelected    func(string)
-	voiceoverAudioPath string
-	multiTaskResults   []taskResult // 存储多任务的结果
+	voiceoverAudioPath  string
+	multiTaskResults    []taskResult // Stores multi-task results
+	reviewDialogShowing bool         // Whether the review dialog is currently displayed
 }
 
-// 用于存储每个任务的结果信息
+// Used to store result info for each task
 type taskResult struct {
-	fileName          string // 原始文件名
+	fileName          string // Original file name
 	subtitleInfo      []api.SubtitleResult
 	speechDownloadURL string
 	taskId            string
 }
 
-// NewSubtitleManager 创建字幕管理器
+// NewSubtitleManager creates the subtitle manager
 func NewSubtitleManager(window fyne.Window) *SubtitleManager {
 	return &SubtitleManager{
 		window:            window,
@@ -71,6 +74,7 @@ func NewSubtitleManager(window fyne.Window) *SubtitleManager {
 		bilingualEnabled:  true,
 		bilingualPosition: 1,
 		fillerFilter:      true,
+		enableReview:      true, // Enable by default
 		voiceoverEnabled:  false,
 		ttsVoiceCode:      "",
 		embedSubtitle:     "none",
@@ -80,11 +84,60 @@ func NewSubtitleManager(window fyne.Window) *SubtitleManager {
 	}
 }
 
+func (sm *SubtitleManager) showReviewDialog(taskId, srtContent string) {
+	sm.reviewDialogShowing = true
+
+	// Create multi-line entry for SRT editing
+	entry := widget.NewMultiLineEntry()
+	entry.SetText(srtContent)
+	// Make it reasonably large
+	entryContainer := container.NewGridWrap(fyne.NewSize(600, 400), entry)
+
+	var dlg dialog.Dialog
+	
+	approveBtn := widget.NewButton("Approve & Continue", func() {
+		// Send the approved/edited content to the API
+		reqBody := map[string]string{
+			"task_id":            taskId,
+			"edited_srt_content": entry.Text,
+		}
+		jsonData, err := json.Marshal(reqBody)
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("Failed to encode review request: %v", err), sm.window)
+			return
+		}
+
+		resp, err := http.Post(fmt.Sprintf("http://%s:%d/api/capability/subtitleTask/review", config.Conf.Server.Host, config.Conf.Server.Port), "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("Failed to submit review: %v", err), sm.window)
+			return
+		}
+		defer resp.Body.Close()
+
+		sm.reviewDialogShowing = false
+		dlg.Hide()
+	})
+	approveBtn.Importance = widget.HighImportance
+
+	content := container.NewVBox(
+		widget.NewLabel("Review and edit the translated subtitles below before dubbing:"),
+		entryContainer,
+		container.NewHBox(layout.NewSpacer(), approveBtn, layout.NewSpacer()),
+	)
+
+	dlg = dialog.NewCustom("Review Subtitles", "Cancel", content, sm.window)
+	dlg.SetOnClosed(func() {
+		sm.reviewDialogShowing = false
+	})
+	dlg.Resize(fyne.NewSize(650, 500))
+	dlg.Show()
+}
+
 func (sm *SubtitleManager) SetVideoSelectedCallback(callback func(string)) {
 	sm.onVideoSelected = callback
 }
 
-// 多文件选择回调设
+// Multi-file selection callback
 func (sm *SubtitleManager) SetVideosSelectedCallback(callback func([]string)) {
 	sm.onVideosSelected = callback
 }
@@ -95,8 +148,8 @@ func (sm *SubtitleManager) ShowFileDialog() {
 	sm.addVideoFile(false)
 }
 
-// addVideoFile 添加视频文件
-// continueAdding为true表示这是继续添加的文件
+// addVideoFile adds video files
+// continueAdding true means adding more files
 func (sm *SubtitleManager) addVideoFile(continueAdding bool) {
 	fd := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
 		if err != nil {
@@ -104,12 +157,12 @@ func (sm *SubtitleManager) addVideoFile(continueAdding bool) {
 			return
 		}
 		if reader == nil {
-			// 用户取消选择
+			// User cancelled selection
 			if len(sm.videoPaths) > 0 {
-				// 询问是否上传
+				// Ask whether to upload
 				confirmDialog := dialog.NewConfirm(
-					"上传文件",
-					fmt.Sprintf("已选择 %d 个文件，是否开始上传？", len(sm.videoPaths)),
+					"Upload Files",
+					fmt.Sprintf("Selected %d files. Start uploading?", len(sm.videoPaths)),
 					func(confirm bool) {
 						if confirm {
 							sm.uploadMultipleFiles()
@@ -126,23 +179,23 @@ func (sm *SubtitleManager) addVideoFile(continueAdding bool) {
 
 		sm.videoPaths = append(sm.videoPaths, filePath)
 
-		// 询问是否继续添加
-		// 构建已选文件消息
-		filesMessage := fmt.Sprintf("已选择 %d 个文件:\n", len(sm.videoPaths))
+		// Ask whether to continue adding
+		// Build selected file message
+		filesMessage := fmt.Sprintf("Selected %d files:\n", len(sm.videoPaths))
 		for i, path := range sm.videoPaths {
 			filesMessage += fmt.Sprintf("%d. %s\n", i+1, filepath.Base(path))
 		}
-		filesMessage += "\n是否继续添加更多文件？"
+		filesMessage += "\nDo you want to add more files?"
 
 		confirmDialog := dialog.NewConfirm(
-			"继续选择",
+			"Continue Selecting",
 			filesMessage,
 			func(cont bool) {
 				if cont {
-					// 继续添加文件
+					// Continue adding files
 					sm.addVideoFile(true)
 				} else {
-					// 开始上传
+					// Start uploading
 					sm.uploadMultipleFiles()
 				}
 			},
@@ -155,29 +208,29 @@ func (sm *SubtitleManager) addVideoFile(continueAdding bool) {
 	fd.Show()
 }
 
-// uploadMultipleFiles 上传多个文件
+// uploadMultipleFiles uploads multiple files
 func (sm *SubtitleManager) uploadMultipleFiles() {
 	if len(sm.videoPaths) == 0 {
 		return
 	}
 
-	// 创建进度对话框
-	filesList := fmt.Sprintf("上传 %d 个文件:\n", len(sm.videoPaths))
+	// Create progress dialog
+	filesList := fmt.Sprintf("Uploading %d files:\n", len(sm.videoPaths))
 	for i, path := range sm.videoPaths {
 		filesList += fmt.Sprintf("%d. %s\n", i+1, filepath.Base(path))
 	}
 
-	progressDialog := dialog.NewProgress("上传中", filesList, sm.window)
+	progressDialog := dialog.NewProgress("Uploading", filesList, sm.window)
 	progressDialog.Show()
 
 	go func() {
 		defer progressDialog.Hide()
 
-		// 创建multipart form
+		// Create multipart form
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)
 
-		// 添加多个文件到表单
+		// Add multiple files to form
 		for i, filePath := range sm.videoPaths {
 			file, err := os.Open(filePath)
 			if err != nil {
@@ -199,7 +252,7 @@ func (sm *SubtitleManager) uploadMultipleFiles() {
 				return
 			}
 
-			// 更新进度
+			// Update progress
 			progressDialog.SetValue(float64(i+1) / float64(len(sm.videoPaths)))
 		}
 
@@ -209,7 +262,7 @@ func (sm *SubtitleManager) uploadMultipleFiles() {
 			return
 		}
 
-		// 发送请求
+		// Send request
 		resp, err := http.Post(fmt.Sprintf("http://%s:%d/api/file", config.Conf.Server.Host, config.Conf.Server.Port), writer.FormDataContentType(), body)
 		if err != nil {
 			dialog.ShowError(err, sm.window)
@@ -239,7 +292,7 @@ func (sm *SubtitleManager) uploadMultipleFiles() {
 		copy(tempPaths, result.Data.FilePath)
 		sm.videoPaths = tempPaths
 
-		// 如果只有一个文件，也设置videoUrl
+		// If there's only one file, also set videoUrl
 		if len(result.Data.FilePath) > 0 {
 			sm.videoUrl = result.Data.FilePath[0]
 		}
@@ -250,13 +303,13 @@ func (sm *SubtitleManager) uploadMultipleFiles() {
 			sm.onVideoSelected(result.Data.FilePath[0])
 		}
 
-		// 构建消息
-		successMessage := fmt.Sprintf("已成功上传 %d 个文件:\n", len(result.Data.FilePath))
+		// Build message
+		successMessage := fmt.Sprintf("Successfully uploaded %d files:\n", len(result.Data.FilePath))
 		for i, url := range result.Data.FilePath {
 			successMessage += fmt.Sprintf("%d. %s\n", i+1, filepath.Base(url))
 		}
 
-		dialog.ShowInformation("上传成功", successMessage, sm.window)
+		dialog.ShowInformation("Upload Successful", successMessage, sm.window)
 	}()
 }
 
@@ -284,7 +337,7 @@ func (sm *SubtitleManager) ShowAudioFileDialog() {
 			return
 		}
 
-		// 设置音频路径
+		// Set audio path
 		sm.voiceoverAudioPath = tempFile.Name()
 		if sm.onAudioSelected != nil {
 			sm.onAudioSelected(tempFile.Name())
@@ -295,26 +348,26 @@ func (sm *SubtitleManager) ShowAudioFileDialog() {
 func (sm *SubtitleManager) uploadVideo(localPath string) error {
 	file, err := os.Open(localPath)
 	if err != nil {
-		return fmt.Errorf("打开文件失败: %w", err)
+		return fmt.Errorf("Failed to open file: %w", err)
 	}
 	defer file.Close()
 
-	// 创建multipart form
+	// Create multipart form
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("file", filepath.Base(localPath))
 	if err != nil {
-		return fmt.Errorf("创建form失败: %w", err)
+		return fmt.Errorf("Failed to create form: %w", err)
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		return fmt.Errorf("复制文件内容失败: %w", err)
+		return fmt.Errorf("Failed to copy file content: %w", err)
 	}
 	writer.Close()
 
 	resp, err := http.Post(fmt.Sprintf("http://%s:%d/api/file", config.Conf.Server.Host, config.Conf.Server.Port), writer.FormDataContentType(), body)
 	if err != nil {
-		return fmt.Errorf("上传文件失败: %w", err)
+		return fmt.Errorf("Failed to upload file: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -328,7 +381,7 @@ func (sm *SubtitleManager) uploadVideo(localPath string) error {
 
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("Failed to parse response: %w", err)
 	}
 
 	if result.Error != 0 && result.Error != 200 {
@@ -342,26 +395,26 @@ func (sm *SubtitleManager) uploadVideo(localPath string) error {
 func (sm *SubtitleManager) uploadAudio() error {
 	file, err := os.Open(sm.audioPath)
 	if err != nil {
-		return fmt.Errorf("打开文件失败: %w", err)
+		return fmt.Errorf("Failed to open file: %w", err)
 	}
 	defer file.Close()
 
-	// 创建multipart form
+	// Create multipart form
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("file", filepath.Base(sm.audioPath))
 	if err != nil {
-		return fmt.Errorf("创建form失败: %w", err)
+		return fmt.Errorf("Failed to create form: %w", err)
 	}
 	_, err = io.Copy(part, file)
 	if err != nil {
-		return fmt.Errorf("复制文件内容失败: %w", err)
+		return fmt.Errorf("Failed to copy file content: %w", err)
 	}
 	writer.Close()
 
 	resp, err := http.Post(fmt.Sprintf("http://%s:%d/api/file", config.Conf.Server.Host, config.Conf.Server.Port), writer.FormDataContentType(), body)
 	if err != nil {
-		return fmt.Errorf("上传文件失败: %w", err)
+		return fmt.Errorf("Failed to upload file: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -375,7 +428,7 @@ func (sm *SubtitleManager) uploadAudio() error {
 
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("Failed to parse response: %w", err)
 	}
 
 	if result.Error != 0 && result.Error != 200 {
@@ -394,89 +447,94 @@ func (sm *SubtitleManager) SetTargetLang(lang string) {
 	sm.targetLang = lang
 }
 
-// SetBilingualEnabled 设置是否启用双语字幕
+// SetBilingualEnabled sets whether to enable bilingual subtitles
 func (sm *SubtitleManager) SetBilingualEnabled(enabled bool) {
 	sm.bilingualEnabled = enabled
 }
 
-// SetBilingualPosition 设置双语字幕位置
+// SetBilingualPosition sets bilingual subtitle position
 func (sm *SubtitleManager) SetBilingualPosition(position int) {
 	sm.bilingualPosition = position
 }
 
-// SetFillerFilter 设置是否启用语气词过滤
+// SetFillerFilter sets whether to enable filler word filtering
 func (sm *SubtitleManager) SetFillerFilter(enabled bool) {
 	sm.fillerFilter = enabled
 }
 
-// SetVoiceoverEnabled 设置是否启用配音
+// SetVoiceoverEnabled sets whether to enable dubbing
 func (sm *SubtitleManager) SetVoiceoverEnabled(enabled bool) {
 	sm.voiceoverEnabled = enabled
 }
 
-// SetTtsVoiceCode 设置配音性别
+// SetTtsVoiceCode sets voice code
 func (sm *SubtitleManager) SetTtsVoiceCode(code string) {
 	sm.ttsVoiceCode = code
 }
 
-// SetEmbedSubtitle 设置字幕嵌入方式
+// SetEmbedSubtitle sets subtitle embedding mode
 func (sm *SubtitleManager) SetEmbedSubtitle(mode string) {
 	sm.embedSubtitle = mode
 }
 
-// SetVerticalTitles 设置竖屏标题
+// SetVerticalTitles sets vertical titles
 func (sm *SubtitleManager) SetVerticalTitles(mainTitle, subTitle string) {
 	sm.verticalTitles = [2]string{mainTitle, subTitle}
 }
 
-// SetProgressBar 设置进度条
+// SetProgressBar sets the progress bar
 func (sm *SubtitleManager) SetProgressBar(progress *widget.ProgressBar) {
 	sm.progressBar = progress
 }
 
-// SetDownloadContainer 设置下载容器
+// SetDownloadContainer sets download container
 func (sm *SubtitleManager) SetDownloadContainer(container *fyne.Container) {
 	sm.downloadContainer = container
 }
 
-// SetTipsLabel 设置提示标签
+// SetTipsLabel sets tips label
 func (sm *SubtitleManager) SetTipsLabel(label *widget.Label) {
 	sm.tipsLabel = label
 }
 
-// SetAudioSelectedCallback 设置音频选择回调
+// SetAudioSelectedCallback sets audio selection callback
 func (sm *SubtitleManager) SetAudioSelectedCallback(callback func(string)) {
 	sm.onAudioSelected = callback
 }
 
-// SetVideoUrl 设置视频URL
+// SetVideoUrl sets video URL
 func (sm *SubtitleManager) SetVideoUrl(url string) {
 	sm.videoUrl = url
 }
 
-// GetVideoUrl 获取视频URL
+// SetEnableReview sets enableReview
+func (sm *SubtitleManager) SetEnableReview(enable bool) {
+	sm.enableReview = enable
+}
+
+// GetVideoUrl gets video URL
 func (sm *SubtitleManager) GetVideoUrl() string {
 	return sm.videoUrl
 }
 
-// SetProgressLabel 设置进度百分比标签
+// SetProgressLabel sets progress percentage label
 func (sm *SubtitleManager) SetProgressLabel(label *widget.Label) {
 	sm.progressLabel = label
 }
 
-// StartTask 启动字幕任务
+// StartTask starts the subtitle task
 func (sm *SubtitleManager) StartTask() error {
-	// 检查是否有多个视频路径需要处理
+	// Check if there are multiple video paths to process
 	if len(sm.videoPaths) > 1 {
-		// 对多个视频依次启动任务
+		// Start tasks for multiple videos sequentially
 		go sm.processMultipleVideos()
 		return nil
 	} else if len(sm.videoPaths) == 1 {
-		// 确保使用videoPaths中的第一个URL
+		// Ensure the first URL in videoPaths is used
 		sm.videoUrl = sm.videoPaths[0]
 	}
 
-	// 单个视频处理
+	// Single video processing
 	task := &api.SubtitleTask{
 		URL:                     sm.videoUrl,
 		Language:                "zh_cn",
@@ -488,6 +546,7 @@ func (sm *SubtitleManager) StartTask() error {
 		TTSVoiceCode:            sm.ttsVoiceCode,
 		TTSVoiceCloneSrcFileURL: sm.voiceoverAudioPath,
 		ModalFilter:             boolToInt(sm.fillerFilter),
+		EnableReview:            sm.enableReview,
 		EmbedSubtitleVideoType:  sm.embedSubtitle,
 		VerticalMajorTitle:      sm.verticalTitles[0],
 		VerticalMinorTitle:      sm.verticalTitles[1],
@@ -495,12 +554,12 @@ func (sm *SubtitleManager) StartTask() error {
 
 	jsonData, err := json.Marshal(task)
 	if err != nil {
-		return fmt.Errorf("序列化任务数据失败: %w", err)
+		return fmt.Errorf("Failed to serialize task data: %w", err)
 	}
 
 	resp, err := http.Post(fmt.Sprintf("http://%s:%d/api/capability/subtitleTask", config.Conf.Server.Host, config.Conf.Server.Port), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return fmt.Errorf("发送任务请求失败: %w", err)
+		return fmt.Errorf("Failed to send task request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -513,41 +572,41 @@ func (sm *SubtitleManager) StartTask() error {
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return fmt.Errorf("解析响应失败: %w", err)
+		return fmt.Errorf("Failed to parse response: %w", err)
 	}
 
 	if result.Error != 0 && result.Error != 200 {
 		return fmt.Errorf(result.Msg)
 	}
 
-	// 开始轮询任务状态
+	// Start polling task status
 	go sm.pollTaskStatus(result.Data.TaskId)
 	return nil
 }
 
-// 处理多个视频
+// Process multiple videos
 func (sm *SubtitleManager) processMultipleVideos() {
-	// 原始视频URL
+	// Original video URL
 	originalURL := sm.videoUrl
 
-	// 清空之前的任务结果
+	// Clear previous task results
 	sm.multiTaskResults = make([]taskResult, 0, len(sm.videoPaths))
 
-	// 重置进度条
+	// Reset progress bar
 	sm.progressBar.SetValue(0)
 	sm.progressBar.Show()
 
-	// 更新进度标签
+	// Update progress label
 	if sm.progressLabel != nil {
 		sm.progressLabel.SetText("0%")
 		sm.progressLabel.Show()
 	}
 
-	// 清空下载容器
+	// Clear download container
 	sm.downloadContainer.Objects = []fyne.CanvasObject{}
 	sm.downloadContainer.Hide()
 
-	// 隐藏提示标签
+	// Hide tips label
 	sm.tipsLabel.Hide()
 
 	go func() {
@@ -562,7 +621,7 @@ func (sm *SubtitleManager) processMultipleVideos() {
 				if len(displayName) > 20 {
 					displayName = displayName[:17] + "..."
 				}
-				sm.progressLabel.SetText(fmt.Sprintf("处理: %d/%d\n%s", i+1, len(sm.videoPaths), displayName))
+				sm.progressLabel.SetText(fmt.Sprintf("Processing: %d/%d\n%s", i+1, len(sm.videoPaths), displayName))
 				sm.progressLabel.Show()
 			}
 
@@ -586,13 +645,13 @@ func (sm *SubtitleManager) processMultipleVideos() {
 
 			jsonData, err := json.Marshal(task)
 			if err != nil {
-				log.GetLogger().Error("序列化任务数据失败", zap.Error(err))
+				log.GetLogger().Error("Failed to serialize task data", zap.Error(err))
 				continue
 			}
 
 			resp, err := http.Post(fmt.Sprintf("http://%s:%d/api/capability/subtitleTask", config.Conf.Server.Host, config.Conf.Server.Port), "application/json", bytes.NewBuffer(jsonData))
 			if err != nil {
-				log.GetLogger().Error("发送任务请求失败", zap.Error(err))
+				log.GetLogger().Error("Failed to send task request", zap.Error(err))
 				continue
 			}
 
@@ -606,13 +665,13 @@ func (sm *SubtitleManager) processMultipleVideos() {
 
 			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 				resp.Body.Close()
-				log.GetLogger().Error("解析响应失败", zap.Error(err))
+				log.GetLogger().Error("Failed to parse response", zap.Error(err))
 				continue
 			}
 			resp.Body.Close()
 
 			if result.Error != 0 && result.Error != 200 {
-				log.GetLogger().Error("任务创建失败", zap.String("msg", result.Msg))
+				log.GetLogger().Error("Failed to create task", zap.String("msg", result.Msg))
 				continue
 			}
 
@@ -623,33 +682,33 @@ func (sm *SubtitleManager) processMultipleVideos() {
 
 		sm.videoUrl = originalURL
 
-		// 显示所有文件下载链接
+		// Display all file download links
 		sm.displayMultiTaskDownloadLinks()
 
-		// 完成所有视频处理
-		dialog.ShowInformation("完成", "所有视频处理完成", sm.window)
+		// Complete all video processing
+		dialog.ShowInformation("Done", "All videos processed successfully", sm.window)
 	}()
 }
 
-// 等待任务完成，并返回任务结果
+// Wait for task completion and return result
 func (sm *SubtitleManager) waitTaskCompleted(taskId string, originalFileName string) taskResult {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	// 上次进度
+	// Last progress percentage
 	lastPercent := 0
 
-	// 准备任务结果
+	// Prepare task result
 	res := taskResult{
 		fileName: originalFileName,
 		taskId:   taskId,
 	}
 
-	// 轮询任务状态
+	// Poll task status
 	for {
 		resp, err := http.Get(fmt.Sprintf("http://%s:%d/api/capability/subtitleTask?taskId=%s", config.Conf.Server.Host, config.Conf.Server.Port, taskId))
 		if err != nil {
-			log.GetLogger().Error("获取任务状态失败", zap.Error(err))
+			log.GetLogger().Error("Failed to get task status", zap.Error(err))
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -659,14 +718,16 @@ func (sm *SubtitleManager) waitTaskCompleted(taskId string, originalFileName str
 			Msg   string `json:"msg"`
 			Data  struct {
 				ProcessPercent    int                  `json:"process_percent"`
+				Status            string               `json:"status"`
 				SubtitleInfo      []api.SubtitleResult `json:"subtitle_info"`
 				SpeechDownloadURL string               `json:"speech_download_url"`
 				TaskId            string               `json:"task_id"`
+				ReviewSrtContent  string               `json:"review_srt_content"`
 			} `json:"data"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			log.GetLogger().Error("解析响应失败", zap.Error(err))
+			log.GetLogger().Error("Failed to parse response", zap.Error(err))
 			resp.Body.Close()
 			time.Sleep(2 * time.Second)
 			continue
@@ -677,13 +738,13 @@ func (sm *SubtitleManager) waitTaskCompleted(taskId string, originalFileName str
 			progress := float64(result.Data.ProcessPercent) / 100.0
 			sm.progressBar.SetValue(progress)
 
-			// 更新进度标签
+			// Update progress label
 			if sm.progressLabel != nil {
 				sm.progressLabel.SetText(fmt.Sprintf("%d%%", result.Data.ProcessPercent))
 				sm.progressLabel.Show()
 			}
 
-			// 更新上次进度
+			// Update last progress percentage
 			lastPercent = result.Data.ProcessPercent
 		}
 
@@ -691,6 +752,10 @@ func (sm *SubtitleManager) waitTaskCompleted(taskId string, originalFileName str
 			res.subtitleInfo = result.Data.SubtitleInfo
 			res.speechDownloadURL = result.Data.SpeechDownloadURL
 			break
+		}
+
+		if result.Data.Status == "waiting_review" && !sm.reviewDialogShowing {
+			sm.showReviewDialog(taskId, result.Data.ReviewSrtContent)
 		}
 
 		time.Sleep(2 * time.Second)
@@ -706,19 +771,19 @@ func boolToInt(b bool) int {
 	return 2
 }
 
-// pollTaskStatus 轮询任务状态
+// pollTaskStatus polls task status
 func (sm *SubtitleManager) pollTaskStatus(taskId string) {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
-	// 记录上次进度，避免频繁更新
+	// Record last progress percentage to avoid frequent updates
 	lastPercent := 0
 
 	for range ticker.C {
 		resp, err := http.Get(fmt.Sprintf("http://%s:%d/api/capability/subtitleTask?taskId=%s", config.Conf.Server.Host, config.Conf.Server.Port, taskId))
 		if err != nil {
-			log.GetLogger().Error("获取任务状态失败", zap.Error(err))
-			dialog.ShowError(fmt.Errorf("获取任务状态失败 Failed to get task status: %v", err), sm.window)
+			log.GetLogger().Error("Failed to get task status", zap.Error(err))
+			dialog.ShowError(fmt.Errorf("Failed to get task status: %v", err), sm.window)
 			return
 		}
 
@@ -727,23 +792,25 @@ func (sm *SubtitleManager) pollTaskStatus(taskId string) {
 			Msg   string `json:"msg"`
 			Data  struct {
 				ProcessPercent    int                  `json:"process_percent"`
+				Status            string               `json:"status"`
 				SubtitleInfo      []api.SubtitleResult `json:"subtitle_info"`
 				SpeechDownloadURL string               `json:"speech_download_url"`
 				TaskId            string               `json:"task_id"`
+				ReviewSrtContent  string               `json:"review_srt_content"`
 			} `json:"data"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			log.GetLogger().Error("解析响应失败", zap.Error(err))
+			log.GetLogger().Error("Failed to parse response", zap.Error(err))
 			resp.Body.Close()
-			dialog.ShowError(fmt.Errorf("获取任务状态失败 Failed to get task status: %v", err), sm.window)
+			dialog.ShowError(fmt.Errorf("Failed to get task status: %v", err), sm.window)
 			return
 		}
 		resp.Body.Close()
 
 		if result.Error != 0 {
-			log.GetLogger().Error("获取任务状态失败", zap.String("msg", result.Msg))
-			dialog.ShowError(fmt.Errorf("获取任务状态失败 Failed to get task status: %v", result.Msg), sm.window)
+			log.GetLogger().Error("Failed to get task status", zap.String("msg", result.Msg))
+			dialog.ShowError(fmt.Errorf("Failed to get task status: %v", result.Msg), sm.window)
 			return
 		}
 
@@ -756,12 +823,12 @@ func (sm *SubtitleManager) pollTaskStatus(taskId string) {
 				sm.progressLabel.Show()
 			}
 
-			// 更新上次进度
+			// Update last progress percentage
 			lastPercent = result.Data.ProcessPercent
 		}
 
 		if result.Data.ProcessPercent >= 100 {
-			// 对于单文件任务，创建一个任务结果并显示
+			// For single-file tasks, create and display a task result
 			taskRes := taskResult{
 				fileName:          filepath.Base(sm.videoUrl),
 				subtitleInfo:      result.Data.SubtitleInfo,
@@ -773,17 +840,21 @@ func (sm *SubtitleManager) pollTaskStatus(taskId string) {
 
 			sm.displayMultiTaskDownloadLinks()
 
-			sm.tipsLabel.SetText(fmt.Sprintf("若需要查看合成的视频或者文字稿，请到软件目录下的/tasks/%s/output 目录下查看。", result.Data.TaskId))
+			sm.tipsLabel.SetText(fmt.Sprintf("Check composite videos or transcripts in /tasks/%s/output in the app directory.", result.Data.TaskId))
 			sm.tipsLabel.Show()
 
 			return
 		}
+
+		if result.Data.Status == "waiting_review" && !sm.reviewDialogShowing {
+			sm.showReviewDialog(taskId, result.Data.ReviewSrtContent)
+		}
 	}
 }
 
-// 显示多任务的下载链接
+// Display download links for multiple tasks
 func (sm *SubtitleManager) displayMultiTaskDownloadLinks() {
-	// 清空现有链接
+	// Clear existing links
 	sm.downloadContainer.Objects = []fyne.CanvasObject{}
 
 	if len(sm.multiTaskResults) == 0 {
@@ -794,7 +865,7 @@ func (sm *SubtitleManager) displayMultiTaskDownloadLinks() {
 
 	for _, taskRes := range sm.multiTaskResults {
 		taskLabel := widget.NewLabelWithStyle(
-			fmt.Sprintf("文件: %s", taskRes.fileName),
+			fmt.Sprintf("File: %s", taskRes.fileName),
 			fyne.TextAlignLeading,
 			fyne.TextStyle{Bold: true},
 		)
@@ -805,7 +876,7 @@ func (sm *SubtitleManager) displayMultiTaskDownloadLinks() {
 			downloadURL := result.DownloadURL
 			fileName := result.Name
 
-			btn := widget.NewButton("下载"+fileName, func(url string) func() {
+			btn := widget.NewButton("Download "+fileName, func(url string) func() {
 				return func() {
 					go sm.downloadFile(url, filepath.Base(url))
 				}
@@ -818,7 +889,7 @@ func (sm *SubtitleManager) displayMultiTaskDownloadLinks() {
 			url := taskRes.speechDownloadURL
 			ttsFileName := fmt.Sprintf("tts_%s.wav", filepath.Base(taskRes.speechDownloadURL))
 
-			speechBtn := widget.NewButton("下载配音文件", func(u, f string) func() {
+			speechBtn := widget.NewButton("Download Dubbing File", func(u, f string) func() {
 				return func() {
 					go sm.downloadFile(u, f)
 				}
@@ -827,7 +898,7 @@ func (sm *SubtitleManager) displayMultiTaskDownloadLinks() {
 			taskContainer.Add(speechBtn)
 		}
 
-		taskTip := widget.NewLabel(fmt.Sprintf("查看视频或文字稿: /tasks/%s/output", taskRes.taskId))
+		taskTip := widget.NewLabel(fmt.Sprintf("View video or transcript: /tasks/%s/output", taskRes.taskId))
 		taskTip.Alignment = fyne.TextAlignCenter
 		taskContainer.Add(taskTip)
 
@@ -840,16 +911,16 @@ func (sm *SubtitleManager) displayMultiTaskDownloadLinks() {
 		allTasksContainer.Add(taskContainer)
 	}
 
-	// 所有任务容器添加到下载容器
+	// Add all task containers to the download container
 	sm.downloadContainer.Add(allTasksContainer)
 	sm.downloadContainer.Show()
 }
 
-// 下载文件的通用方法
+// General method to download files
 func (sm *SubtitleManager) downloadFile(downloadURL, suggestedFileName string) {
 	resp, err := http.Get(fmt.Sprintf("http://%s:%d", config.Conf.Server.Host, config.Conf.Server.Port) + downloadURL)
 	if err != nil {
-		dialog.ShowError(fmt.Errorf("下载失败: %v", err), sm.window)
+		dialog.ShowError(fmt.Errorf("Download failed: %v", err), sm.window)
 		return
 	}
 
@@ -859,18 +930,18 @@ func (sm *SubtitleManager) downloadFile(downloadURL, suggestedFileName string) {
 			return
 		}
 		if writer == nil {
-			return // 用户取消了
+			return // User cancelled
 		}
 		defer writer.Close()
 		defer resp.Body.Close()
 
 		_, err = io.Copy(writer, resp.Body)
 		if err != nil {
-			dialog.ShowError(fmt.Errorf("保存文件失败: %v", err), sm.window)
+			dialog.ShowError(fmt.Errorf("Failed to save file: %v", err), sm.window)
 			return
 		}
 
-		dialog.ShowInformation("下载完成", "文件已保存", sm.window)
+		dialog.ShowInformation("Download Complete", "File saved successfully", sm.window)
 	}, sm.window)
 
 	saveDialog.SetFileName(suggestedFileName)

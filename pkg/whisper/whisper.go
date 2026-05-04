@@ -29,13 +29,13 @@ func (c *Client) Transcription(audioFile, language, workDir string) (*types.Tran
 
 	transcriptionData := &types.TranscriptionData{
 		Language: resp.Language,
-		Text:     strings.ReplaceAll(resp.Text, "-", " "), // 连字符处理，因为模型存在很多错误添加到连字符
+		Text:     strings.ReplaceAll(resp.Text, "-", " "), // Hyphen handling, as the model often incorrectly adds hyphens
 		Words:    make([]types.Word, 0),
 	}
 	num := 0
 	for _, word := range resp.Words {
 		if strings.Contains(word.Word, "—") {
-			// 对称切分
+			// Symmetric splitting
 			mid := (word.Start + word.End) / 2
 			seperatedWords := strings.Split(word.Word, "—")
 			transcriptionData.Words = append(transcriptionData.Words, []types.Word{

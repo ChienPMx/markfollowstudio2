@@ -3,7 +3,7 @@ package types
 type StandardLanguageCode string
 
 const (
-	// 第一批
+	// Batch 1
 	LanguageNameSimplifiedChinese  StandardLanguageCode = "zh_cn"
 	LanguageNameTraditionalChinese StandardLanguageCode = "zh_tw"
 	LanguageNameEnglish            StandardLanguageCode = "en"
@@ -21,7 +21,7 @@ const (
 	LanguageNameRussian            StandardLanguageCode = "ru"
 	LanguageNamePortuguese         StandardLanguageCode = "pt"
 	LanguageNameSpanish            StandardLanguageCode = "es"
-	// 第二批
+	// Batch 2
 	LanguageNameHindi     StandardLanguageCode = "hi"
 	LanguageNameBengali   StandardLanguageCode = "bn"
 	LanguageNameHebrew    StandardLanguageCode = "he"
@@ -40,7 +40,7 @@ const (
 	LanguageNameSerbian   StandardLanguageCode = "sr"
 	LanguageNameCroatian  StandardLanguageCode = "hr"
 	LanguageNameCzech     StandardLanguageCode = "cs"
-	// 第三批
+	// Batch 3
 	LanguageNamePinyin        StandardLanguageCode = "pinyin"
 	LanguageNameSwahili       StandardLanguageCode = "sw"
 	LanguageNameYoruba        StandardLanguageCode = "yo"
@@ -51,7 +51,7 @@ const (
 	LanguageNameLuxembourgish StandardLanguageCode = "lb"
 	LanguageNameCatalan       StandardLanguageCode = "ca"
 	LanguageNameRomanian      StandardLanguageCode = "ro"
-	LanguageNameMoldovan      StandardLanguageCode = "ro" // 和LanguageNameRomanian重复
+	LanguageNameMoldovan      StandardLanguageCode = "ro" // Duplicate of LanguageNameRomanian
 	LanguageNameSlovak        StandardLanguageCode = "sk"
 	LanguageNameBosnian       StandardLanguageCode = "bs"
 	LanguageNameMacedonian    StandardLanguageCode = "mk"
@@ -62,7 +62,7 @@ const (
 	LanguageNameEstonian      StandardLanguageCode = "et"
 	LanguageNameMaltese       StandardLanguageCode = "mt"
 	LanguageNameAlbanian      StandardLanguageCode = "sq"
-	// 第四批
+	// Batch 4
 	LanguageNamePunjabi        StandardLanguageCode = "pa"
 	LanguageNameJavanese       StandardLanguageCode = "jv"
 	LanguageNameTamil          StandardLanguageCode = "ta"
@@ -112,8 +112,8 @@ const (
 )
 
 var StandardLanguageCode2Name = map[StandardLanguageCode]string{
-	LanguageNameSimplifiedChinese:  "简体中文",
-	LanguageNameTraditionalChinese: "繁體中文",
+	LanguageNameSimplifiedChinese:  "Simplified Chinese",
+	LanguageNameTraditionalChinese: "Traditional Chinese",
 	LanguageNameEnglish:            "English",
 	LanguageNameJapanese:           "日本語",
 	LanguageNameIndonesian:         "bahasa Indonesia",
@@ -176,7 +176,7 @@ var StandardLanguageCode2Name = map[StandardLanguageCode]string{
 	LanguageNamePashto:             "پښتو",
 	LanguageNameLingala:            "Lingála",
 	LanguageNameMalayalam:          "മലയാളം",
-	LanguageNameHakkaChin:          "客家话",
+	LanguageNameHakkaChin:          "Hakka Chinese",
 	LanguageNameUzbek:              "Oʻzbekcha",
 	LanguageNameKannada:            "ಕನ್ನಡ",
 	LanguageNameOdia:               "ଓଡ଼ିଆ",
@@ -219,5 +219,5 @@ func GetStandardLanguageName(code StandardLanguageCode) string {
 	if name, ok := StandardLanguageCode2Name[code]; ok {
 		return name
 	}
-	return "未知"
+	return "Unknown"
 }

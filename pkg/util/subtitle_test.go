@@ -13,7 +13,7 @@ func TestSplitTextSentences(t *testing.T) {
 		fmt.Printf("sentence %d, got '%s'\n", i, sentence)
 	}
 
-	// 期望的结果：应该保持为一个完整句子，因为有效字符数小于70
+	// Expected result: should remain as a complete sentence because the number of effective characters is less than 70
 	if len(sentences) != 1 {
 		t.Errorf("Expected 1 sentence, got %d sentences", len(sentences))
 	}

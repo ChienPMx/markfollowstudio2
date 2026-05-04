@@ -1,7 +1,7 @@
 package whispercpp
 
 type WhispercppProcessor struct {
-	WorkDir string // 生成中间文件的目录
+	WorkDir string // Directory for generating intermediate files
 	Model   string
 }
 

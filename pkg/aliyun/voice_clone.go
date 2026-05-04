@@ -16,14 +16,14 @@ import (
 	"github.com/google/uuid"
 )
 
-// _encodeText URL-编码文本，保证符合规范
+// _encodeText URL-encodes text according to specification
 func _encodeText(text string) string {
 	encoded := url.QueryEscape(text)
-	// 根据规范替换特殊字符
+	// Replace special characters according to specification
 	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(encoded, "+", "%20"), "*", "%2A"), "%7E", "~")
 }
 
-// _encodeDict URL-编码字典（map）为查询字符串
+// _encodeDict URL-encodes a dictionary (map) into a query string
 func _encodeDict(dic map[string]string) string {
 	var keys []string
 	for key := range dic {
@@ -36,18 +36,18 @@ func _encodeDict(dic map[string]string) string {
 		values.Add(k, dic[k])
 	}
 	encodedText := values.Encode()
-	// 对整个查询字符串进行编码
+	// Encode the entire query string
 	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(encodedText, "+", "%20"), "*", "%2A"), "%7E", "~")
 }
 
-// 生成签名
+// Generate signature
 func GenerateSignature(secret, stringToSign string) string {
 	key := []byte(secret + "&")
 	data := []byte(stringToSign)
 	hash := hmac.New(sha1.New, key)
 	hash.Write(data)
 	signature := base64.StdEncoding.EncodeToString(hash.Sum(nil))
-	// 对签名进行URL编码
+	// URL-encode the signature
 	return _encodeText(signature)
 }
 
@@ -75,7 +75,7 @@ func NewVoiceCloneClient(accessKeyID, accessKeySecret, appkey string) *VoiceClon
 }
 
 func (c *VoiceCloneClient) CosyVoiceClone(voicePrefix, audioURL string) (string, error) {
-	log.GetLogger().Info("CosyVoiceClone请求开始", zap.String("voicePrefix", voicePrefix), zap.String("audioURL", audioURL))
+	log.GetLogger().Info("CosyVoiceClone request started", zap.String("voicePrefix", voicePrefix), zap.String("audioURL", audioURL))
 	parameters := map[string]string{
 		"AccessKeyId":      c.accessKeyID,
 		"Action":           "CosyVoiceClone",
@@ -105,7 +105,7 @@ func (c *VoiceCloneClient) CosyVoiceClone(voicePrefix, audioURL string) (string,
 		log.GetLogger().Error("CosyVoiceClone post error", zap.Error(err))
 		return "", fmt.Errorf("CosyVoiceClone post error: %w: ", err)
 	}
-	log.GetLogger().Info("CosyVoiceClone请求完毕", zap.String("Response", resp.String()))
+	log.GetLogger().Info("CosyVoiceClone request completed", zap.String("Response", resp.String()))
 	if res.Message != "SUCCESS" {
 		log.GetLogger().Error("CosyVoiceClone res message is not success", zap.String("Request Id", res.RequestId), zap.Int("Code", res.Code), zap.String("Message", res.Message))
 		return "", fmt.Errorf("CosyVoiceClone res message is not success, message: %s", res.Message)
@@ -140,8 +140,8 @@ func (c *VoiceCloneClient) CosyCloneList(voicePrefix string, pageIndex, pageSize
 	}
 	resp, err := c.restyClient.R().Post(fullURL)
 	if err != nil {
-		log.GetLogger().Error("CosyCloneList请求失败", zap.Error(err))
+		log.GetLogger().Error("CosyCloneList request failed", zap.Error(err))
 		return
 	}
-	log.GetLogger().Info("CosyCloneList请求成功", zap.String("Response", resp.String()))
+	log.GetLogger().Info("CosyCloneList request successful", zap.String("Response", resp.String()))
 }

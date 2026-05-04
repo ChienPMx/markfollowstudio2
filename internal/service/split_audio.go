@@ -15,10 +15,10 @@ import (
 // MIN_SEGMENT_DURATION >= MIN_DURATION + TOLERANCE_DURATION * 2 > ENERGY_WINDOW_DURATION > 0
 const (
 	SAMPLE_RATE            = 3000
-	ENERGY_WINDOW_DURATION = 1.5 // 计算音频能量的时间长度
-	TOLERANCE_DURATION     = 8   // 容忍的时间误差
-	MIN_DURATION           = 10  // 最小音频时长
-	MIN_SEGMENT_DURATION   = 20  // 最小分割时长
+	ENERGY_WINDOW_DURATION = 1.5 // Time duration to calculate audio energy
+	TOLERANCE_DURATION     = 8   // Tolerable time error
+	MIN_DURATION           = 10  // Minimum audio duration
+	MIN_SEGMENT_DURATION   = 20  // Minimum segment duration
 )
 
 func buildFFmpegCmd(input string, start, end float64) (*exec.Cmd, error) {
@@ -28,8 +28,8 @@ func buildFFmpegCmd(input string, start, end float64) (*exec.Cmd, error) {
 	cmd := exec.Command(
 		storage.FfmpegPath,
 		"-y",
-		"-ss", fmt.Sprintf("%.3f", start), // 起始时间
-		"-to", fmt.Sprintf("%.3f", end), // 结束时间
+		"-ss", fmt.Sprintf("%.3f", start), // Start time
+		"-to", fmt.Sprintf("%.3f", end), // End time
 		"-i", input,
 
 		"-f", "s16le",
@@ -135,7 +135,7 @@ func GetSplitPoints(input string, segmentDuration float64) ([]float64, error) {
 	if err := eg.Wait(); err != nil {
 		return nil, fmt.Errorf("failed to get quietest time points: %w", err)
 	}
-	// 如果最后一个片段短于最小分割时长，则将其合并到前一个片段
+	// If the last segment is shorter than the minimum duration, merge it with the previous one.
 	if audioDuration-timePoints[segmentNum-1] < MIN_DURATION {
 		timePoints = timePoints[:segmentNum]
 	}
@@ -150,8 +150,8 @@ func ClipAudio(input, output string, start, end float64) error {
 	cmd := exec.Command(
 		storage.FfmpegPath,
 		"-y",
-		"-ss", fmt.Sprintf("%.3f", start), // 起始时间
-		"-to", fmt.Sprintf("%.3f", end), // 结束时间
+		"-ss", fmt.Sprintf("%.3f", start), // Start time
+		"-to", fmt.Sprintf("%.3f", end), // End time
 		"-i", input,
 		output,
 	)

@@ -25,9 +25,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// 创建配置界面
+// Create config tab
 func CreateConfigTab(window fyne.Window) fyne.CanvasObject {
-	pageTitle := TitleText("应用配置")
+	pageTitle := TitleText("App Configuration")
 
 	appGroup := createAppConfigGroup()
 	serverGroup := createServerConfigGroup()
@@ -53,6 +53,17 @@ func CreateConfigTab(window fyne.Window) fyne.CanvasObject {
 	spacer1.SetMinSize(fyne.NewSize(0, 15))
 	spacer2 := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
 	spacer2.SetMinSize(fyne.NewSize(0, 15))
+	spacer3 := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+	spacer3.SetMinSize(fyne.NewSize(0, 20))
+
+	saveButton := PrimaryButton("💾  Save Configuration", theme.DocumentSaveIcon(), func() {
+		if err := config.SaveConfig(); err != nil {
+			dialog.ShowError(fmt.Errorf("Failed to save configuration: %v", err), window)
+			return
+		}
+		dialog.ShowInformation("Saved", "Configuration saved successfully.\nRestart the app for changes to take effect.", window)
+	})
+	saveButtonContainer := container.NewHBox(layout.NewSpacer(), saveButton, layout.NewSpacer())
 
 	configContainer := container.NewVBox(
 		container.NewPadded(pageTitle),
@@ -62,6 +73,8 @@ func CreateConfigTab(window fyne.Window) fyne.CanvasObject {
 		container.NewPadded(transcribeGroup),
 		container.NewPadded(ttsGroup),
 		spacer2,
+		container.NewPadded(saveButtonContainer),
+		spacer3,
 	)
 
 	scroll := container.NewScroll(configContainer)
@@ -71,21 +84,22 @@ func CreateConfigTab(window fyne.Window) fyne.CanvasObject {
 	return container.NewPadded(configStack)
 }
 
-// LLM 配置控件引用，供供应商卡片点击时联动
+
+// LLM configuration widget references for provider card interaction
 var llmBaseUrlEntryRef *widget.Entry
 var llmModelEntryRef *widget.Entry
 var llmModelSelectRef *widget.Select
 
 func CreateLlmTab() fyne.CanvasObject {
-	pageTitle := TitleText("LLM 配置")
+	pageTitle := TitleText("LLM Configuration")
 
-	// 创建LLM配置表单
+	// Create LLM config form
 	llmConfigCard := createLlmConfigGroup()
 
-	// 创建API供应商快捷设置区域（依赖上面的表单控件引用）
+	// Create API provider shortcut settings area (depends on widget references above)
 	providersCard := createApiProvidersCard()
 
-	// 创建使用指南卡片
+	// Create usage guide card
 	guideCard := createLlmGuideCard()
 
 	var background *canvas.LinearGradient
@@ -123,9 +137,9 @@ func CreateLlmTab() fyne.CanvasObject {
 	return container.NewPadded(llmStack)
 }
 
-// 创建API供应商快捷链接卡片
+// Create API provider shortcut card
 func createApiProvidersCard() *fyne.Container {
-	// 内部工具：设置 BaseURL 和 推荐模型
+	// Internal tool: set BaseURL and recommended models
 	setProvider := func(baseURL string, models []string) {
 		if llmBaseUrlEntryRef != nil {
 			llmBaseUrlEntryRef.SetText(baseURL)
@@ -145,12 +159,12 @@ func createApiProvidersCard() *fyne.Container {
 			}
 		}
 	}
-	// 通义千问卡片
+	// Qwen Card
 	qwenCard := createProviderCard(
-		"通义千问 Qwen",
-		"阿里云大模型服务",
+		"Aliyun Qwen",
+		"Aliyun Large Model Service",
 		"https://bailian.console.aliyun.com/",
-		color.NRGBA{R: 99, G: 54, B: 231, A: 255}, // 通义千问紫色
+		color.NRGBA{R: 99, G: 54, B: 231, A: 255}, // Qwen purple
 		"qwen",
 		func() {
 			setProvider("https://dashscope.aliyuncs.com/compatible-mode/v1", []string{
@@ -159,12 +173,12 @@ func createApiProvidersCard() *fyne.Container {
 		},
 	)
 
-	// OpenAI卡片
+	// OpenAI Card
 	openaiCard := createProviderCard(
 		"OpenAI",
-		"GPT模型API服务",
+		"GPT Model API Service",
 		"https://platform.openai.com/",
-		color.NRGBA{R: 116, G: 195, B: 101, A: 255}, // OpenAI绿色
+		color.NRGBA{R: 116, G: 195, B: 101, A: 255}, // OpenAI green
 		"openai",
 		func() {
 			setProvider("https://api.openai.com/v1", []string{
@@ -173,12 +187,12 @@ func createApiProvidersCard() *fyne.Container {
 		},
 	)
 
-	// DeepSeek卡片
+	// DeepSeek Card
 	deepseekCard := createProviderCard(
 		"DeepSeek",
-		"高性价比AI模型",
+		"High Performance AI Model",
 		"https://platform.deepseek.com/",
-		color.NRGBA{R: 77, G: 107, B: 254, A: 255}, // DeepSeek蓝色
+		color.NRGBA{R: 77, G: 107, B: 254, A: 255}, // DeepSeek blue
 		"deepseek",
 		func() {
 			setProvider("https://api.deepseek.com/v1", []string{
@@ -187,12 +201,12 @@ func createApiProvidersCard() *fyne.Container {
 		},
 	)
 
-	// 新增自定义供应商卡片
+	// Add custom provider card
 	addProviderCard := createProviderCard(
-		"新增",
-		"添加自定义供应商",
-		"https://example.com/krillinai/add-provider", // 占位链接，后续可替换
-		color.NRGBA{R: 14, G: 165, B: 233, A: 255},   // 青色强调
+		"Add",
+		"Add custom provider",
+		"https://example.com/krillinai/add-provider", // Placeholder link, can be replaced later
+		color.NRGBA{R: 14, G: 165, B: 233, A: 255},   // Cyan accent
 		"add",
 		func() {
 			setProvider("", []string{})
@@ -208,14 +222,14 @@ func createApiProvidersCard() *fyne.Container {
 	)
 
 	return GlassmorphismCard(
-		"API 供应商",
-		"点击下方卡片快速跳转到对应平台购买API",
+		"API Providers",
+		"Click cards below to visit platforms and purchase API keys",
 		providersGrid,
 		GetCurrentThemeIsDark(),
 	)
 }
 
-// 获取供应商图标
+// Get provider icon
 func getProviderIcon(provider string) fyne.CanvasObject {
 	var pngPath string
 	switch provider {
@@ -245,7 +259,7 @@ func getProviderIcon(provider string) fyne.CanvasObject {
 	return img
 }
 
-// 创建单个供应商卡片
+// Create single provider card
 func createProviderCard(name, description, url string, accentColor color.Color, provider string, onTap func()) *fyne.Container {
 	isDark := GetCurrentThemeIsDark()
 
@@ -269,37 +283,37 @@ func createProviderCard(name, description, url string, accentColor color.Color, 
 		shadowColor = color.NRGBA{R: 0, G: 0, B: 0, A: 30}
 	}
 
-	// 创建阴影效果
+	// Create shadow effect
 	shadow := canvas.NewRectangle(shadowColor)
 	shadow.CornerRadius = 12
 	shadow.Move(fyne.NewPos(2, 2))
 
-	// 背景
+	// Background
 	background := canvas.NewRectangle(bgColor)
 	background.CornerRadius = 12
 	background.StrokeColor = accentColor
 	background.StrokeWidth = 2
 
-	// 图标
+	// Icon
 	icon := getProviderIcon(provider)
-	// 顶部留白，避免图标贴近上边缘
+	// Top padding to avoid icon sticking to edge
 	topPadding := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
 	topPadding.SetMinSize(fyne.NewSize(0, 12))
-	// 为图标创建容器以确保居中
+	// Create container for icon to ensure centering
 	iconContainer := container.NewCenter(icon)
 
-	// 标题
+	// Title
 	nameLabel := canvas.NewText(name, textColor)
 	nameLabel.TextSize = 16
 	nameLabel.TextStyle = fyne.TextStyle{Bold: true}
 	nameLabel.Alignment = fyne.TextAlignCenter
 
-	// 描述
+	// Description
 	descLabel := canvas.NewText(description, descColor)
 	descLabel.TextSize = 12
 	descLabel.Alignment = fyne.TextAlignCenter
 
-	// 创建可点击的容器
+	// Create clickable container
 	content := container.NewVBox(
 		topPadding,
 		iconContainer,
@@ -307,31 +321,31 @@ func createProviderCard(name, description, url string, accentColor color.Color, 
 		container.NewPadded(descLabel),
 	)
 
-	// 创建卡片容器，包含阴影和背景
+	// Create card container with shadow and background
 	card := container.NewStack(shadow, background, content)
-	card.Resize(fyne.NewSize(200, 100)) // 增加高度以适应图标
+	card.Resize(fyne.NewSize(200, 100)) // Increase height to accommodate icon
 
-	// 创建透明的可点击区域
+	// Create transparent clickable area
 	clickableArea := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
 	clickableArea.Resize(fyne.NewSize(200, 100))
 
-	// 创建自定义的可点击对象
+	// Create custom tappable object
 	tappable := &tappableObject{
 		rect: clickableArea,
 		onTap: func() {
-			// 点击效果：内陷动画
+			// Click effect: pressed animation
 			originalPos := card.Position()
 			originalShadowPos := shadow.Position()
 
-			// 内陷效果：卡片向下移动，阴影缩小
+			// Pressed effect: card moves down, shadow shrinks
 			card.Move(fyne.NewPos(originalPos.X+1, originalPos.Y+1))
 			shadow.Move(fyne.NewPos(originalShadowPos.X+1, originalShadowPos.Y+1))
 
-			// 背景颜色变化
+			// Background color change
 			background.FillColor = hoverBgColor
 			background.Refresh()
 
-			// 执行点击回调，若未提供回调且存在 URL 则尝试打开浏览器
+			// Execute callback or open URL if no callback provided
 			if onTap != nil {
 				onTap()
 			} else {
@@ -340,7 +354,7 @@ func createProviderCard(name, description, url string, accentColor color.Color, 
 				}
 			}
 
-			// 恢复原位置和颜色
+			// Restore original position and color
 			go func() {
 				time.Sleep(150 * time.Millisecond)
 				card.Move(fyne.NewPos(0, 0))
@@ -351,7 +365,7 @@ func createProviderCard(name, description, url string, accentColor color.Color, 
 		},
 		onHover: func(hovering bool) {
 			if hovering {
-				// 悬停：仅做颜色和阴影变化，避免尺寸变化引发布局抖动
+				// Hover: color/shadow change only to avoid layout jitter
 				background.FillColor = hoverBgColor
 				background.StrokeWidth = 3
 				shadow.Move(fyne.NewPos(3, 3))
@@ -365,60 +379,59 @@ func createProviderCard(name, description, url string, accentColor color.Color, 
 		},
 	}
 
-	// 创建最终容器
+	// Create final container
 	finalContainer := container.NewStack(card, tappable)
 
 	return finalContainer
 }
 
-// 创建LLM使用指南卡片
+// Create LLM usage guide card
 func createLlmGuideCard() *fyne.Container {
-	guideText := `# LLM 配置指南：  
+	guideText := `# LLM Usage Guide:  
 
-## API Base URL：（根据实际情况选择）  
-   - OpenAI官方：https://api.openai.com/v1  
-   - 阿里云百炼：https://dashscope.aliyuncs.com/compatible-mode/v1  
-   - DeepSeek：https://api.deepseek.com/v1  
+## API Base URL: (Choose according to platform)  
+   - OpenAI Official: https://api.openai.com/v1  
+   - Aliyun Qwen: https://dashscope.aliyuncs.com/compatible-mode/v1  
+   - DeepSeek: https://api.deepseek.com/v1  
 
-## API Key：  
-   - 在对应平台的控制台中获取  
-   - 请妥善保管，避免泄露  
+## API Key:  
+   - Obtain from the respective platform's console  
+   - Keep it secure and avoid leaking  
 
-## 模型名称：  
-   - OpenAI：gpt-3.5-turbo, gpt-4, gpt-4-turbo...
-   - 阿里云：qwen-turbo, qwen-plus, qwen-max...
-   - DeepSeek：deepseek-chat, deepseek-coder...
+## Model Name:  
+   - OpenAI: gpt-3.5-turbo, gpt-4, gpt-4-turbo...
+   - Aliyun: qwen-turbo, qwen-plus, qwen-max...
+   - DeepSeek: deepseek-chat, deepseek-coder...
 
-## 使用建议：
-   - 根据实际需求选择合适的模型
-   - 注意API调用费用`
-
+## Usage Advice:
+   - Choose the appropriate model based on your needs
+   - Pay attention to API usage costs`
 	guideLabel := widget.NewRichTextFromMarkdown(guideText)
 	guideLabel.Wrapping = fyne.TextWrapWord
 
 	return GlassmorphismCard(
-		"使用指南",
-		"LLM API配置说明",
+		"Usage Guide",
+		"LLM API configuration instructions",
 		guideLabel,
 		GetCurrentThemeIsDark(),
 	)
 }
 
-// 解析URL的辅助函数
+// Helper function to parse URL
 func parseURL(urlStr string) *url.URL {
 	u, err := url.Parse(urlStr)
 	if err != nil {
-		log.GetLogger().Error("解析URL失败", zap.Error(err))
+		log.GetLogger().Error("Failed to parse URL", zap.Error(err))
 		return nil
 	}
 	return u
 }
 
-// 创建字幕任务界面
+// Create subtitle task tab
 func CreateSubtitleTab(window fyne.Window) fyne.CanvasObject {
 	sm := NewSubtitleManager(window)
 
-	title1 := TitleText("视频翻译配音")
+	title1 := TitleText("Video Translation & Dubbing")
 	title2 := TitleText("Video Translate & Dubbing")
 	titleContainer := container.NewVBox(title1, title2)
 
@@ -473,135 +486,135 @@ func CreateSubtitleTab(window fyne.Window) fyne.CanvasObject {
 
 	scroll := container.NewScroll(mainContent)
 
-	// 使用一个Stack将背景和滚动内容组合
+	// Use a Stack to combine background and scroll content
 	contentStack := container.NewStack(background, scroll)
 
 	return container.NewPadded(contentStack)
 }
 
-// 创建应用配置组
+// Create app config group
 func createAppConfigGroup() *fyne.Container {
-	appSegmentDurationEntry := StyledEntry("字幕分段处理时长(分钟)")
+	appSegmentDurationEntry := StyledEntry("Segment duration (minutes)")
 	appSegmentDurationEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.App.SegmentDuration)))
 	appSegmentDurationEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 30 {
-			return fmt.Errorf("请输入1-30之间的数字")
+			return fmt.Errorf("Please enter a number between 1-30")
 		}
 		return nil
 	}
 
-	appTranscribeParallelNumEntry := StyledEntry("转录并行数量")
+	appTranscribeParallelNumEntry := StyledEntry("Transcribe Parallel Num")
 	appTranscribeParallelNumEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.App.TranscribeParallelNum)))
 	appTranscribeParallelNumEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 10 {
-			return fmt.Errorf("请输入1-10之间的数字")
+			return fmt.Errorf("Please enter a number between 1-10")
 		}
 		return nil
 	}
 
-	appTranslateParallelNumEntry := StyledEntry("翻译并行数量")
+	appTranslateParallelNumEntry := StyledEntry("Translate Parallel Num")
 	appTranslateParallelNumEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.App.TranslateParallelNum)))
 	appTranslateParallelNumEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 20 {
-			return fmt.Errorf("请输入1-20之间的数字")
+			return fmt.Errorf("Please enter a number between 1-20")
 		}
 		return nil
 	}
 
-	appTranscribeMaxAttemptsEntry := StyledEntry("转录最大尝试次数")
+	appTranscribeMaxAttemptsEntry := StyledEntry("Transcribe Max Attempts")
 	appTranscribeMaxAttemptsEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.App.TranscribeMaxAttempts)))
 	appTranscribeMaxAttemptsEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 10 {
-			return fmt.Errorf("请输入1-10之间的数字")
+			return fmt.Errorf("Please enter a number between 1-10")
 		}
 		return nil
 	}
 
-	appTranslateMaxAttemptsEntry := StyledEntry("翻译最大尝试次数")
+	appTranslateMaxAttemptsEntry := StyledEntry("Translate Max Attempts")
 	appTranslateMaxAttemptsEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.App.TranslateMaxAttempts)))
 	appTranslateMaxAttemptsEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 20 {
-			return fmt.Errorf("请输入1-20之间的数字")
+			return fmt.Errorf("Please enter a number between 1-20")
 		}
 		return nil
 	}
 
-	appMaxSentenceLengthEntry := StyledEntry("每个句子最大字符数 Max sentence length")
+	appMaxSentenceLengthEntry := StyledEntry("Max sentence length")
 	appMaxSentenceLengthEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.App.MaxSentenceLength)))
 	appMaxSentenceLengthEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 200 {
-			return fmt.Errorf("请输入1-200之间的数字")
+			return fmt.Errorf("Please enter a number between 1-200")
 		}
 		return nil
 	}
 
-	appProxyEntry := StyledEntry("网络代理地址")
+	appProxyEntry := StyledEntry("Proxy Address")
 	appProxyEntry.Bind(binding.BindString(&config.Conf.App.Proxy))
 
 	form := widget.NewForm(
-		widget.NewFormItem("分段处理时长(分钟) Segment duration (minutes)", appSegmentDurationEntry),
-		widget.NewFormItem("转录最大并行数量 Transcribe parallel num", appTranscribeParallelNumEntry),
-		widget.NewFormItem("翻译最大并行数量 Translate parallel num", appTranslateParallelNumEntry),
-		widget.NewFormItem("转录最大尝试次数 Transcribe max attempts", appTranscribeMaxAttemptsEntry),
-		widget.NewFormItem("翻译最大尝试次数 Translate max attempts", appTranslateMaxAttemptsEntry),
-		widget.NewFormItem("每个句子最大字符数 Max sentence length", appMaxSentenceLengthEntry),
-		widget.NewFormItem("网络代理地址 proxy", appProxyEntry),
+		widget.NewFormItem("Segment duration (minutes)", appSegmentDurationEntry),
+		widget.NewFormItem("Transcribe parallel num", appTranscribeParallelNumEntry),
+		widget.NewFormItem("Translate parallel num", appTranslateParallelNumEntry),
+		widget.NewFormItem("Transcribe max attempts", appTranscribeMaxAttemptsEntry),
+		widget.NewFormItem("Translate max attempts", appTranslateMaxAttemptsEntry),
+		widget.NewFormItem("Max sentence length", appMaxSentenceLengthEntry),
+		widget.NewFormItem("Proxy address", appProxyEntry),
 	)
 
-	return GlassmorphismCard("应用配置 App Config", "基本参数 Basic config", form, GetCurrentThemeIsDark())
+	return GlassmorphismCard("App Configuration", "Basic Parameters", form, GetCurrentThemeIsDark())
 }
 
-// 创建server配置组
+// Create server config group
 func createServerConfigGroup() *fyne.Container {
-	serverHostEntry := StyledEntry("服务器地址 Server address")
+	serverHostEntry := StyledEntry("Server address")
 	serverHostEntry.Bind(binding.BindString(&config.Conf.Server.Host))
 
-	serverPortEntry := StyledEntry("服务器端口 Server port")
+	serverPortEntry := StyledEntry("Server port")
 	serverPortEntry.Bind(binding.IntToString(binding.BindInt(&config.Conf.Server.Port)))
 	serverPortEntry.Validator = func(s string) error {
 		val, err := strconv.Atoi(s)
 		if err != nil {
-			return fmt.Errorf("请输入数字")
+			return fmt.Errorf("Please enter a number")
 		}
 		if val < 1 || val > 65535 {
-			return fmt.Errorf("请输入1-65535之间的有效端口")
+			return fmt.Errorf("Please enter a valid port (1-65535)")
 		}
 		return nil
 	}
 
 	form := widget.NewForm(
-		widget.NewFormItem("服务器地址 Server address", serverHostEntry),
-		widget.NewFormItem("服务器端口 Server port", serverPortEntry),
+		widget.NewFormItem("Server Address", serverHostEntry),
+		widget.NewFormItem("Server Port", serverPortEntry),
 	)
 
-	return GlassmorphismCard("服务器配置 Server Config", "API服务器设置 API server settings", form, GetCurrentThemeIsDark())
+	return GlassmorphismCard("Server Configuration", "API Server Settings", form, GetCurrentThemeIsDark())
 }
 
-// 创建LLM配置组
+// Create LLM config group
 func createLlmConfigGroup() *fyne.Container {
 	baseUrlEntry := StyledEntry("API Base URL")
 	baseUrlEntry.Bind(binding.BindString(&config.Conf.Llm.BaseUrl))
@@ -610,31 +623,31 @@ func createLlmConfigGroup() *fyne.Container {
 	apiKeyEntry := StyledPasswordEntry("API Key")
 	apiKeyEntry.Bind(binding.BindString(&config.Conf.Llm.ApiKey))
 
-	modelEntry := StyledEntry("模型名称 Model name")
+	modelEntry := StyledEntry("Model Name")
 	modelEntry.Bind(binding.BindString(&config.Conf.Llm.Model))
 	llmModelEntryRef = modelEntry
 
-	// 推荐模型下拉（只展示、选中后同步到文本框）
+	// Recommended model dropdown (display only, sync to text box on selection)
 	modelSelect := StyledSelect([]string{}, func(v string) {
 		if v != "" && llmModelEntryRef != nil {
 			llmModelEntryRef.SetText(v)
 		}
 	})
-	modelSelect.PlaceHolder = "选择推荐模型（可选）"
+	modelSelect.PlaceHolder = "Select recommended model (optional)"
 	llmModelSelectRef = modelSelect
 
 	form := widget.NewForm(
 		widget.NewFormItem("API Base URL", baseUrlEntry),
 		widget.NewFormItem("API Key", apiKeyEntry),
-		widget.NewFormItem("模型名称 Model name", modelEntry),
-		widget.NewFormItem("支持模型 Supported models", modelSelect),
+		widget.NewFormItem("Model Name", modelEntry),
+		widget.NewFormItem("Supported Models", modelSelect),
 	)
-	return GlassmorphismCard("LLM 配置 LLM Config", "LLM配置 LLM config", form, GetCurrentThemeIsDark())
+	return GlassmorphismCard("LLM Configuration", "LLM Settings", form, GetCurrentThemeIsDark())
 }
 
-// 创建语音识别配置组
+// Create transcription config group
 func createTranscribeConfigGroup() *fyne.Container {
-	providerOptions := []string{"openai", "fasterwhisper", "whisperkit", "whispercpp", "aliyun"}
+	providerOptions := []string{"openai", "fasterwhisper", "whisperkit", "whispercpp"}
 	providerSelect := widget.NewSelect(providerOptions, func(value string) {
 		config.Conf.Transcribe.Provider = value
 	})
@@ -644,61 +657,39 @@ func createTranscribeConfigGroup() *fyne.Container {
 	openaiBaseUrlEntry.Bind(binding.BindString(&config.Conf.Transcribe.Openai.BaseUrl))
 	openaiApiKeyEntry := StyledPasswordEntry("API Key")
 	openaiApiKeyEntry.Bind(binding.BindString(&config.Conf.Transcribe.Openai.ApiKey))
-	openaiModelEntry := StyledEntry("模型名称 Model name")
+	openaiModelEntry := StyledEntry("Model Name")
 	openaiModelEntry.Bind(binding.BindString(&config.Conf.Transcribe.Openai.Model))
 
-	fasterWhisperModelEntry := StyledEntry("模型名称 Model name")
+	fasterWhisperModelEntry := StyledEntry("Model Name")
 	fasterWhisperModelEntry.Bind(binding.BindString(&config.Conf.Transcribe.Fasterwhisper.Model))
 
-	whisperKitModelEntry := StyledEntry("模型名称 Model name")
+	whisperKitModelEntry := StyledEntry("Model Name")
 	whisperKitModelEntry.Bind(binding.BindString(&config.Conf.Transcribe.Whisperkit.Model))
 
-	whisperCppModelEntry := StyledEntry("模型名称 Model name")
+	whisperCppModelEntry := StyledEntry("Model Name")
 	whisperCppModelEntry.Bind(binding.BindString(&config.Conf.Transcribe.Whispercpp.Model))
 
-	aliyunOssKeyIdEntry := StyledEntry("阿里云 Aliyun Access Key ID")
-	aliyunOssKeyIdEntry.Bind(binding.BindString(&config.Conf.Transcribe.Aliyun.Oss.AccessKeyId))
-	aliyunOssKeySecretEntry := StyledPasswordEntry("阿里云 Aliyun Access Key Secret")
-	aliyunOssKeySecretEntry.Bind(binding.BindString(&config.Conf.Transcribe.Aliyun.Oss.AccessKeySecret))
-	aliyunOssBucketEntry := StyledEntry("阿里云 Aliyun OSS Bucket名称")
-	aliyunOssBucketEntry.Bind(binding.BindString(&config.Conf.Transcribe.Aliyun.Oss.Bucket))
-
-	aliyunSpeechKeyIdEntry := StyledEntry("阿里云 Aliyun Speech Access Key ID")
-	aliyunSpeechKeyIdEntry.Bind(binding.BindString(&config.Conf.Transcribe.Aliyun.Speech.AccessKeyId))
-	aliyunSpeechKeySecretEntry := StyledPasswordEntry("阿里云 Aliyun Speech Access Key Secret")
-	aliyunSpeechKeySecretEntry.Bind(binding.BindString(&config.Conf.Transcribe.Aliyun.Speech.AccessKeySecret))
-	aliyunSpeechAppKeyEntry := StyledEntry("阿里云 Aliyun Speech App Key")
-	aliyunSpeechAppKeyEntry.Bind(binding.BindString(&config.Conf.Transcribe.Aliyun.Speech.AppKey))
-
 	form := widget.NewForm(
-		widget.NewFormItem("提供商 Provider", providerSelect),
-		widget.NewFormItem("GPU加速 GPU acceleration", widget.NewCheckWithData("启用 Enable", binding.BindBool(&config.Conf.Transcribe.EnableGpuAcceleration))),
+		widget.NewFormItem("Provider", providerSelect),
+		widget.NewFormItem("GPU Acceleration", widget.NewCheckWithData("Enable", binding.BindBool(&config.Conf.Transcribe.EnableGpuAcceleration))),
 
 		widget.NewFormItem("OpenAI Base URL", openaiBaseUrlEntry),
 		widget.NewFormItem("OpenAI API Key", openaiApiKeyEntry),
-		widget.NewFormItem("OpenAI 模型 Model", openaiModelEntry),
+		widget.NewFormItem("OpenAI Model", openaiModelEntry),
 
-		widget.NewFormItem("FasterWhisper 模型 Model", fasterWhisperModelEntry),
+		widget.NewFormItem("FasterWhisper Model", fasterWhisperModelEntry),
 
-		widget.NewFormItem("WhisperKit 模型 Model", whisperKitModelEntry),
+		widget.NewFormItem("WhisperKit Model", whisperKitModelEntry),
 
-		widget.NewFormItem("WhisperCpp 模型 Model", whisperCppModelEntry),
-
-		widget.NewFormItem("阿里云 Aliyun OSS Access Key ID", aliyunOssKeyIdEntry),
-		widget.NewFormItem("阿里云 Aliyun OSS Access Key Secret", aliyunOssKeySecretEntry),
-		widget.NewFormItem("阿里云 Aliyun OSS Bucket Name", aliyunOssBucketEntry),
-
-		widget.NewFormItem("阿里云语音 Aliyun Speech Access Key ID", aliyunSpeechKeyIdEntry),
-		widget.NewFormItem("阿里云语音 Aliyun Speech Access Key Secret", aliyunSpeechKeySecretEntry),
-		widget.NewFormItem("阿里云语音 Aliyun Speech App Key", aliyunSpeechAppKeyEntry),
+		widget.NewFormItem("WhisperCpp Model", whisperCppModelEntry),
 	)
 
-	return GlassmorphismCard("语音识别配置 Transcribe Config", "语音识别配置 Transcribe config", form, GetCurrentThemeIsDark())
+	return GlassmorphismCard("Transcription Configuration", "Transcription Settings", form, GetCurrentThemeIsDark())
 }
 
-// 创建文本转语音配置组
+// Create TTS config group
 func createTtsConfigGroup() *fyne.Container {
-	providerOptions := []string{"openai", "aliyun", "edge-tts"}
+	providerOptions := []string{"openai", "edge-tts", "vclip"}
 	providerSelect := widget.NewSelect(providerOptions, func(value string) {
 		config.Conf.Tts.Provider = value
 	})
@@ -708,65 +699,63 @@ func createTtsConfigGroup() *fyne.Container {
 	openaiBaseUrlEntry.Bind(binding.BindString(&config.Conf.Tts.Openai.BaseUrl))
 	openaiApiKeyEntry := StyledPasswordEntry("API Key")
 	openaiApiKeyEntry.Bind(binding.BindString(&config.Conf.Tts.Openai.ApiKey))
-	openaiModelEntry := StyledEntry("模型名称 Model name")
+	openaiModelEntry := StyledEntry("Model Name (e.g., tts-1)")
 	openaiModelEntry.Bind(binding.BindString(&config.Conf.Tts.Openai.Model))
+	openaiVoiceEntry := StyledEntry("Default Voice (e.g., alloy)")
+	openaiVoiceEntry.Bind(binding.BindString(&config.Conf.Tts.Openai.Voice))
 
-	aliyunOssKeyIdEntry := StyledEntry("阿里云 Aliyun Access Key ID")
-	aliyunOssKeyIdEntry.Bind(binding.BindString(&config.Conf.Tts.Aliyun.Oss.AccessKeyId))
-	aliyunOssKeySecretEntry := StyledPasswordEntry("阿里云 Aliyun Access Key Secret")
-	aliyunOssKeySecretEntry.Bind(binding.BindString(&config.Conf.Tts.Aliyun.Oss.AccessKeySecret))
-	aliyunOssBucketEntry := StyledEntry("阿里云 Aliyun OSS Bucket名称")
-	aliyunOssBucketEntry.Bind(binding.BindString(&config.Conf.Tts.Aliyun.Oss.Bucket))
+	edgeTtsVoiceEntry := StyledEntry("Edge-TTS Voice (e.g., en-US-AndrewNeural)")
+	edgeTtsVoiceEntry.Bind(binding.BindString(&config.Conf.Tts.EdgeTts.Voice))
 
-	aliyunSpeechKeyIdEntry := StyledEntry("阿里云 Aliyun Speech Access Key ID")
-	aliyunSpeechKeyIdEntry.Bind(binding.BindString(&config.Conf.Tts.Aliyun.Speech.AccessKeyId))
-	aliyunSpeechKeySecretEntry := StyledPasswordEntry("阿里云 Aliyun Speech Access Key Secret")
-	aliyunSpeechKeySecretEntry.Bind(binding.BindString(&config.Conf.Tts.Aliyun.Speech.AccessKeySecret))
-	aliyunSpeechAppKeyEntry := StyledEntry("阿里云 Aliyun Speech App Key")
-	aliyunSpeechAppKeyEntry.Bind(binding.BindString(&config.Conf.Tts.Aliyun.Speech.AppKey))
+	vclipApiKeyEntry := StyledPasswordEntry("VClip API Key")
+	vclipApiKeyEntry.Bind(binding.BindString(&config.Conf.Tts.VClip.ApiKey))
+	vclipVoiceIdEntry := StyledEntry("VClip Voice ID (userVoiceId)")
+	vclipVoiceIdEntry.Bind(binding.BindString(&config.Conf.Tts.VClip.VoiceID))
+	vclipSpeedEntry := StyledEntry("Speed (0.5 - 2.0, default 1.0)")
+	vclipSpeedEntry.Bind(binding.FloatToString(binding.BindFloat(&config.Conf.Tts.VClip.Speed)))
 
 	form := widget.NewForm(
-		widget.NewFormItem("提供商 Provider", providerSelect),
+		widget.NewFormItem("Provider", providerSelect),
 
 		widget.NewFormItem("OpenAI Base URL", openaiBaseUrlEntry),
 		widget.NewFormItem("OpenAI API Key", openaiApiKeyEntry),
-		widget.NewFormItem("OpenAI 模型 Model", openaiModelEntry),
+		widget.NewFormItem("OpenAI Model", openaiModelEntry),
+		widget.NewFormItem("OpenAI Voice", openaiVoiceEntry),
 
-		widget.NewFormItem("阿里云 Aliyun OSS Access Key ID", aliyunOssKeyIdEntry),
-		widget.NewFormItem("阿里云 Aliyun OSS Access Key Secret", aliyunOssKeySecretEntry),
-		widget.NewFormItem("阿里云 Aliyun OSS Bucket", aliyunOssBucketEntry),
+		widget.NewFormItem("Edge-TTS Voice", edgeTtsVoiceEntry),
 
-		widget.NewFormItem("阿里云 Aliyun Speech Access Key ID", aliyunSpeechKeyIdEntry),
-		widget.NewFormItem("阿里云 Aliyun  Speech Access Key Secret", aliyunSpeechKeySecretEntry),
-		widget.NewFormItem("阿里云 Aliyun Speech App Key", aliyunSpeechAppKeyEntry),
+		widget.NewFormItem("VClip API Key", vclipApiKeyEntry),
+		widget.NewFormItem("VClip Voice ID", vclipVoiceIdEntry),
+		widget.NewFormItem("VClip Speed", vclipSpeedEntry),
 	)
 
-	return GlassmorphismCard("文本转语音配置 TTS Config", "文本转语音配置 TTS config", form, GetCurrentThemeIsDark())
+	return GlassmorphismCard("TTS Configuration", "TTS Settings", form, GetCurrentThemeIsDark())
 }
 
-// 创建视频输入容器
+
+// Create video input container
 func createVideoInputContainer(sm *SubtitleManager) *fyne.Container {
-	inputTypeRadio := widget.NewRadioGroup([]string{"本地上传 Upload a file", "输入链接 Paste a link"}, nil)
+	inputTypeRadio := widget.NewRadioGroup([]string{"Local Upload", "Paste Link"}, nil)
 	inputTypeRadio.Horizontal = true
 	inputTypeContainer := container.NewHBox(
 		inputTypeRadio,
 	)
 
-	urlEntry := StyledEntry("输入视频链接 Paste a link here")
+	urlEntry := StyledEntry("Paste video link here")
 	urlEntry.Hide()
 	urlEntry.OnChanged = func(text string) {
 		sm.SetVideoUrl(text)
 	}
 
-	selectButton := PrimaryButton("选择视频文件 Select Video Files", theme.FolderOpenIcon(), sm.ShowFileDialog)
+	selectButton := PrimaryButton("Select Video Files", theme.FolderOpenIcon(), sm.ShowFileDialog)
 
 	selectedVideoLabel := widget.NewLabel("")
 	selectedVideoLabel.Hide()
 
-	sm.SetVideoSelectedCallback(func(path string) { // 设置视频地址+控制信息展示
+	sm.SetVideoSelectedCallback(func(path string) { // Set video URL and control display info
 		if path != "" {
 			sm.SetVideoUrl(path)
-			selectedVideoLabel.SetText("已选择Chosen: " + filepath.Base(path))
+			selectedVideoLabel.SetText("Selected: " + filepath.Base(path))
 			selectedVideoLabel.Show()
 		} else {
 			selectedVideoLabel.Hide()
@@ -782,7 +771,7 @@ func createVideoInputContainer(sm *SubtitleManager) *fyne.Container {
 				fileNames = append(fileNames, filepath.Base(path))
 			}
 
-			displayText := fmt.Sprintf("已选择 %d 个文件:\n", len(paths))
+			displayText := fmt.Sprintf("Selected %d files:\n", len(paths))
 			for i, name := range fileNames {
 				displayText += fmt.Sprintf("%d. %s\n", i+1, name)
 			}
@@ -797,9 +786,9 @@ func createVideoInputContainer(sm *SubtitleManager) *fyne.Container {
 	videoInputContainer := container.NewVBox()
 	videoInputContainer.Objects = []fyne.CanvasObject{selectButton, selectedVideoLabel}
 
-	inputTypeRadio.SetSelected("本地上传 Upload a file")
+	inputTypeRadio.SetSelected("Local Upload")
 	inputTypeRadio.OnChanged = func(value string) {
-		if value == "本地上传 Upload a file" {
+		if value == "Local Upload" {
 			urlEntry.Hide()
 			selectButton.Show()
 			selectedVideoLabel.Show()
@@ -819,24 +808,24 @@ func createVideoInputContainer(sm *SubtitleManager) *fyne.Container {
 		container.NewPadded(videoInputContainer),
 	)
 
-	return GlassmorphismCard("1. 选择视频 Select Video", "", content, GetCurrentThemeIsDark())
+	return GlassmorphismCard("1. Select Video", "", content, GetCurrentThemeIsDark())
 }
 
-// 创建字幕设置卡片
+// Create subtitle settings card
 func createSubtitleSettingsCard(sm *SubtitleManager) *fyne.Container {
 	positionSelect := widget.NewSelect([]string{
-		"翻译在上 Translation Above",
-		"翻译在下 Translation Below",
+		"Translation Above",
+		"Translation Below",
 	}, func(value string) {
-		if value == "翻译在上 Translation Above" {
+		if value == "Translation Above" {
 			sm.SetBilingualPosition(1)
 		} else {
 			sm.SetBilingualPosition(2)
 		}
 	})
-	positionSelect.SetSelected("翻译在上 Translation Above")
+	positionSelect.SetSelected("Translation Above")
 
-	bilingualCheck := widget.NewCheck("启用双语字幕 Bilingual Subtitles", func(checked bool) {
+	bilingualCheck := widget.NewCheck("Bilingual Subtitles", func(checked bool) {
 		sm.SetBilingualEnabled(checked)
 		if checked {
 			positionSelect.Enable()
@@ -858,93 +847,107 @@ func createSubtitleSettingsCard(sm *SubtitleManager) *fyne.Container {
 
 	langContainer := container.NewVBox(
 		container.NewHBox(
-			widget.NewLabel("源语言 Original Language:"),
+			widget.NewLabel("Original Language:"),
 			StyledSelect([]string{
-				"简体中文", "English", "日本語", "Türkçe", "Deutsch", "한국어", "Русский язык", "Bahasa Melayu",
+				"Simplified Chinese", "English", "Japanese", "Turkish", "German", "Korean", "Russian", "Malay",
 			}, func(value string) {
 				sourceLangMap := map[string]string{
-					"简体中文": "zh_cn", "English": "en", "日本語": "ja",
-					"Türkçe": "tr", "Deutsch": "de", "한국어": "ko", "Русский язык": "ru",
-					"Bahasa Melayu": "ms",
+					"Simplified Chinese": "zh_cn", "English": "en", "Japanese": "ja",
+					"Turkish": "tr", "German": "de", "Korean": "ko", "Russian": "ru",
+					"Malay": "ms",
 				}
 				sm.SetSourceLang(sourceLangMap[value])
 			}),
 		),
 		container.NewHBox(
-			widget.NewLabel("翻译成 Translate To:"),
+			widget.NewLabel("Translate To:"),
 			targetLangSelector,
 		),
 	)
 
-	// 设置默认语言
+	// Set default languages
 	langContainer.Objects[0].(*fyne.Container).Objects[1].(*widget.Select).SetSelected("English")
-	langContainer.Objects[1].(*fyne.Container).Objects[1].(*widget.Select).SetSelected("简体中文")
+	langContainer.Objects[1].(*fyne.Container).Objects[1].(*widget.Select).SetSelected("Simplified Chinese")
 
-	fillerCheck := widget.NewCheck("启用语气词过滤 Tone Word Filtering", func(checked bool) {
+	fillerCheck := widget.NewCheck("Tone Word Filtering", func(checked bool) {
 		sm.SetFillerFilter(checked)
 	})
 	fillerCheck.SetChecked(true)
 
+	reviewCheck := widget.NewCheck("Review Subtitles before TTS", func(checked bool) {
+		sm.SetEnableReview(checked)
+	})
+	reviewCheck.SetChecked(true)
+
 	content := container.NewVBox(
-		container.NewHBox(bilingualCheck, fillerCheck),
+		container.NewHBox(bilingualCheck, fillerCheck, reviewCheck),
 		langContainer,
 		positionSelect,
 	)
 
-	return ModernCard("2. 字幕设置 Subtitle settings", content, GetCurrentThemeIsDark())
+	return ModernCard("2. Subtitle Settings", content, GetCurrentThemeIsDark())
 }
 
-// 创建配音设置卡片
+// Create dubbing settings card
 func createVoiceSettingsCard(sm *SubtitleManager) *fyne.Container {
 	voiceCodeEntry := widget.NewEntry()
-	voiceCodeEntry.SetPlaceHolder("输入声音代码 Enter voice code")
+	voiceCodeEntry.SetPlaceHolder("Enter voice code")
+
+	// Set default voice from config based on provider
+	defaultVoice := ""
+	switch config.Conf.Tts.Provider {
+	case "openai":
+		defaultVoice = config.Conf.Tts.Openai.Voice
+	case "edge-tts":
+		defaultVoice = config.Conf.Tts.EdgeTts.Voice
+	case "vclip":
+		defaultVoice = config.Conf.Tts.VClip.VoiceID
+	}
+	voiceCodeEntry.SetText(defaultVoice)
+	sm.SetTtsVoiceCode(defaultVoice)
+
 	voiceCodeEntry.OnChanged = func(text string) {
 		sm.SetTtsVoiceCode(text)
 	}
 	voiceCodeEntry.Disable()
 
-	// 音色克隆功能 - 当前支持阿里云TTS，未来可扩展其他提供商
-	audioSampleButton := SecondaryButton("选择音色克隆样本 Select Voice Clone Sample（Aliyun TTS Supported）", theme.MediaMusicIcon(), sm.ShowAudioFileDialog)
-	audioSampleButton.Disable()
-
-	voiceoverCheck := widget.NewCheck("启用配音 Apply Dubbing", func(checked bool) {
+	voiceoverCheck := widget.NewCheck("Apply Dubbing", func(checked bool) {
 		sm.SetVoiceoverEnabled(checked)
 		if checked {
 			voiceCodeEntry.Enable()
-			audioSampleButton.Enable()
 		} else {
 			voiceCodeEntry.Disable()
-			audioSampleButton.Disable()
 		}
 	})
 
 	grid := container.NewVBox(
 		container.NewHBox(voiceoverCheck),
-		container.NewHBox(container.NewBorder(voiceCodeEntry, nil, nil, audioSampleButton)),
+		container.NewPadded(voiceCodeEntry),
 	)
 
-	return ModernCard("3. 配音设置 Dubbing settings", grid, GetCurrentThemeIsDark())
+	return ModernCard("3. Dubbing Settings", grid, GetCurrentThemeIsDark())
 }
 
-// 视频合成卡片
+
+// Video composition card
 func createEmbedSettingsCard(sm *SubtitleManager) *fyne.Container {
-	embedCheck := widget.NewCheck("合成 Composite", nil)
+	embedCheck := widget.NewCheck("Composite", nil)
 
 	embedTypeSelect := StyledSelect([]string{
-		"横屏输出 Landscape（16：9）", "竖屏输出 Portrait（9:16）", "横屏+竖屏 (Landscape+Portrait)",
+		"Landscape (16:9)", "Portrait (9:16)", "Landscape + Portrait",
 	}, nil)
 	embedTypeSelect.Disable()
 
-	mainTitleEntry := StyledEntry("请输入主标题 Enter main title")
-	subTitleEntry := StyledEntry("请输入副标题 Enter sub title")
+	mainTitleEntry := StyledEntry("Enter main title")
+	subTitleEntry := StyledEntry("Enter sub title")
 
 	titleInputContainer := container.NewVBox(
 		container.NewGridWithColumns(2,
-			widget.NewLabel("主标题 Main title:"),
+			widget.NewLabel("Main Title:"),
 			mainTitleEntry,
 		),
 		container.NewGridWithColumns(2,
-			widget.NewLabel("副标题 Sub title:"),
+			widget.NewLabel("Sub Title:"),
 			subTitleEntry,
 		),
 	)
@@ -953,7 +956,7 @@ func createEmbedSettingsCard(sm *SubtitleManager) *fyne.Container {
 	embedCheck.OnChanged = func(checked bool) {
 		if checked {
 			embedTypeSelect.Enable()
-			embedTypeSelect.SetSelected("横屏输出 Landscape（16：9）")
+			embedTypeSelect.SetSelected("Landscape (16:9)")
 		} else {
 			embedTypeSelect.Disable()
 			sm.SetEmbedSubtitle("none")
@@ -962,13 +965,13 @@ func createEmbedSettingsCard(sm *SubtitleManager) *fyne.Container {
 
 	embedTypeSelect.OnChanged = func(value string) {
 		switch value {
-		case "横屏输出 Landscape（16：9）":
+		case "Landscape (16:9)":
 			titleInputContainer.Hide()
 			sm.SetEmbedSubtitle("horizontal")
-		case "竖屏输出 Portrait（9:16）":
+		case "Portrait (9:16)":
 			titleInputContainer.Show()
 			sm.SetEmbedSubtitle("vertical")
-		case "横屏+竖屏 (Landscape+Portrait)":
+		case "Landscape + Portrait":
 			titleInputContainer.Show()
 			sm.SetEmbedSubtitle("all")
 		}
@@ -981,10 +984,10 @@ func createEmbedSettingsCard(sm *SubtitleManager) *fyne.Container {
 		container.NewPadded(titleInputContainer),
 	)
 
-	return ModernCard("视频合成设置 Composition Settings", mainContainer, GetCurrentThemeIsDark())
+	return ModernCard("Composition Settings", mainContainer, GetCurrentThemeIsDark())
 }
 
-// 创建进度和下载区域
+// Create progress and download area
 func createProgressAndDownloadArea(sm *SubtitleManager) (*widget.ProgressBar, *fyne.Container, *fyne.Container) {
 	progress := widget.NewProgressBar()
 	progress.Hide()
@@ -1046,9 +1049,9 @@ func createProgressAndDownloadArea(sm *SubtitleManager) (*widget.ProgressBar, *f
 	return progress, downloadWithBg, tipsWithBg
 }
 
-// 开始按钮
+// Start button
 func createStartButton(window fyne.Window, sm *SubtitleManager, videoInputContainer *fyne.Container, embedSettingsCard *fyne.Container, progress *widget.ProgressBar, downloadContainer *fyne.Container) *widget.Button {
-	btn := widget.NewButtonWithIcon("开始翻译 Start Translating", theme.MediaPlayIcon(), nil)
+	btn := widget.NewButtonWithIcon("Start Translating", theme.MediaPlayIcon(), nil)
 	btn.Importance = widget.HighImportance
 
 	btn.OnTapped = func() {
@@ -1087,11 +1090,11 @@ func createStartButton(window fyne.Window, sm *SubtitleManager, videoInputContai
 		downloadContainer.Hide()
 
 		if sm.GetVideoUrl() == "" {
-			inputType := "本地视频"
+			inputType := "Local Video"
 
 			if videoInputContainer != nil && len(videoInputContainer.Objects) > 0 {
 				for i := 0; i < len(videoInputContainer.Objects); i++ {
-					// 如果对象是Container，查找其中的RadioGroup
+					// If object is Container, find RadioGroup within it
 					if container, ok := videoInputContainer.Objects[i].(*fyne.Container); ok {
 						for j := 0; j < len(container.Objects); j++ {
 							if radio, ok := container.Objects[j].(*widget.RadioGroup); ok {
@@ -1103,10 +1106,10 @@ func createStartButton(window fyne.Window, sm *SubtitleManager, videoInputContai
 				}
 			}
 
-			if inputType == "本地视频" {
-				dialog.ShowError(fmt.Errorf("请先选择视频文件"), window)
+			if inputType == "Local Video" {
+				dialog.ShowError(fmt.Errorf("Please select video files first"), window)
 			} else {
-				dialog.ShowError(fmt.Errorf("请输入视频链接"), window)
+				dialog.ShowError(fmt.Errorf("Please enter a video link"), window)
 			}
 			progress.Hide()
 			return
@@ -1114,16 +1117,16 @@ func createStartButton(window fyne.Window, sm *SubtitleManager, videoInputContai
 
 		err := config.CheckConfig()
 		if err != nil {
-			dialog.ShowError(fmt.Errorf("配置不正确: %v", err), window)
-			log.GetLogger().Error("配置不正确", zap.Error(err))
+			dialog.ShowError(fmt.Errorf("Incorrect configuration: %v", err), window)
+			log.GetLogger().Error("Incorrect configuration", zap.Error(err))
 			progress.Hide()
 			return
 		}
 
 		err = deps.CheckDependency()
 		if err != nil {
-			dialog.ShowError(fmt.Errorf("依赖环境准备失败: %v", err), window)
-			log.GetLogger().Error("依赖环境准备失败", zap.Error(err))
+			dialog.ShowError(fmt.Errorf("Dependency environment preparation failed: %v", err), window)
+			log.GetLogger().Error("Dependency environment preparation failed", zap.Error(err))
 			progress.Hide()
 			return
 		}
@@ -1131,8 +1134,8 @@ func createStartButton(window fyne.Window, sm *SubtitleManager, videoInputContai
 
 		if config.ConfigBackup != config.Conf {
 			if err = server.StopBackend(); err != nil {
-				dialog.ShowError(fmt.Errorf("停止后端服务失败: %v", err), window)
-				log.GetLogger().Error("停止后端服务失败", zap.Error(err))
+				dialog.ShowError(fmt.Errorf("Failed to stop backend service: %v", err), window)
+				log.GetLogger().Error("Failed to stop backend service", zap.Error(err))
 				progress.Hide()
 				return
 			}
@@ -1140,8 +1143,8 @@ func createStartButton(window fyne.Window, sm *SubtitleManager, videoInputContai
 			go func() {
 				err := server.StartBackend()
 				if err != nil {
-					dialog.ShowError(fmt.Errorf("启动后端服务失败: %v", err), window)
-					log.GetLogger().Error("启动后端服务失败", zap.Error(err))
+					dialog.ShowError(fmt.Errorf("Failed to start backend service: %v", err), window)
+					log.GetLogger().Error("Failed to start backend service", zap.Error(err))
 					progress.Hide()
 					return
 				}

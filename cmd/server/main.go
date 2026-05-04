@@ -19,16 +19,16 @@ func main() {
 	}
 
 	if err = config.CheckConfig(); err != nil {
-		log.GetLogger().Error("加载配置失败", zap.Error(err))
+		log.GetLogger().Error("Failed to load config", zap.Error(err))
 		return
 	}
 
 	if err = deps.CheckDependency(); err != nil {
-		log.GetLogger().Error("依赖环境准备失败", zap.Error(err))
+		log.GetLogger().Error("Failed to prepare dependencies", zap.Error(err))
 		return
 	}
 	if err = server.StartBackend(); err != nil {
-		log.GetLogger().Error("后端服务启动失败", zap.Error(err))
+		log.GetLogger().Error("Failed to start backend service", zap.Error(err))
 		os.Exit(1)
 	}
 }

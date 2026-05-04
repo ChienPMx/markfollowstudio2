@@ -13,7 +13,7 @@ type ChatClient struct {
 
 func NewChatClient(apiKey string) *ChatClient {
 	cfg := goopenai.DefaultConfig(apiKey)
-	cfg.BaseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1" // 使用阿里云的openai兼容模式调用
+	cfg.BaseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1" // Use Aliyun's OpenAI compatible mode
 	return &ChatClient{
 		Client: goopenai.NewClientWithConfig(cfg),
 	}

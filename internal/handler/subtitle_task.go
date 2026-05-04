@@ -19,15 +19,15 @@ func (h Handler) StartSubtitleTask(c *gin.Context) {
 		log.GetLogger().Error("StartSubtitleTask ShouldBindJSON err", zap.Error(err))
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "参数错误",
+			Msg:   "Parameter error",
 			Data:  nil,
 		})
 		return
 	}
 
-	// 检查配置是否需要重新初始化
+	// Check if configuration needs re-initialization
 	if configUpdated {
-		log.GetLogger().Info("检测到配置更新，重新初始化服务")
+		log.GetLogger().Info("Detected config update, re-initializing service...")
 		deps.CheckDependency()
 		h.Service = service.NewService()
 		configUpdated = false
@@ -46,7 +46,7 @@ func (h Handler) StartSubtitleTask(c *gin.Context) {
 	}
 	response.R(c, response.Response{
 		Error: 0,
-		Msg:   "成功",
+		Msg:   "Success",
 		Data:  data,
 	})
 }
@@ -56,15 +56,15 @@ func (h Handler) GetSubtitleTask(c *gin.Context) {
 	if err := c.ShouldBindQuery(&req); err != nil {
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "参数错误",
+			Msg:   "Parameter error",
 			Data:  nil,
 		})
 		return
 	}
 
-	// 检查配置是否需要重新初始化
+	// Check if configuration needs re-initialization
 	if configUpdated {
-		log.GetLogger().Info("检测到配置更新，重新初始化服务")
+		log.GetLogger().Info("Detected config update, re-initializing service...")
 		h.Service = service.NewService()
 		configUpdated = false
 	}
@@ -81,8 +81,37 @@ func (h Handler) GetSubtitleTask(c *gin.Context) {
 	}
 	response.R(c, response.Response{
 		Error: 0,
-		Msg:   "成功",
+		Msg:   "Success",
 		Data:  data,
+	})
+}
+
+func (h Handler) ApproveReview(c *gin.Context) {
+	var req dto.ApproveReviewReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.GetLogger().Error("ApproveReview ShouldBindJSON err", zap.Error(err))
+		response.R(c, response.Response{
+			Error: -1,
+			Msg:   "Parameter error",
+			Data:  nil,
+		})
+		return
+	}
+
+	svc := h.Service
+	if err := svc.ApproveReview(req); err != nil {
+		log.GetLogger().Error("ApproveReview err", zap.Error(err))
+		response.R(c, response.Response{
+			Error: -1,
+			Msg:   err.Error(),
+			Data:  nil,
+		})
+		return
+	}
+	response.R(c, response.Response{
+		Error: 0,
+		Msg:   "Review approved, pipeline resuming",
+		Data:  nil,
 	})
 }
 
@@ -91,7 +120,7 @@ func (h Handler) UploadFile(c *gin.Context) {
 	if err != nil {
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "未能获取文件",
+			Msg:   "Failed to get file",
 			Data:  nil,
 		})
 		return
@@ -101,20 +130,20 @@ func (h Handler) UploadFile(c *gin.Context) {
 	if len(files) == 0 {
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "未上传任何文件",
+			Msg:   "No files uploaded",
 			Data:  nil,
 		})
 		return
 	}
 
-	// 保存每个文件
+	// Save each file
 	var savedFiles []string
 	for _, file := range files {
 		savePath := "./uploads/" + file.Filename
 		if err := c.SaveUploadedFile(file, savePath); err != nil {
 			response.R(c, response.Response{
 				Error: -1,
-				Msg:   "文件保存失败: " + file.Filename,
+				Msg:   "Failed to save file: " + file.Filename,
 				Data:  nil,
 			})
 			return
@@ -124,7 +153,7 @@ func (h Handler) UploadFile(c *gin.Context) {
 
 	response.R(c, response.Response{
 		Error: 0,
-		Msg:   "文件上传成功",
+		Msg:   "File upload successful",
 		Data:  gin.H{"file_path": savedFiles},
 	})
 }
@@ -134,7 +163,7 @@ func (h Handler) DownloadFile(c *gin.Context) {
 	if requestedFile == "" {
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "文件路径为空",
+			Msg:   "File path is empty",
 			Data:  nil,
 		})
 		return
@@ -144,7 +173,7 @@ func (h Handler) DownloadFile(c *gin.Context) {
 	if _, err := os.Stat(localFilePath); os.IsNotExist(err) {
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "文件不存在",
+			Msg:   "File does not exist",
 			Data:  nil,
 		})
 		return

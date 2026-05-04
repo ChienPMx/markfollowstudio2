@@ -1,133 +1,131 @@
 package types
 
-// var SplitTextPrompt = `你是一个英语处理专家，擅长翻译成%s和处理英文文本，根据句意和标点对句子进行拆分。
+// var SplitTextPrompt = `You are an English processing expert, skilled in translating into %s and processing English text, splitting sentences based on meaning and punctuation.
 
-// - 不要漏掉原英文任何一个单词
-// - 翻译一定要流畅，完整表达原文意思
-// - 优先根据标点符号进行拆分，遇到逗号、句号、问号，一定要拆分，必须把句子拆短些。
-// - 遇到定语从句、并列句等复杂句式，根据连词（如and, but, which, when）进行拆分。
-// - 拆分后的单行句子英文不能超过15个单词。
-// - 翻译的时候确保每个原始字幕块单独存在且编号和格式正确。
-// - 不需要任何额外的话语，直接按下面格式输出结果。
+// - Do not miss any original English word
+// - Translation must be fluent and fully express the original meaning
+// - Prioritize splitting based on punctuation; commas, periods, and question marks must trigger a split to keep sentences short.
+// - For complex sentences like relative or coordinate clauses, split based on conjunctions (e.g., and, but, which, when).
+// - A single split English line must not exceed 15 words.
+// - During translation, ensure each original subtitle block exists independently with correct numbering and formatting.
+// - No extra words needed, output results directly in the following format.
 
 // 1
-// [中文翻译]
-// [英文句子]
+// [Translated Text]
+// [English Sentence]
 
 // 2
-// [中文翻译]
-// [英文句子]
+// [Translated Text]
+// [English Sentence]
 
-// 内容如下:`
+// Content as follows:`
 
-var SplitTextPrompt = `你是一个语言处理专家，专注于自然语言处理和翻译任务。按照以下步骤和要求，以最大程度实现字幕的准确和高质量翻译：
+var SplitTextPrompt = `You are a language processing expert specializing in NLP and translation. Follow these steps for high-quality subtitle translation:
 
-1. 将原句翻译为%s，确保译文流畅、自然，达到专业翻译水平，保持意思相同。
-2. 严格依据标点符号（逗号: ，,、句号:。.、问号:？?等）将内容拆分成单独的句子，并依据以下规则确保拆分长度较短：
-   - 每个句子在保证句意完整的情况下尽可能短，适中的字幕长短能提供舒适的观看体验。
-   - 根据连词（例如 "and", "but", "which", "when", "so", "所以", "但是", "因此", "考虑到" 等）进一步拆分句子，得到较短的结果。
-3. 对每个拆分的句子分别翻译，确保不遗漏或修改任何字词。
-4. 将每对翻译后的句子与原句用独立编号表示，并分别以方括号[]包裹内容。
-5. 输出的翻译与原文应保持对应，严格按照原文顺序呈现，不得有错位，与原文表达的意思保持一致，且原文尽可能使用原文。
-6. 不管内容是正式还是非正式，都要翻译。
+1. Translate the sentence into %s. Ensure the translation is natural, fluent, and professional while preserving the original meaning.
+2. Split the content into shorter segments based on punctuation (comma, period, question mark, etc.).
+   - Each segment should be as short as possible while remaining meaningful for a comfortable viewing experience.
+   - Use conjunctions (e.g., "and", "but", "which", "when", "so", etc.) to further split long sentences.
+3. Translate each split segment separately without missing or modifying any words.
+4. Output each pair (translated and original) with an independent ID, with content wrapped in square brackets [].
+5. Ensure the translated segments strictly align with the original order and meaning.
+6. Translate all content, regardless of formal or informal tone.
 
-翻译输出应采用如下格式：
-**正常翻译的示例（注意每块3部分，每个部分都独占一行，空格分块）**：
+Output Format:
 1
-[翻译后的句子1]
-[原句子1]
+[Translated Sentence]
+[Original Sentence]
 
 2
-[翻译后的句子2]
-[原句子2]
+[Translated Sentence]
+[Original Sentence]
 
-**无文本需要翻译的输出示例**：
-[无文本]
+Example for empty/no text:
+[no_text]
 
-确保高效、精确地完成上述翻译任务，输入内容如下：
+Ensure efficient and accurate completion. Input content follows:
 
 `
 
-// 带有语气词过滤的拆分Prompt
-var SplitTextPromptWithModalFilter = `你是一个语言处理专家，专注于自然语言处理和翻译任务。按照以下步骤和要求，以最大程度实现字幕的准确和高质量翻译：
+// Split prompt with modal filter (removes filler words)
+var SplitTextPromptWithModalFilter = `You are a language processing expert specializing in NLP and translation. Follow these steps for high-quality subtitle translation:
 
-1. 将原句翻译为%s，确保译文流畅、自然，达到专业翻译水平，保持意思相同。
-2. 严格依据标点符号（逗号: ，,、句号:。.、问号:？?等）将内容拆分成单独的句子，并依据以下规则确保拆分长度较短：
-   - 每个句子在保证句意完整的情况下尽可能短，适中的字幕长短能提供舒适的观看体验。
-   - 根据连词（例如 "and", "but", "which", "when", "so", "所以", "但是", "因此", "考虑到" 等）进一步拆分句子，得到较短的结果。
-3. 对每个拆分的句子分别翻译，确保不遗漏或修改任何字词。
-4. 将每对翻译后的句子与原句用独立编号表示，并分别以方括号[]包裹内容。
-5. 输出的翻译与原文应保持对应，严格按照原文顺序呈现，不得有错位，与原文表达的意思保持一致，且原文尽可能使用原文。
-6. 忽略文本中的语气词，比如"Oh" "Ah" "Wow"等等。
-7. 不管内容是正式还是非正式，都要翻译。
+1. Translate the sentence into %s. Ensure the translation is natural, fluent, and professional.
+2. Split the content into shorter segments based on punctuation (comma, period, question mark, etc.).
+   - Each segment should be as short as possible for subtitles.
+   - Use conjunctions (e.g., "and", "but", "which", "when", "so", etc.) to further split if needed.
+3. Ignore filler words or interjections (e.g., "Oh", "Ah", "Wow", "Hmm", etc.) in the text.
+4. Translate each split segment separately without missing or modifying any words.
+5. Output each pair with an independent ID, with content wrapped in square brackets [].
+6. Ensure segments strictly align with the original order and meaning.
+7. Translate all content, regardless of tone.
 
-翻译输出应采用如下格式：
-**正常翻译的示例（注意每块3部分，每个部分都独占一行，空格分块）**：
+Output Format:
 1
-[翻译后的句子1]
-[原句子1]
+[Translated Sentence]
+[Original Sentence]
 
 2
-[翻译后的句子2]
-[原句子2]
+[Translated Sentence]
+[Original Sentence]
 
-**无文本需要翻译的输出示例**：
-[无文本]
+Example for empty/no text:
+[no_text]
 
-确保高效、精确地完成上述翻译任务，输入内容如下：
-
-`
-
-var SplitTextPromptJson = `你是一个语言处理专家，专注于自然语言处理和翻译任务。按照以下步骤和要求，以最大程度实现字幕的准确和高质量翻译：
-
-1. 将原句翻译为%s，确保译文流畅、自然，达到专业翻译水平，保持意思相同。
-2. 严格依据标点符号（逗号: ，,、句号:。.、问号:？?等）将内容拆分成单独的句子，并依据以下规则确保拆分长度较短：
-   - 每个句子在保证句意完整的情况下尽可能短，适中的字幕长短能提供舒适的观看体验。
-   - 根据连词（例如 "and", "but", "which", "when", "so", "所以", "但是", "因此", "考虑到" 等）进一步拆分句子，得到较短的结果。
-3. 对每个拆分的句子分别翻译，确保不遗漏或修改任何字词。
-4. 输出的翻译与原文确保相对应，严格按照原文顺序呈现。
-5. 输出格式必须是一个 JSON 数组，每个元素包含 'original_sentence' 和 'translated_sentence' 字段。
-6. 结果中的原句子要和原文中完全一致，包括首字母是否大小写，标点符号也要保留不修改，英文原文请使用英文标点符号，务必不要纠正任何语病和拼写错误。
-7. 每个拆分的句子只能有一个完整的语句。
-
-确保高效、精确地完成上述字幕翻译任务，输入内容如下：
+Ensure efficient and accurate completion. Input content follows:
 
 `
 
-var SplitTextPromptWithModalFilterJson = `你是一个语言处理专家，专注于自然语言处理和翻译任务。按照以下步骤和要求，以最大程度实现字幕的准确和高质量翻译：
+var SplitTextPromptJson = `You are a language processing expert specializing in NLP and translation. Follow these steps for high-quality subtitle translation:
 
-1. 将原句翻译为%s，确保译文流畅、自然，达到专业翻译水平，保持意思相同。
-2. 严格依据标点符号（逗号: ，,、句号:。.、问号:？?等）将内容拆分成单独的句子，并依据以下规则确保拆分长度较短：
-   - 每个句子在保证句意完整的情况下尽可能短，适中的字幕长短能提供舒适的观看体验。
-   - 根据连词（例如 "and", "but", "which", "when", "so", "所以", "但是", "因此", "考虑到" 等）进一步拆分句子，得到较短的结果。
-3. 忽略文本中的语气词，比如"Oh" "Ah" "Wow"等等。
-4. 对每个拆分的句子分别翻译，确保不遗漏或修改任何字词。
-5. 输出的翻译与原文确保相对应，严格按照原文顺序呈现。
-6. 输出格式必须是一个 JSON 数组，每个元素包含 'original_sentence' 和 'translated_sentence' 字段。
-7. 结果中的原句子要和原文中完全一致，包括首字母是否大小写，标点符号也要保留不修改，英文原文请使用英文标点符号，务必不要纠正任何语病和拼写错误。
-8. 每个拆分的句子只能有一个完整的语句。
+1. Translate the sentence into %s. Ensure the translation is natural and professional.
+2. Split content into shorter sentences based on punctuation.
+   - Each sentence should be short and suitable for subtitles.
+   - Use conjunctions to split further if necessary.
+3. Translate each segment separately.
+4. Ensure segments align perfectly with the original order.
+5. Output MUST be a JSON array, where each element contains 'original_sentence' and 'translated_sentence' fields.
+6. The original sentence in the result must match the source exactly (case-sensitive, preserve punctuation). Do not correct grammar or spelling in the source.
+7. Each split segment should contain only one complete statement.
 
-确保高效、精确地完成上述字幕翻译任务，输入内容如下：
+Ensure efficient and accurate completion. Input content follows:
 
 `
 
-var TranslateVideoTitleAndDescriptionPrompt = `你是一个专业的翻译专家，请翻译下面给出的标题和描述信息（两者用####来分隔），要求如下：
- - 将内容翻译成 %s
- - 翻译后的内容仍然用####来分隔标题和描述两部分
- 以下全部是源内容，请完整按要求翻译：
+var SplitTextPromptWithModalFilterJson = `You are a language processing expert specializing in NLP and translation. Follow these steps for high-quality subtitle translation:
+
+1. Translate the sentence into %s. Ensure natural and professional translation.
+2. Split content into shorter segments based on punctuation.
+   - Segments should be short and comfortable for subtitles.
+   - Use conjunctions to split further if necessary.
+3. Ignore filler words or interjections (e.g., "Oh", "Ah", "Wow", etc.) in the text.
+4. Translate each split segment separately.
+5. Ensure strict alignment with the original order.
+6. Output MUST be a JSON array with 'original_sentence' and 'translated_sentence' fields.
+7. Original sentences must match the source exactly (case, punctuation). Do not correct errors in source.
+8. Each segment should be one complete statement.
+
+Ensure efficient and accurate completion. Input content follows:
+
+`
+
+var TranslateVideoTitleAndDescriptionPrompt = `You are a professional translation expert. Please translate the following title and description (separated by ####) with these requirements:
+ - Translate content into %s
+ - Keep the #### separator between title and description in the result
+ Original content follows:
 %s
 `
 
-var SplitLongSentencePrompt = `请将以下原文和译文分割成多个部分，确保每个部分都尽可能短：
-原文：%s
-译文：%s
+var SplitLongSentencePrompt = `Please split the following original and translated text into multiple parts, ensuring each part is as short as possible:
+Original: %s
+Translation: %s
 
-要求：
-1. 分割后的原文与原文不能有偏差 
-2. 分割后的每个翻译句都需要符合语法规范，可进行添加连词、去除助词等操作等保证每句读起来都是自然的
-3. 译文如果有遗漏，请在分割的同时补全
-4. 务必返回JSON格式，包含origin_part和translated_part数组，例如：
-{"align":[{"origin_part":"原文部分1","translated_part":"译文部分1"},{"origin_part":"原文部分2","translated_part":"译文部分2"}]}`
+Requirements:
+1. Split original text must not deviate from the source.
+2. Each split translation must be grammatically correct and natural (you can add conjunctions or remove particles if needed).
+3. If anything is missing in the translation, please complete it while splitting.
+4. MUST return in JSON format with 'align' array containing 'origin_part' and 'translated_part', e.g.:
+{"align":[{"origin_part":"Part 1","translated_part":"Translation 1"},{"origin_part":"Part 2","translated_part":"Translation 2"}]}`
 
 var SplitOriginLongSentencePrompt = `Please split the following text into multiple parts, ensuring it's divided into at most 3 short sentences, preferably 2 parts,
 
@@ -166,20 +164,20 @@ Requirements:
 
 `
 
-// var SplitTextWithContextPrompt = `你是一个专业翻译专家，擅长结合上下文进行准确翻译。请根据以下提供的上下文句子和目标句子，将目标句子翻译成%s，并确保翻译结果与上下文保持连贯一致：
+// var SplitTextWithContextPrompt = `You are a professional translation expert skilled in accurate contextual translation. Please translate the target sentence into %s based on the provided context and target sentences below, ensuring coherence and consistency:
 
-// 上下文句子：
+// Context sentences:
 // %s
 
-// 需要翻译的目标句子：%s
+// Target sentence to be translated: %s
 
-// 翻译要求：
-// 1. 严格按照目标语言的语法和表达习惯翻译
-// 2. 保持专业术语的一致性
-// 3. 输出仅包含翻译后的文本，不添加任何额外解释或格式
-// 4. 确保翻译结果与上下文语义连贯
+// Translation requirements:
+// 1. Strictly follow the grammar and expression habits of the target language
+// 2. Maintain consistency of professional terminology
+// 3. Output contains only the translated text, without additional explanation or formatting
+// 4. Ensure the translation is semantically coherent with the context
 
-// 请直接输出翻译结果：`
+// Please output the translation result directly:`
 
 // var SplitTextWithContextPrompt = `You are a professional translation expert skilled in providing accurate translations based on context. Please translate the target sentence into %s according to the provided context sentences below, ensuring the translation remains coherent and consistent.
 
@@ -236,10 +234,10 @@ type SmallAudio struct {
 type SubtitleResultType int
 
 const (
-	SubtitleResultTypeOriginOnly                   SubtitleResultType = iota + 1 // 仅返回原语言字幕
-	SubtitleResultTypeTargetOnly                                                 // 仅返回翻译后语言字幕
-	SubtitleResultTypeBilingualTranslationOnTop                                  // 返回双语字幕，翻译后的字幕在上
-	SubtitleResultTypeBilingualTranslationOnBottom                               // 返回双语字幕，翻译后的字幕在下
+	SubtitleResultTypeOriginOnly                   SubtitleResultType = iota + 1 // Only return original language subtitles
+	SubtitleResultTypeTargetOnly                                                 // Only return translated language subtitles
+	SubtitleResultTypeBilingualTranslationOnTop                                  // Return bilingual, translation on top
+	SubtitleResultTypeBilingualTranslationOnBottom                               // Return bilingual, translation on bottom
 )
 
 const (
@@ -268,7 +266,8 @@ const (
 )
 
 const (
-	SubtitleTaskStatusProcessing uint8 = iota + 1
+	SubtitleTaskStatusProcessing    uint8 = iota + 1
+	SubtitleTaskStatusWaitingReview       // Paused, waiting for user to review/edit subtitles
 	SubtitleTaskStatusSuccess
 	SubtitleTaskStatusFailed
 )
@@ -283,11 +282,11 @@ const (
 	SubtitleTaskSplitSrtNoTimestampFileNamePattern               = "srt_no_ts_%d.srt"
 	SubtitleTaskSrtNoTimestampFileName                           = "srt_no_ts.srt"
 	SubtitleTaskSplitBilingualSrtFileNamePattern                 = "split_bilingual_srt_%d.srt"
-	SubtitleTaskSplitShortOriginMixedSrtFileNamePattern          = "split_short_origin_mixed_srt_%d.srt" //长中文+短英文
-	SubtitleTaskSplitShortOriginSrtFileNamePattern               = "split_short_origin_srt_%d.srt"       //短英文
+	SubtitleTaskSplitShortOriginMixedSrtFileNamePattern          = "split_short_origin_mixed_srt_%d.srt" // Long target + short origin
+	SubtitleTaskSplitShortOriginSrtFileNamePattern               = "split_short_origin_srt_%d.srt"       // Short origin
 	SubtitleTaskBilingualSrtFileName                             = "bilingual_srt.srt"
-	SubtitleTaskShortOriginMixedSrtFileName                      = "short_origin_mixed_srt.srt" //长中文+短英文
-	SubtitleTaskShortOriginSrtFileName                           = "short_origin_srt.srt"       //短英文
+	SubtitleTaskShortOriginMixedSrtFileName                      = "short_origin_mixed_srt.srt" // Long target + short origin
+	SubtitleTaskShortOriginSrtFileName                           = "short_origin_srt.srt"       // Short origin
 	SubtitleTaskOriginLanguageSrtFileName                        = "origin_language_srt.srt"
 	SubtitleTaskOriginLanguageTextFileName                       = "origin_language.txt"
 	SubtitleTaskTargetLanguageSrtFileName                        = "target_language_srt.srt"
@@ -314,35 +313,35 @@ const (
 type SubtitleFileInfo struct {
 	Name               string
 	Path               string
-	LanguageIdentifier string // 在最终下载的文件里标识语言，如zh_cn，en，bilingual
+	LanguageIdentifier string // Identifier for language in final download files, e.g., zh_cn, en, bilingual
 }
 
 type SubtitleTaskStepParam struct {
 	TaskId                      string
-	TaskPtr                     *SubtitleTask // 和storage里面对应
+	TaskPtr                     *SubtitleTask // Corresponds to the one in storage
 	TaskBasePath                string
 	Link                        string
 	AudioFilePath               string
 	SubtitleResultType          SubtitleResultType
 	EnableModalFilter           bool
 	EnableTts                   bool
-	TtsVoiceCode                string // 人声语音编码
-	VoiceCloneAudioUrl          string // 音色克隆的源音频oss地址
+	TtsVoiceCode                string // Voice code for speech synthesis
+	VoiceCloneAudioUrl          string // OSS address of source audio for voice cloning
 	ReplaceWordsMap             map[string]string
-	OriginLanguage              StandardLanguageCode // 视频源语言
-	TargetLanguage              StandardLanguageCode // 用户希望的目标翻译语言
-	UserUILanguage              StandardLanguageCode // 用户的使用语言
+	OriginLanguage              StandardLanguageCode // Source video language
+	TargetLanguage              StandardLanguageCode // Target translation language
+	UserUILanguage              StandardLanguageCode // User's interface language
 	BilingualSrtFilePath        string
 	ShortOriginMixedSrtFilePath string
 	SubtitleInfos               []SubtitleFileInfo
 	TtsSourceFilePath           string
 	TtsResultFilePath           string
-	InputVideoPath              string // 源视频路径
-	EmbedSubtitleVideoType      string // 合成字幕嵌入的视频类型 none不嵌入 horizontal横屏 vertical竖屏
-	VerticalVideoMajorTitle     string // 合成竖屏视频的主标题
+	InputVideoPath              string // Source video path
+	EmbedSubtitleVideoType      string // Type of video to embed: none, horizontal, vertical
+	VerticalVideoMajorTitle     string // Major title for vertical video
 	VerticalVideoMinorTitle     string
-	MaxWordOneLine              int    // 字幕一行最多显示多少个字
-	VideoWithTtsFilePath        string // 替换源视频的音频为tts结果后的视频路径
+	MaxWordOneLine              int    // Max words per line
+	VideoWithTtsFilePath        string // Path to video with TTS audio replacement
 }
 
 type SrtSentence struct {
@@ -358,35 +357,39 @@ type SrtSentenceWithStrTime struct {
 }
 
 type SubtitleInfo struct {
-	Id          uint64 `json:"id" gorm:"column:id"`                                  // 自增id
+	Id          uint64 `json:"id" gorm:"column:id"`                                  // ID
 	TaskId      string `json:"task_id" gorm:"column:task_id"`                        // task_id
-	Uid         uint32 `json:"uid" gorm:"column:uid"`                                // 用户id
-	Name        string `json:"name" gorm:"column:name"`                              // 字幕名称
-	DownloadUrl string `json:"download_url" gorm:"column:download_url"`              // 字幕地址
-	CreateTime  int64  `json:"create_time" gorm:"column:create_time;autoCreateTime"` // 创建时间
+	Uid         uint32 `json:"uid" gorm:"column:uid"`                                // User ID
+	Name        string `json:"name" gorm:"column:name"`                              // Subtitle Name
+	DownloadUrl string `json:"download_url" gorm:"column:download_url"`              // Download URL
+	CreateTime  int64  `json:"create_time" gorm:"column:create_time;autoCreateTime"` // Creation Time
 }
 
 type SubtitleTask struct {
-	Id                    uint64         `json:"id" gorm:"column:id"`                                         // 自增id
-	TaskId                string         `json:"task_id" gorm:"column:task_id"`                               // 任务id
-	Title                 string         `json:"title" gorm:"column:title"`                                   // 标题
-	Description           string         `json:"description" gorm:"column:description"`                       // 描述
-	TranslatedTitle       string         `json:"translated_title" gorm:"column:translated_title"`             // 翻译后的标题
-	TranslatedDescription string         `json:"translated_description" gorm:"column:translated_description"` // 翻译后的描述
-	OriginLanguage        string         `json:"origin_language" gorm:"column:origin_language"`               // 视频原语言
-	TargetLanguage        string         `json:"target_language" gorm:"column:target_language"`               // 翻译任务的目标语言
-	VideoSrc              string         `json:"video_src" gorm:"column:video_src"`                           // 视频地址
-	Status                uint8          `json:"status" gorm:"column:status"`                                 // 1-处理中,2-成功,3-失败
-	LastSuccessStepNum    uint8          `json:"last_success_step_num" gorm:"column:last_success_step_num"`   // 最后成功的子任务序号，用于任务恢复
-	FailReason            string         `json:"fail_reason" gorm:"column:fail_reason"`                       // 失败原因
-	ProcessPct            uint8          `json:"process_percent" gorm:"column:process_percent"`               // 处理进度
-	Duration              uint32         `json:"duration" gorm:"column:duration"`                             // 视频时长
-	SrtNum                int            `json:"srt_num" gorm:"column:srt_num"`                               // 字幕数量
+	Id                    uint64         `json:"id" gorm:"column:id"`
+	TaskId                string         `json:"task_id" gorm:"column:task_id"`
+	Title                 string         `json:"title" gorm:"column:title"`
+	Description           string         `json:"description" gorm:"column:description"`
+	TranslatedTitle       string         `json:"translated_title" gorm:"column:translated_title"`
+	TranslatedDescription string         `json:"translated_description" gorm:"column:translated_description"`
+	OriginLanguage        string         `json:"origin_language" gorm:"column:origin_language"`
+	TargetLanguage        string         `json:"target_language" gorm:"column:target_language"`
+	VideoSrc              string         `json:"video_src" gorm:"column:video_src"`
+	Status                uint8          `json:"status" gorm:"column:status"`
+	LastSuccessStepNum    uint8          `json:"last_success_step_num" gorm:"column:last_success_step_num"`
+	FailReason            string         `json:"fail_reason" gorm:"column:fail_reason"`
+	ProcessPct            uint8          `json:"process_percent" gorm:"column:process_percent"`
+	Duration              uint32         `json:"duration" gorm:"column:duration"`
+	SrtNum                int            `json:"srt_num" gorm:"column:srt_num"`
 	SubtitleInfos         []SubtitleInfo `gorm:"foreignKey:TaskId;references:TaskId"`
-	Cover                 string         `json:"cover" gorm:"column:cover"`                             // 封面
-	SpeechDownloadUrl     string         `json:"speech_download_url" gorm:"column:speech_download_url"` // 语音文件下载地址
-	CreateTime            int64          `json:"create_time" gorm:"column:create_time;autoCreateTime"`  // 创建时间
-	UpdateTime            int64          `json:"update_time" gorm:"column:update_time;autoUpdateTime"`  // 更新时间
+	Cover                 string         `json:"cover" gorm:"column:cover"`
+	SpeechDownloadUrl     string         `json:"speech_download_url" gorm:"column:speech_download_url"`
+	CreateTime            int64          `json:"create_time" gorm:"column:create_time;autoCreateTime"`
+	UpdateTime            int64          `json:"update_time" gorm:"column:update_time;autoUpdateTime"`
+
+	// Review flow fields (not persisted to DB)
+	ReviewSrtPath   string `json:"-" gorm:"-"` // Path to the SRT file awaiting review
+	ReviewDoneCh    chan struct{} `json:"-" gorm:"-"` // Closed by the review API to resume the pipeline
 }
 
 type Word struct {

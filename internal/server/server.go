@@ -22,14 +22,14 @@ func StartBackend() error {
 		Addr: fmt.Sprintf("%s:%d", config.Conf.Server.Host, config.Conf.Server.Port),
 		Handler: engine,
 	}
-	log.GetLogger().Info("服务启动", zap.String("host", config.Conf.Server.Host), zap.Int("port", config.Conf.Server.Port))
+	log.GetLogger().Info("Service started", zap.String("host", config.Conf.Server.Host), zap.Int("port", config.Conf.Server.Port))
 	// return engine.Run(fmt.Sprintf("%s:%d", config.Conf.Server.Host, config.Conf.Server.Port))
 	err := BackEnd.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		log.GetLogger().Error("服务启动失败", zap.Error(err))
+		log.GetLogger().Error("Failed to start service", zap.Error(err))
 		return err
 	}
-	log.GetLogger().Info("服务关闭")
+	log.GetLogger().Info("Service closed")
 	return nil
 }
 
@@ -40,10 +40,10 @@ func StopBackend() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if err := BackEnd.Shutdown(ctx); err != nil {
-		log.GetLogger().Error("服务关闭失败", zap.Error(err))
+		log.GetLogger().Error("Failed to close service", zap.Error(err))
 		return err
 	}
 	BackEnd = nil
-	log.GetLogger().Info("服务已成功关闭")
+	log.GetLogger().Info("Service closed successfully")
 	return nil
 }

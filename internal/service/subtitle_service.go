@@ -13,32 +13,33 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
 func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.StartVideoSubtitleTaskResData, error) {
-	// 校验链接
+	// Validate link
 	if strings.Contains(req.Url, "youtube.com") {
 		videoId, _ := util.GetYouTubeID(req.Url)
 		if videoId == "" {
-			return nil, fmt.Errorf("链接不合法")
+			return nil, fmt.Errorf("Invalid link")
 		}
 	}
 	if strings.Contains(req.Url, "bilibili.com") {
 		videoId := util.GetBilibiliVideoId(req.Url)
 		if videoId == "" {
-			return nil, fmt.Errorf("链接不合法")
+			return nil, fmt.Errorf("Invalid link")
 		}
 	}
-	// 生成任务id
+	// Generate task ID
 	seperates := strings.Split(req.Url, "/")
 	taskId := fmt.Sprintf("%s_%s", util.SanitizePathName(string([]rune(strings.ReplaceAll(seperates[len(seperates)-1], " ", ""))[:16])), util.GenerateRandStringWithUpperLowerNum(4))
-	taskId = strings.ReplaceAll(taskId, "=", "") // 等于号影响ffmpeg处理
-	taskId = strings.ReplaceAll(taskId, "?", "") // 问号影响ffmpeg处理
-	// 构造任务所需参数
+	taskId = strings.ReplaceAll(taskId, "=", "") // Equals sign affects ffmpeg processing
+	taskId = strings.ReplaceAll(taskId, "?", "") // Question mark affects ffmpeg processing
+
+	// Determine subtitle type based on input options
 	var resultType types.SubtitleResultType
-	// 根据入参选项确定要返回的字幕类型
 	if req.TargetLang == "none" {
 		resultType = types.SubtitleResultTypeOriginOnly
 	} else {
@@ -52,7 +53,8 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 			resultType = types.SubtitleResultTypeTargetOnly
 		}
 	}
-	// 文字替换map
+
+	// Text replacement map
 	replaceWordsMap := make(map[string]string)
 	if len(req.Replace) > 0 {
 		for _, replace := range req.Replace {
@@ -64,39 +66,29 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 			}
 		}
 	}
+
 	var err error
 	ctx := context.Background()
-	// 创建字幕任务文件夹
+
+	// Create subtitle task folder
 	taskBasePath := filepath.Join("./tasks", taskId)
 	if _, err = os.Stat(taskBasePath); os.IsNotExist(err) {
-		// 不存在则创建
 		err = os.MkdirAll(filepath.Join(taskBasePath, "output"), os.ModePerm)
 		if err != nil {
 			log.GetLogger().Error("StartVideoSubtitleTask MkdirAll err", zap.Any("req", req), zap.Error(err))
 		}
 	}
 
-	// 创建任务
+	// Create task; initialize review channel if review mode is enabled
 	taskPtr := &types.SubtitleTask{
 		TaskId:   taskId,
 		VideoSrc: req.Url,
 		Status:   types.SubtitleTaskStatusProcessing,
 	}
-	storage.SubtitleTasks.Store(taskId, taskPtr)
-
-	// 处理声音克隆源
-	var voiceCloneAudioUrl string
-	if req.TtsVoiceCloneSrcFileUrl != "" {
-		localFileUrl := strings.TrimPrefix(req.TtsVoiceCloneSrcFileUrl, "local:")
-		fileKey := util.GenerateRandStringWithUpperLowerNum(5) + filepath.Ext(localFileUrl) // 防止url encode的问题，这里统一处理
-		err = s.OssClient.UploadFile(context.Background(), fileKey, localFileUrl, s.OssClient.Bucket)
-		if err != nil {
-			log.GetLogger().Error("StartVideoSubtitleTask UploadFile err", zap.Any("req", req), zap.Error(err))
-			return nil, errors.New("上传声音克隆源失败")
-		}
-		voiceCloneAudioUrl = fmt.Sprintf("https://%s.oss-cn-shanghai.aliyuncs.com/%s", s.OssClient.Bucket, fileKey)
-		log.GetLogger().Info("StartVideoSubtitleTask 上传声音克隆源成功", zap.Any("oss url", voiceCloneAudioUrl))
+	if req.EnableReview {
+		taskPtr.ReviewDoneCh = make(chan struct{})
 	}
+	storage.SubtitleTasks.Store(taskId, taskPtr)
 
 	stepParam := types.SubtitleTaskStepParam{
 		TaskId:                  taskId,
@@ -107,7 +99,6 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 		EnableModalFilter:       req.ModalFilter == types.SubtitleTaskModalFilterYes,
 		EnableTts:               req.Tts == types.SubtitleTaskTtsYes,
 		TtsVoiceCode:            req.TtsVoiceCode,
-		VoiceCloneAudioUrl:      voiceCloneAudioUrl,
 		ReplaceWordsMap:         replaceWordsMap,
 		OriginLanguage:          types.StandardLanguageCode(req.OriginLanguage),
 		TargetLanguage:          types.StandardLanguageCode(req.TargetLang),
@@ -115,7 +106,7 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 		EmbedSubtitleVideoType:  req.EmbedSubtitleVideoType,
 		VerticalVideoMajorTitle: req.VerticalMajorTitle,
 		VerticalVideoMinorTitle: req.VerticalMinorTitle,
-		MaxWordOneLine:          12, // 默认值
+		MaxWordOneLine:          12,
 	}
 	if req.OriginLanguageWordOneLine != 0 {
 		stepParam.MaxWordOneLine = req.OriginLanguageWordOneLine
@@ -133,8 +124,9 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 				stepParam.TaskPtr.Status = types.SubtitleTaskStatusFailed
 			}
 		}()
-		// 新版流程：链接->本地音频文件->视频信息获取（若有）->本地字幕文件->语言合成->视频合成->字幕文件链接生成
+
 		log.GetLogger().Info("video subtitle start task", zap.String("taskId", taskId))
+
 		err = s.linkToFile(ctx, &stepParam)
 		if err != nil {
 			log.GetLogger().Error("StartVideoSubtitleTask linkToFile err", zap.Any("req", req), zap.Error(err))
@@ -142,14 +134,7 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 			stepParam.TaskPtr.FailReason = err.Error()
 			return
 		}
-		// 暂时不加视频信息
-		//err = s.getVideoInfo(ctx, &stepParam)
-		//if err != nil {
-		//	log.GetLogger().Error("StartVideoSubtitleTask getVideoInfo err", zap.Any("req", req), zap.Error(err))
-		//	stepParam.TaskPtr.Status = types.SubtitleTaskStatusFailed
-		//	stepParam.TaskPtr.FailReason = "get video info error"
-		//	return
-		//}
+
 		err = s.audioToSubtitle(ctx, &stepParam)
 		if err != nil {
 			log.GetLogger().Error("StartVideoSubtitleTask audioToSubtitle err", zap.Any("req", req), zap.Error(err))
@@ -157,6 +142,36 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 			stepParam.TaskPtr.FailReason = err.Error()
 			return
 		}
+
+		// ── REVIEW PAUSE ──────────────────────────────────────────────────────
+		if req.EnableReview && taskPtr.ReviewDoneCh != nil {
+			// Choose which SRT file to expose for review
+			reviewSrtPath := filepath.Join(taskBasePath, types.SubtitleTaskTargetLanguageSrtFileName)
+			switch resultType {
+			case types.SubtitleResultTypeBilingualTranslationOnTop,
+				types.SubtitleResultTypeBilingualTranslationOnBottom:
+				reviewSrtPath = filepath.Join(taskBasePath, types.SubtitleTaskBilingualSrtFileName)
+			case types.SubtitleResultTypeOriginOnly:
+				reviewSrtPath = filepath.Join(taskBasePath, types.SubtitleTaskOriginLanguageSrtFileName)
+			}
+
+			taskPtr.ReviewSrtPath = reviewSrtPath
+			taskPtr.ProcessPct = 95
+			taskPtr.Status = types.SubtitleTaskStatusWaitingReview
+			log.GetLogger().Info("Task paused for review",
+				zap.String("taskId", taskId),
+				zap.String("srtPath", reviewSrtPath))
+
+			// Block until ApproveReview closes the channel
+			<-taskPtr.ReviewDoneCh
+			log.GetLogger().Info("Review approved, resuming pipeline", zap.String("taskId", taskId))
+			taskPtr.Status = types.SubtitleTaskStatusProcessing
+
+			// Ensure the TTS engine reads from the user-reviewed file
+			stepParam.TtsSourceFilePath = taskPtr.ReviewSrtPath
+		}
+		// ─────────────────────────────────────────────────────────────────────
+
 		err = s.srtFileToSpeech(ctx, &stepParam)
 		if err != nil {
 			log.GetLogger().Error("StartVideoSubtitleTask srtFileToSpeech err", zap.Any("req", req), zap.Error(err))
@@ -190,15 +205,28 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 func (s Service) GetTaskStatus(req dto.GetVideoSubtitleTaskReq) (*dto.GetVideoSubtitleTaskResData, error) {
 	task, ok := storage.SubtitleTasks.Load(req.TaskId)
 	if !ok || task == nil {
-		return nil, errors.New("任务不存在")
+		return nil, errors.New("Task does not exist")
 	}
 	taskPtr := task.(*types.SubtitleTask)
 	if taskPtr.Status == types.SubtitleTaskStatusFailed {
-		return nil, fmt.Errorf("任务失败，原因：%s", taskPtr.FailReason)
+		return nil, fmt.Errorf("Task failed, reason: %s", taskPtr.FailReason)
 	}
-	return &dto.GetVideoSubtitleTaskResData{
+
+	// Map numeric status to string for the frontend
+	statusStr := "processing"
+	switch taskPtr.Status {
+	case types.SubtitleTaskStatusWaitingReview:
+		statusStr = "waiting_review"
+	case types.SubtitleTaskStatusSuccess:
+		statusStr = "success"
+	case types.SubtitleTaskStatusFailed:
+		statusStr = "failed"
+	}
+
+	res := &dto.GetVideoSubtitleTaskResData{
 		TaskId:         taskPtr.TaskId,
 		ProcessPercent: taskPtr.ProcessPct,
+		Status:         statusStr,
 		VideoInfo: &dto.VideoInfo{
 			Title:                 taskPtr.Title,
 			Description:           taskPtr.Description,
@@ -213,5 +241,47 @@ func (s Service) GetTaskStatus(req dto.GetVideoSubtitleTaskReq) (*dto.GetVideoSu
 		}),
 		TargetLanguage:    taskPtr.TargetLanguage,
 		SpeechDownloadUrl: taskPtr.SpeechDownloadUrl,
-	}, nil
+	}
+
+	// Provide SRT content when the pipeline is waiting for review
+	if taskPtr.Status == types.SubtitleTaskStatusWaitingReview && taskPtr.ReviewSrtPath != "" {
+		srtBytes, err := os.ReadFile(taskPtr.ReviewSrtPath)
+		if err == nil {
+			res.ReviewSrtContent = string(srtBytes)
+		} else {
+			log.GetLogger().Warn("GetTaskStatus: failed to read review SRT", zap.Error(err))
+		}
+	}
+
+	return res, nil
+}
+
+// ApproveReview is called when the user finishes reviewing/editing the subtitles.
+// It writes the (possibly edited) SRT back to disk and unblocks the pipeline goroutine.
+func (s Service) ApproveReview(req dto.ApproveReviewReq) error {
+	task, ok := storage.SubtitleTasks.Load(req.TaskId)
+	if !ok || task == nil {
+		return errors.New("Task does not exist")
+	}
+	taskPtr := task.(*types.SubtitleTask)
+	if taskPtr.Status != types.SubtitleTaskStatusWaitingReview {
+		return errors.New("Task is not in review state")
+	}
+	if taskPtr.ReviewDoneCh == nil {
+		return errors.New("Review channel not initialized")
+	}
+
+	// Persist the user's edits before resuming
+	if req.EditedSrtContent != "" && taskPtr.ReviewSrtPath != "" {
+		if err := os.WriteFile(taskPtr.ReviewSrtPath, []byte(req.EditedSrtContent), 0644); err != nil {
+			log.GetLogger().Error("ApproveReview WriteFile err", zap.Error(err))
+			return fmt.Errorf("Failed to save edited subtitles: %w", err)
+		}
+		log.GetLogger().Info("ApproveReview: edited SRT saved", zap.String("taskId", req.TaskId))
+	}
+
+	// Unblock the pipeline
+	close(taskPtr.ReviewDoneCh)
+	taskPtr.ReviewDoneCh = nil // Prevent double-close
+	return nil
 }

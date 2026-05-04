@@ -18,7 +18,7 @@ import (
 type FileManager struct {
 	window        fyne.Window
 	files         []string
-	selectedFiles []string // 多文件选择
+	selectedFiles []string // Multiple file selection
 }
 
 func NewFileManager(window fyne.Window) *FileManager {
@@ -39,7 +39,7 @@ func (fm *FileManager) ShowUploadDialog() {
 			return
 		}
 
-		// 获取文件路径
+		// Get file path
 		filePath := reader.URI().Path()
 		fileName := filepath.Base(filePath)
 
@@ -49,14 +49,14 @@ func (fm *FileManager) ShowUploadDialog() {
 			return
 		}
 
-		dialog.ShowInformation("成功", "文件上传成功", fm.window)
+		dialog.ShowInformation("Success", "File uploaded successfully", fm.window)
 	}, fm.window)
 
 	fd.Show()
 }
 
 func (fm *FileManager) ShowMultiUploadDialog() {
-	// 清空已选择的文件
+	// Clear selected files
 	fm.selectedFiles = make([]string, 0)
 
 	fm.showAddFileDialog()
@@ -72,36 +72,36 @@ func (fm *FileManager) showAddFileDialog() {
 			return
 		}
 
-		// 获取文件路径
+		// Get file path
 		filePath := reader.URI().Path()
 		fm.selectedFiles = append(fm.selectedFiles, filePath)
 		reader.Close()
 
-		// 是否继续添加文件
+		// Continue adding files?
 		continueDialog := dialog.NewConfirm(
-			"添加更多文件",
-			fmt.Sprintf("已选择 %d 个文件。是否继续添加？", len(fm.selectedFiles)),
+			"Add more files",
+			fmt.Sprintf("%d files selected. Continue adding?", len(fm.selectedFiles)),
 			func(cont bool) {
 				if cont {
-					// 继续添加文件
+					// Continue adding files
 					fm.showAddFileDialog()
 				} else {
-					// 上传
+					// Upload
 					if len(fm.selectedFiles) > 0 {
-						// 文件名列表
+						// File name list
 						fileNames := make([]string, len(fm.selectedFiles))
 						for i, path := range fm.selectedFiles {
 							fileNames[i] = filepath.Base(path)
 						}
 
-						// 上传
+						// Upload
 						err := fm.uploadMultipleFiles(fm.selectedFiles, fileNames)
 						if err != nil {
 							dialog.ShowError(err, fm.window)
 							return
 						}
 
-						dialog.ShowInformation("成功", fmt.Sprintf("已上传 %d 个文件", len(fm.selectedFiles)), fm.window)
+						dialog.ShowInformation("Success", fmt.Sprintf("%d files uploaded", len(fm.selectedFiles)), fm.window)
 					}
 				}
 			},
@@ -121,7 +121,7 @@ func (fm *FileManager) uploadFile(filePath, fileName string) error {
 	}
 	defer file.Close()
 
-	// 创建multipart form
+	// Create multipart form
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("file", fileName)
@@ -134,7 +134,7 @@ func (fm *FileManager) uploadFile(filePath, fileName string) error {
 	}
 	writer.Close()
 
-	// 发送请求
+	// Send request
 	resp, err := http.Post("http://localhost:8888/api/file", writer.FormDataContentType(), body)
 	if err != nil {
 		return err
@@ -163,8 +163,8 @@ func (fm *FileManager) uploadFile(filePath, fileName string) error {
 }
 
 func (fm *FileManager) uploadMultipleFiles(filePaths []string, fileNames []string) error {
-	// 显示上传进度对话框
-	progress := dialog.NewProgress("上传中", "正在上传文件...", fm.window)
+	// Show upload progress dialog
+	progress := dialog.NewProgress("Uploading", "Uploading files...", fm.window)
 	progress.Show()
 	defer progress.Hide()
 
@@ -261,6 +261,6 @@ func (fm *FileManager) DownloadFile(index int) {
 		}
 
 		writer.Close()
-		dialog.ShowInformation("成功", "文件下载完成", fm.window)
+		dialog.ShowInformation("Success", "File download complete", fm.window)
 	}, fm.window)
 }

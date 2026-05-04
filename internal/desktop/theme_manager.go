@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// ThemeManager 主题管理器
+// ThemeManager theme manager
 type ThemeManager struct {
 	app        fyne.App
 	window     fyne.Window
@@ -18,7 +18,7 @@ type ThemeManager struct {
 	callbacks  []func(bool)
 }
 
-// NewThemeManager 创建主题管理器
+// NewThemeManager creates the theme manager
 func NewThemeManager(app fyne.App, window fyne.Window) *ThemeManager {
 	theme := NewCustomTheme(ThemeModeLight).(*customTheme)
 	app.Settings().SetTheme(theme)
@@ -32,12 +32,12 @@ func NewThemeManager(app fyne.App, window fyne.Window) *ThemeManager {
 	}
 }
 
-// IsDarkMode 检查是否为夜晚模式
+// IsDarkMode checks if it is dark mode
 func (tm *ThemeManager) IsDarkMode() bool {
 	return tm.isDarkMode
 }
 
-// ToggleTheme 切换主题
+// ToggleTheme toggles the theme
 func (tm *ThemeManager) ToggleTheme() {
 	tm.isDarkMode = !tm.isDarkMode
 
@@ -47,7 +47,7 @@ func (tm *ThemeManager) ToggleTheme() {
 		tm.theme.SetThemeMode(ThemeModeLight)
 	}
 
-	// 更新应用主题
+	// Update app theme
 	tm.app.Settings().SetTheme(tm.theme)
 
 	for _, callback := range tm.callbacks {
@@ -57,35 +57,35 @@ func (tm *ThemeManager) ToggleTheme() {
 	tm.window.Canvas().Refresh(tm.window.Content())
 }
 
-// AddThemeChangeCallback 添加主题变化回调
+// AddThemeChangeCallback adds a theme change callback
 func (tm *ThemeManager) AddThemeChangeCallback(callback func(bool)) {
 	tm.callbacks = append(tm.callbacks, callback)
 }
 
-// CreateGlassmorphismCard 创建毛玻璃卡片（主题感知）
+// CreateGlassmorphismCard creates a glassmorphism card (theme-aware)
 func (tm *ThemeManager) CreateGlassmorphismCard(title, subtitle string, content fyne.CanvasObject) *fyne.Container {
 	return GlassmorphismCard(title, subtitle, content, tm.isDarkMode)
 }
 
-// CreateModernCard 创建现代卡片（主题感知）
+// CreateModernCard creates a modern card (theme-aware)
 func (tm *ThemeManager) CreateModernCard(title string, content fyne.CanvasObject) *fyne.Container {
 	return ModernCard(title, content, tm.isDarkMode)
 }
 
-// CreateTransparentCard 创建透明卡片（主题感知）
+// CreateTransparentCard creates a transparent card (theme-aware)
 func (tm *ThemeManager) CreateTransparentCard(content fyne.CanvasObject) *fyne.Container {
 	return TransparentCard(content, tm.isDarkMode)
 }
 
-// CreateThemeToggleButton 创建主题切换按钮
+// CreateThemeToggleButton creates the theme toggle button
 func (tm *ThemeManager) CreateThemeToggleButton() *fyne.Container {
 	var themeToggleBtn *widget.Button
 
 	updateButton := func() {
 		if tm.isDarkMode {
-			themeToggleBtn.SetText("明亮模式")
+			themeToggleBtn.SetText("Light Mode")
 		} else {
-			themeToggleBtn.SetText("夜晚模式")
+			themeToggleBtn.SetText("Dark Mode")
 		}
 		themeToggleBtn.Refresh()
 	}
@@ -95,7 +95,7 @@ func (tm *ThemeManager) CreateThemeToggleButton() *fyne.Container {
 		updateButton()
 	})
 
-	// 添加主题变化回调来更新按钮文本
+	// Add theme change callback to update button text
 	tm.AddThemeChangeCallback(func(isDark bool) {
 		updateButton()
 	})
@@ -103,7 +103,7 @@ func (tm *ThemeManager) CreateThemeToggleButton() *fyne.Container {
 	return container.NewPadded(themeToggleBtn)
 }
 
-// CreateGlassmorphismBackground 创建毛玻璃背景
+// CreateGlassmorphismBackground creates a glassmorphism background
 func (tm *ThemeManager) CreateGlassmorphismBackground() *canvas.Rectangle {
 	var bgColor color.Color
 	var borderColor color.Color
@@ -124,7 +124,7 @@ func (tm *ThemeManager) CreateGlassmorphismBackground() *canvas.Rectangle {
 	return background
 }
 
-// CreateTransparentBackground 创建透明背景
+// CreateTransparentBackground creates a transparent background
 func (tm *ThemeManager) CreateTransparentBackground() *canvas.Rectangle {
 	var bgColor color.Color
 	var borderColor color.Color
@@ -145,7 +145,7 @@ func (tm *ThemeManager) CreateTransparentBackground() *canvas.Rectangle {
 	return background
 }
 
-// CreateGradientBackground 创建渐变背景
+// CreateGradientBackground creates a gradient background
 func (tm *ThemeManager) CreateGradientBackground() *canvas.LinearGradient {
 	var startColor, endColor color.Color
 
@@ -160,7 +160,7 @@ func (tm *ThemeManager) CreateGradientBackground() *canvas.LinearGradient {
 	return canvas.NewLinearGradient(startColor, endColor, 0.0)
 }
 
-// UpdateAllComponents 更新所有组件
+// UpdateAllComponents updates all components
 func (tm *ThemeManager) UpdateAllComponents() {
 	tm.window.Canvas().Refresh(tm.window.Content())
 }

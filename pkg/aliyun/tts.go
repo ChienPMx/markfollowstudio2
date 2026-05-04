@@ -56,6 +56,10 @@ func NewTtsClient(accessKeyId, accessKeySecret, appkey string) *TtsClient {
 }
 
 func (c *TtsClient) Text2Speech(text, voice, outputFile string) error {
+	if voice == "" {
+		voice = "aitong" // default voice
+	}
+
 	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
@@ -142,7 +146,7 @@ func (c *TtsClient) StartSynthesis(conn *websocket.Conn, taskId string, payload 
 		return err
 	}
 
-	// 阻塞等待 SynthesisStarted 事件
+	// Blocking wait for SynthesisStarted event
 	<-synthesisStarted
 
 	return nil
@@ -158,7 +162,7 @@ func (c *TtsClient) StopSynthesis(conn *websocket.Conn, taskId string, synthesis
 		return err
 	}
 
-	// 阻塞等待 SynthesisCompleted 事件
+	// Blocking wait for SynthesisCompleted event
 	<-synthesisComplete
 
 	return nil
@@ -178,7 +182,7 @@ func (c *TtsClient) receiveMessages(conn *websocket.Conn, onTextMessage func(str
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				log.GetLogger().Error("SpeechClient receiveMessages websocket非正常关闭", zap.Error(err))
+				log.GetLogger().Error("SpeechClient receiveMessages websocket closed abnormally", zap.Error(err))
 				return
 			}
 			return
@@ -186,12 +190,12 @@ func (c *TtsClient) receiveMessages(conn *websocket.Conn, onTextMessage func(str
 		if messageType == websocket.TextMessage {
 			var msg Message
 			if err := json.Unmarshal(message, &msg); err != nil {
-				log.GetLogger().Error("SpeechClient receiveMessages json解析失败", zap.Error(err))
+				log.GetLogger().Error("SpeechClient receiveMessages JSON parsing failed", zap.Error(err))
 				return
 			}
 			if msg.Header.Name == "SynthesisCompleted" {
 				log.GetLogger().Info("SynthesisCompleted event received")
-				// 收到结束消息退出
+				// Exit upon receiving completion message
 				break
 			} else if msg.Header.Name == "SynthesisStarted" {
 				log.GetLogger().Info("SynthesisStarted event received")

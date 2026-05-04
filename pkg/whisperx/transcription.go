@@ -56,24 +56,24 @@ func (c *WhisperXProcessor) Transcription(audioFile, language, workDir string) (
 		newEnv := append(currentEnv, cudaLibPath)
 		cmd.Env = newEnv
 	}
-	log.GetLogger().Info("WhisperXProcessor转录开始", zap.String("cmd", cmd.String()))
+	log.GetLogger().Info("WhisperXProcessor transcription started", zap.String("cmd", cmd.String()))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.GetLogger().Error("WhisperXProcessor  cmd 执行失败", zap.String("output", string(output)), zap.Error(err))
+		log.GetLogger().Error("WhisperXProcessor cmd execution failed", zap.String("output", string(output)), zap.Error(err))
 		return nil, err
 	}
-	log.GetLogger().Info("WhisperXProcessor转录json生成完毕", zap.String("audio file", audioFile))
+	log.GetLogger().Info("WhisperXProcessor transcription JSON generation complete", zap.String("audio file", audioFile))
 
 	var result types.WhisperXOutput
 	fileData, err := os.Open(util.ChangeFileExtension(audioFile, ".json"))
 	if err != nil {
-		log.GetLogger().Error("WhisperXProcessor 打开json文件失败", zap.Error(err))
+		log.GetLogger().Error("WhisperXProcessor failed to open JSON file", zap.Error(err))
 		return nil, err
 	}
 	defer fileData.Close()
 	decoder := json.NewDecoder(fileData)
 	if err = decoder.Decode(&result); err != nil {
-		log.GetLogger().Error("WhisperXProcessor 解析json文件失败", zap.Error(err))
+		log.GetLogger().Error("WhisperXProcessor failed to parse JSON file", zap.Error(err))
 		return nil, err
 	}
 
@@ -82,10 +82,10 @@ func (c *WhisperXProcessor) Transcription(audioFile, language, workDir string) (
 		num               int
 	)
 	for _, segment := range result.Segments {
-		transcriptionData.Text += strings.ReplaceAll(segment.Text, "—", " ") // 连字符处理，因为模型存在很多错误添加到连字符
+		transcriptionData.Text += strings.ReplaceAll(segment.Text, "—", " ") // Hyphen handling, as the model often incorrectly adds hyphens
 		for _, word := range segment.Words {
 			if strings.Contains(word.Word, "—") {
-				// 对称切分
+				// Symmetric splitting
 				mid := (word.Start + word.End) / 2
 				seperatedWords := strings.Split(word.Word, "—")
 				transcriptionData.Words = append(transcriptionData.Words, []types.Word{
@@ -114,6 +114,6 @@ func (c *WhisperXProcessor) Transcription(audioFile, language, workDir string) (
 			}
 		}
 	}
-	log.GetLogger().Info("WhisperXProcessor转录成功")
+	log.GetLogger().Info("WhisperXProcessor transcription success")
 	return &transcriptionData, nil
 }

@@ -14,29 +14,29 @@ import (
 	"unicode"
 )
 
-// 处理每一个字幕块
+// Process each subtitle block
 func ProcessBlock(block []string, targetLanguageFile, targetLanguageTextFile, originLanguageFile, originLanguageTextFile *os.File, isTargetOnTop bool) {
 	var targetLines, originLines []string
-	// 匹配时间戳的正则表达式
+	// Regex pattern for matching timestamps
 	timePattern := regexp.MustCompile(`\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}`)
 	for _, line := range block {
 		if timePattern.MatchString(line) || IsNumber(line) {
-			// 时间戳和编号行保留在两个文件中
+			// Retain timestamp and index lines in both files
 			targetLines = append(targetLines, line)
 			originLines = append(originLines, line)
 			continue
 		}
-		if len(targetLines) == 2 && len(originLines) == 2 { // 刚写完编号和时间戳，到了上方的文字行
+		if len(targetLines) == 2 && len(originLines) == 2 { // Just finished index and timestamp, reached the upper text line
 			if isTargetOnTop {
 				targetLines = append(targetLines, line)
-				targetLanguageTextFile.WriteString(line + " ") // 文稿文件
+				targetLanguageTextFile.WriteString(line + " ") // Transcript file
 			} else {
 				originLines = append(originLines, line)
 				originLanguageTextFile.WriteString(line + " ")
 			}
 			continue
 		}
-		// 到了下方的文字行
+		// Reached the lower text line
 		if isTargetOnTop {
 			originLines = append(originLines, line)
 			originLanguageTextFile.WriteString(line + " ")
@@ -47,7 +47,7 @@ func ProcessBlock(block []string, targetLanguageFile, targetLanguageTextFile, or
 	}
 
 	if len(targetLines) > 2 {
-		// 写入目标语言文件
+		// Write to target language file
 		for _, line := range targetLines {
 			targetLanguageFile.WriteString(line + "\n")
 		}
@@ -55,7 +55,7 @@ func ProcessBlock(block []string, targetLanguageFile, targetLanguageTextFile, or
 	}
 
 	if len(originLines) > 2 {
-		// 写入源语言文件
+		// Write to source language file
 		for _, line := range originLines {
 			originLanguageFile.WriteString(line + "\n")
 		}
@@ -63,7 +63,7 @@ func ProcessBlock(block []string, targetLanguageFile, targetLanguageTextFile, or
 	}
 }
 
-// IsSubtitleText 是否是字幕文件中的字幕文字行
+// IsSubtitleText checks if a line is a subtitle text line
 func IsSubtitleText(line string) bool {
 	if line == "" {
 		return false
@@ -91,39 +91,41 @@ type SrtBlock struct {
 }
 
 func TrimString(s string) string {
-	s = strings.Replace(s, "[中文翻译]", "", -1)
-	s = strings.Replace(s, "[英文句子]", "", -1)
-	// 去除开头的空格和 '['
+	s = strings.Replace(s, "[Translated Sentence]", "", -1)
+	s = strings.Replace(s, "[Original Sentence]", "", -1)
+	s = strings.Replace(s, "[Chinese Translation]", "", -1)
+	s = strings.Replace(s, "[English Sentence]", "", -1)
+	// Remove leading spaces and '['
 	s = strings.TrimLeft(s, " [")
 
-	// 去除结尾的空格和 ']'
+	// Remove trailing spaces and ']'
 	s = strings.TrimRight(s, " ]")
 
-	//替换中文单引号
+	// Replace CJK single quotes
 	s = strings.ReplaceAll(s, "’", "'")
 
 	return s
 }
 
 func SplitSentence(sentence string) []string {
-	// 使用正则表达式移除标点符号和特殊字符（保留各语言字母、数字和空格）
+	// Use regex to remove punctuation and special characters (preserving alphanumeric and spaces across languages)
 	re := regexp.MustCompile(`[^\p{L}\p{N}\s']+`)
 	cleanedSentence := re.ReplaceAllString(sentence, " ")
 
-	// 使用 strings.Fields 按空格拆分成单词
+	// Use strings.Fields to split into words by whitespace
 	words := strings.Fields(cleanedSentence)
 
 	return words
 }
 
 func MergeFile(finalFile string, files ...string) error {
-	// 创建最终文件
+	// Create final file
 	final, err := os.Create(finalFile)
 	if err != nil {
 		return err
 	}
 
-	// 逐个读取文件并写入最终文件
+	// Read files one by one and write to the final file
 	for _, file := range files {
 		f, err := os.Open(file)
 		if err != nil {
@@ -150,17 +152,17 @@ func MergeSrtFiles(finalFile string, files ...string) error {
 	writer := bufio.NewWriter(output)
 	lineNumber := 0
 	for _, file := range files {
-		// 不存在某一个file就跳过
+		// Skip if a file does not exist
 		if _, err = os.Stat(file); os.IsNotExist(err) {
 			continue
 		}
-		// 打开当前字幕文件
+		// Open current subtitle file
 		f, err := os.Open(file)
 		if err != nil {
 			return err
 		}
 		defer f.Close()
-		// 处理当前字幕文件
+		// Process current subtitle file
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
@@ -182,7 +184,7 @@ func MergeSrtFiles(finalFile string, files ...string) error {
 	return nil
 }
 
-// 给定文件和替换map，将文件中所有的key替换成value
+// Replace all keys with values in the given file using the replacement map
 func ReplaceFileContent(srcFile, dstFile string, replacements map[string]string) error {
 	file, err := os.Open(srcFile)
 	if err != nil {
@@ -197,7 +199,7 @@ func ReplaceFileContent(srcFile, dstFile string, replacements map[string]string)
 	defer outFile.Close()
 
 	scanner := bufio.NewScanner(file)
-	writer := bufio.NewWriter(outFile) // 提高性能
+	writer := bufio.NewWriter(outFile) // For performance improvement
 	defer writer.Flush()
 
 	for scanner.Scan() {
@@ -215,7 +217,7 @@ func ReplaceFileContent(srcFile, dstFile string, replacements map[string]string)
 	return nil
 }
 
-// 获得文件名后加上后缀的新文件名，不改变扩展名，例如：/home/ubuntu/abc.srt变成/home/ubuntu/abc_tmp.srt
+// Generate a new filename by adding a suffix before the extension, e.g., /path/abc.srt becomes /path/abc_suffix.srt
 func AddSuffixToFileName(filePath, suffix string) string {
 	dir := filepath.Dir(filePath)
 	ext := filepath.Ext(filePath)
@@ -224,23 +226,23 @@ func AddSuffixToFileName(filePath, suffix string) string {
 	return filepath.Join(dir, newName)
 }
 
-// 去除字符串中的标点符号等字符，确保字符中的内容都是whisper模型可以识别出来的，便于时间戳对齐
+// Remove punctuation and other symbols to ensure text is recognizable by Whisper models, facilitating timestamp alignment
 func GetRecognizableString(s string) string {
 	var result []rune
 	for _, v := range s {
-		// 英文字母和数字
+		// English letters and numbers
 		if unicode.Is(unicode.Latin, v) || unicode.Is(unicode.Number, v) {
 			result = append(result, v)
 		}
-		// 中文
+		// Chinese
 		if unicode.Is(unicode.Han, v) {
 			result = append(result, v)
 		}
-		// 韩文
+		// Korean
 		if unicode.Is(unicode.Hangul, v) {
 			result = append(result, v)
 		}
-		// 日文平假片假
+		// Japanese Hiragana/Katakana
 		if unicode.Is(unicode.Hiragana, v) || unicode.Is(unicode.Katakana, v) {
 			result = append(result, v)
 		}
@@ -249,14 +251,14 @@ func GetRecognizableString(s string) string {
 }
 
 func GetAudioDuration(inputFile string) (float64, error) {
-	// 使用 ffprobe 获取精确时长
+	// Use ffprobe to get precise duration
 	cmd := exec.Command(storage.FfprobePath, "-i", inputFile, "-show_entries", "format=duration", "-v", "quiet", "-of", "csv=p=0")
 	cmdOutput, err := cmd.Output()
 	if err != nil {
 		return 0, fmt.Errorf("GetAudioDuration failed to get audio duration: %w", err)
 	}
 
-	// 解析时长
+	// Parse duration
 	duration, err := strconv.ParseFloat(strings.TrimSpace(string(cmdOutput)), 64)
 	if err != nil {
 		return 0, fmt.Errorf("GetAudioDuration failed to parse audio duration: %w", err)
@@ -265,7 +267,7 @@ func GetAudioDuration(inputFile string) (float64, error) {
 	return duration, nil
 }
 
-// todo 后续再补充
+// todo: Add more later
 func IsAsianLanguage(code types.StandardLanguageCode) bool {
 	return code == types.LanguageNameSimplifiedChinese || code == types.LanguageNameTraditionalChinese || code == types.LanguageNameJapanese || code == types.LanguageNameKorean || code == types.LanguageNameThai
 }
@@ -275,37 +277,37 @@ func BeautifyAsianLanguageSentence(input string) string {
 		return input
 	}
 
-	// 不处理的
+	// Punctuations not to process (balanced pairs)
 	pairPunctuations := map[rune]rune{
 		'「': '」', '『': '』', '“': '”', '‘': '’',
 		'《': '》', '<': '>', '【': '】', '〔': '〕',
 		'(': ')', '[': ']', '{': '}',
 	}
 
-	// 需要处理的单标点
+	// Single punctuations to be processed
 	singlePunctuations := ",.;:!?~，、。！？；：…"
 
-	// 先处理字符串末尾的标点
+	// Process punctuations at the end of the string first
 	runes := []rune(input)
 	i := len(runes) - 1
 	for i >= 0 {
 		r := runes[i]
-		// 如果是空格，继续检查前一个字符
+		// If it's a space, check the previous character
 		if unicode.IsSpace(r) {
 			i--
 			continue
 		}
-		// 如果是单标点，去除
+		// If it's a single punctuation, remove it
 		if strings.ContainsRune(singlePunctuations, r) {
 			runes = runes[:i]
 			i--
 		} else {
-			// 遇到非标点或成对标点，停止
+			// Stop when encountering non-punctuation or paired punctuation
 			break
 		}
 	}
 
-	// 中间的单标点替换为空格
+	// Replace single punctuations in the middle with spaces
 	var inPair bool
 	var expectedClose rune
 	var result []rune
@@ -313,7 +315,7 @@ func BeautifyAsianLanguageSentence(input string) string {
 	for i := 0; i < len(runes); i++ {
 		r := runes[i]
 
-		// 检查是否在成对标点内
+		// Check if inside paired punctuations
 		if inPair {
 			if r == expectedClose {
 				inPair = false
@@ -322,7 +324,7 @@ func BeautifyAsianLanguageSentence(input string) string {
 			continue
 		}
 
-		// 检查是否是成对标点的开始
+		// Check if it's the start of a paired punctuation
 		if close, isPair := pairPunctuations[r]; isPair {
 			inPair = true
 			expectedClose = close
@@ -330,7 +332,7 @@ func BeautifyAsianLanguageSentence(input string) string {
 			continue
 		}
 
-		// 检查是否是数字中的小数点
+		// Check if it's a decimal point in a number
 		if r == '.' && i > 0 && i < len(runes)-1 {
 			prev := runes[i-1]
 			next := runes[i+1]
@@ -340,9 +342,9 @@ func BeautifyAsianLanguageSentence(input string) string {
 			}
 		}
 
-		// 处理单标点
+		// Handle single punctuation
 		if strings.ContainsRune(singlePunctuations, r) {
-			// 替换为空格，但避免连续空格
+			// Replace with space, avoiding consecutive spaces
 			if len(result) > 0 && !unicode.IsSpace(result[len(result)-1]) {
 				result = append(result, ' ')
 			}
@@ -354,21 +356,21 @@ func BeautifyAsianLanguageSentence(input string) string {
 	return strings.TrimSpace(string(result))
 }
 
-// SplitTextSentences 将文本按常见的半全角分隔符号切分成句子，会考虑一些特殊的不用切分的情况
-// maxChars: 最小字符数，完整句子小于此字符数时不切割，否则连逗号也要切割
-// 使用示例:
+// SplitTextSentences splits text into sentences by common full/half-width delimiters, considering special cases that shouldn't be split
+// maxChars: Minimum characters; full sentences smaller than this are not split, otherwise even commas trigger splits
+// Usage example:
 //
-//	SplitTextSentences("你好,世界!", 5)  // 返回: ["你好,世界!"] (不切割，因为总字符数<5)
-//	SplitTextSentences("这是一个很长的句子,包含很多内容。", 10) // 返回: ["这是一个很长的句子", "包含很多内容。"] (切割逗号)
+//	SplitTextSentences("Hello, World!", 5)  // Returns: ["Hello, World!"] (Not split because total characters < 5)
+//	SplitTextSentences("This is a very long sentence, containing a lot of content.", 10) // Returns: ["This is a very long sentence", "containing a lot of content."] (Split by comma)
 func SplitTextSentences(text string, maxChars int) []string {
 	if strings.TrimSpace(text) == "" {
 		return []string{}
 	}
 
-	// 第一步：保护特殊模式（数字、时间、缩写等）
+	// Step 1: Protect special patterns (numbers, times, abbreviations, etc.)
 	text = protectSpecialNumbers(text)
 
-	// 第二步：智能切割 - 首先按完整句子分割
+	// Step 2: Intelligent splitting - First split by complete sentences
 	completeSentences := splitByCompleteSentences(text)
 
 	var result []string
@@ -378,15 +380,15 @@ func SplitTextSentences(text string, maxChars int) []string {
 			continue
 		}
 
-		// 统计有效字符数（排除标点和空格）
+		// Count effective characters (excluding punctuation and spaces)
 		effectiveChars := CountEffectiveChars(sentence)
 
-		// 如果完整句子小于最小字符数，不切割
+		// If the complete sentence is smaller than the minimum character count, don't split
 		if effectiveChars < maxChars {
 			cleaned := restoreProtectedPatterns(sentence)
 			result = append(result, strings.TrimSpace(cleaned))
 		} else {
-			// 完整句子过长，需要进一步按逗号等标点切割
+			// Full sentence is too long, need to split further by commas or other punctuation
 			subSentences := splitByAllPunctuation(sentence)
 			merged := mergeShortSentences(subSentences, 20, maxChars)
 
@@ -403,15 +405,15 @@ func SplitTextSentences(text string, maxChars int) []string {
 	return result
 }
 
-// protectedPatterns 存储被保护的模式
+// protectedPatterns stores protected patterns
 var protectedPatterns map[string]string
 
-// protectSpecialNumbers 保护数字、时间、缩写等不被误切
+// protectSpecialNumbers protects numbers, times, abbreviations, etc., from being mis-cut
 func protectSpecialNumbers(text string) string {
 	protectedPatterns = make(map[string]string)
 
-	// 使用更直接的方法来保护列表编号模式
-	// 先处理特定的模式，如 "1.value", "2.be", "3.give" 等
+	// Use a more direct method to protect list numbering patterns
+	// Process specific patterns first, like "1.value", "2.be", "3.give", etc.
 	listNumberPattern := regexp.MustCompile(`\b\d+\.[a-zA-Z]`)
 	text = listNumberPattern.ReplaceAllStringFunc(text, func(match string) string {
 		placeholder := fmt.Sprintf("\uE000%d\uE000", len(protectedPatterns))
@@ -423,25 +425,25 @@ func protectSpecialNumbers(text string) string {
 		regex *regexp.Regexp
 		name  string
 	}{
-		// 保护域名和网址（如 .com, .org, .net 等）
+		// Protect domains and URLs (e.g., .com, .org, .net, etc.)
 		{regexp.MustCompile(`\b[a-zA-Z0-9-]+\.(?:com|org|net|edu|gov|mil|int|co|io|ai|me|tv|fm|am|pm|uk|cn|jp|de|fr|it|es|ru|in|au|ca|br|mx|ar|cl|pe|ve|ec|py|uy|bo|gf|sr|gy|fk|gs|sh|ac|ad|ae|af|ag|al|am|an|ao|aq|as|at|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|cc|cd|cf|cg|ch|ci|ck|cm|co|cr|cs|cu|cv|cx|cy|cz|dj|dk|dm|do|dz|eg|eh|er|et|eu|fi|fj|fk|fo|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|iq|ir|is|je|jm|jo|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|qa|re|ro|rs|rw|sa|sb|sc|sd|se|sg|si|sj|sk|sl|sm|sn|so|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tz|ua|ug|um|us|uy|uz|va|vc|vg|vi|vn|vu|wf|ws|ye|yt|za|zm|zw)\b`), "domain"},
-		// 保护 a.m., p.m., A.M., P.M. 这类缩写
+		// Protect abbreviations like a.m., p.m., A.M., P.M.
 		{regexp.MustCompile(`(?i)\b[ap]\.m\.`), "ampm"},
-		// 时间格式
+		// Time format
 		{regexp.MustCompile(`\b\d{1,2}[:\.]\d{2}\s*(?:[ap]\.?m\.?|AM|PM)?\b`), "time"},
-		// 小数（包括多位小数）
+		// Decimals (including multi-digit decimals)
 		{regexp.MustCompile(`\b\d+\.\d+\b`), "decimal"},
-		// 千位分隔符
+		// Thousands separator
 		{regexp.MustCompile(`\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b`), "thousands"},
-		// 版本号（如 1.0, 2.5.1 等）
+		// Version numbers (e.g., 1.0, 2.5.1, etc.)
 		{regexp.MustCompile(`\b\d+(?:\.\d+)+\b`), "version"},
-		// 英文缩写
+		// English abbreviations
 		{regexp.MustCompile(`\b(?:[A-Z][a-z]*\.){2,}|(?:[A-Z]\.){2,}[A-Z]?\b`), "abbrev"},
-		// Mr., Mrs., Dr. 等称谓
+		// Titles like Mr., Mrs., Dr., etc.
 		{regexp.MustCompile(`\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr)\.`), "title"},
-		// 列表编号（如 1., 2., 3. 等）- 数字+点+空格
+		// List numbering (e.g., 1., 2., 3., etc.) - Number + Dot + Space
 		{regexp.MustCompile(`\b\d+\.\s`), "list_number_with_space"},
-		// 字母编号（如 a., b., c. 等）
+		// Letter numbering (e.g., a., b., c., etc.)
 		{regexp.MustCompile(`\b[a-zA-Z]\.\s`), "letter_number_with_space"},
 	}
 
@@ -456,27 +458,27 @@ func protectSpecialNumbers(text string) string {
 	return text
 }
 
-// splitByCompleteSentences 按完整句子标点分割（句号、感叹号、问号等）
+// splitByCompleteSentences splits by complete sentence punctuation (period, exclamation, question mark, etc.)
 func splitByCompleteSentences(text string) []string {
-	// 只按句末标点分割，不包含逗号
+	// Split only by end-of-sentence punctuation, excluding commas
 	completeSentenceMarkers := []string{
 		".", "!", "?", "。", "！", "？", "；", "\n", "\r\n",
 	}
 
-	// 创建正则表达式模式
+	// Create regex pattern
 	var patterns []string
 	for _, marker := range completeSentenceMarkers {
 		patterns = append(patterns, regexp.QuoteMeta(marker))
 	}
 
-	// 匹配连续的句末标点符号
+	// Match consecutive end-of-sentence punctuation marks
 	regexPattern := fmt.Sprintf(`([%s]+)`, strings.Join(patterns, ""))
 	regex := regexp.MustCompile(regexPattern)
 
-	// 在标点符号后添加分隔符
+	// Add separator after punctuation marks
 	text = regex.ReplaceAllString(text, "${1}\uE001")
 
-	// 按分隔符分割
+	// Split by separator
 	parts := strings.Split(text, "\uE001")
 
 	var segments []string
@@ -490,40 +492,40 @@ func splitByCompleteSentences(text string) []string {
 	return segments
 }
 
-// countEffectiveChars 统计有效字符数（排除标点和空格）
+// countEffectiveChars counts effective characters (excluding punctuation and spaces)
 func CountEffectiveChars(text string) int {
 	effectiveText := regexp.MustCompile(`[^\p{L}\p{N}]`).ReplaceAllString(text, "")
 	return len([]rune(effectiveText))
 }
 
-// splitByAllPunctuation 按所有标点符号分割文本
+// splitByAllPunctuation splits text by all punctuation marks
 func splitByAllPunctuation(text string) []string {
-	// 注意：这里的text已经在SplitTextSentences中被保护过了，不需要再次保护
+	// Note: text here has already been protected in SplitTextSentences, no need to protect again
 
-	// 定义分割标点符号（包括中英文标点）
+	// Define splitting punctuation marks (including CJK and Latin)
 	punctuationMarkers := []string{
-		// 句末标点
+		// End-of-sentence punctuation
 		".", "!", "?", "；", "。", "！", "？", "；",
-		// 句内标点（也要分割）
+		// Intra-sentence punctuation (to be split)
 		",", "，", ";",
-		// 换行符
+		// Newline characters
 		"\n", "\r\n",
 	}
 
-	// 创建正则表达式模式
+	// Create regex pattern
 	var patterns []string
 	for _, marker := range punctuationMarkers {
 		patterns = append(patterns, regexp.QuoteMeta(marker))
 	}
 
-	// 匹配连续的标点符号
+	// Match consecutive punctuation marks
 	regexPattern := fmt.Sprintf(`([%s]+)`, strings.Join(patterns, ""))
 	regex := regexp.MustCompile(regexPattern)
 
-	// 在标点符号后添加分隔符
+	// Add separator after punctuation marks
 	text = regex.ReplaceAllString(text, "${1}\uE001")
 
-	// 按分隔符分割
+	// Split by separator
 	parts := strings.Split(text, "\uE001")
 
 	var segments []string
@@ -537,9 +539,9 @@ func splitByAllPunctuation(text string) []string {
 	return segments
 }
 
-// mergeShortSentences 合并过短的句子
-// maxChars: 最小字符数，句子小于此值时考虑合并
-// maxChars: 最大字符数，合并后的句子不能超过此值
+// mergeShortSentences merges sentences that are too short
+// minChars: Minimum characters; consider merging if below this value
+// maxChars: Maximum characters; merged sentence cannot exceed this value
 func mergeShortSentences(segments []string, minChars, maxChars int) []string {
 	if len(segments) == 0 {
 		return segments
@@ -554,7 +556,7 @@ func mergeShortSentences(segments []string, minChars, maxChars int) []string {
 			continue
 		}
 
-		// 添加到当前句子
+		// Add to current sentence
 		if current.Len() > 0 {
 			current.WriteString(" ")
 		}
@@ -563,29 +565,29 @@ func mergeShortSentences(segments []string, minChars, maxChars int) []string {
 		currentText := current.String()
 		currentEffectiveChars := CountEffectiveChars(currentText)
 
-		// 检查是否应该合并下一个片段
+		// Check if the next segment should be merged
 		shouldMerge := false
-		if i < len(segments)-1 { // 还有下一个片段
+		if i < len(segments)-1 { // Still more segments
 			nextSegment := strings.TrimSpace(segments[i+1])
 			if nextSegment != "" {
-				// 计算合并后的长度
+				// Calculate merged length
 				potentialMerged := currentText + " " + nextSegment
 				mergedEffectiveChars := CountEffectiveChars(potentialMerged)
 
-				// 只有当前句子小于minChars，并且合并后不超过maxChars才合并
+				// Merge only if current sentence is below minChars and merged result is within maxChars
 				shouldMerge = currentEffectiveChars < minChars && mergedEffectiveChars <= maxChars
 			}
 		}
 
 		if !shouldMerge {
-			// 不合并，输出当前句子并重置
+			// No merge; output current sentence and reset
 			result = append(result, strings.TrimSpace(currentText))
 			current.Reset()
 		}
-		// 如果shouldMerge为true，继续循环到下一个片段进行合并
+		// If shouldMerge is true, continue to the next segment for merging
 	}
 
-	// 处理最后的片段
+	// Handle the final segment
 	if current.Len() > 0 {
 		result = append(result, strings.TrimSpace(current.String()))
 	}
@@ -593,24 +595,24 @@ func mergeShortSentences(segments []string, minChars, maxChars int) []string {
 	return result
 }
 
-// isTooShort 判断句子是否过短需要合并
+// isTooShort determines if a sentence is too short and needs merging
 func isTooShort(text string, maxChars int) bool {
 	text = strings.TrimSpace(text)
 
-	// 计算有效字符数（排除标点和空格）
+	// Count effective characters (excluding punctuation and spaces)
 	effectiveChars := CountEffectiveChars(text)
 
-	// 如果有效字符少于最小字符数，认为过短
+	// If effective characters are fewer than minChars, it's considered too short
 	if effectiveChars < maxChars {
 		return true
 	}
 
-	// 如果只有一个单词，也认为过短（除非已经达到最小字符数）
+	// If there's only one word, it's also considered too short (unless minChars is reached)
 	words := strings.Fields(text)
 	return len(words) <= 1 && effectiveChars < maxChars
 }
 
-// restoreProtectedPatterns 恢复被保护的模式
+// restoreProtectedPatterns restores protected patterns
 func restoreProtectedPatterns(text string) string {
 	for placeholder, original := range protectedPatterns {
 		text = strings.ReplaceAll(text, placeholder, original)
@@ -618,7 +620,7 @@ func restoreProtectedPatterns(text string) string {
 	return text
 }
 
-// 将start和end转换为指定格式
+// Convert start and end to specified format
 func ConvertTimes(start, end float32) string {
 	startTime := FormatTime(start)
 	endTime := FormatTime(end)

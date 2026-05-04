@@ -17,6 +17,7 @@ type StartVideoSubtitleTaskReq struct {
 	VerticalMajorTitle        string   `json:"vertical_major_title"`
 	VerticalMinorTitle        string   `json:"vertical_minor_title"`
 	OriginLanguageWordOneLine int      `json:"origin_language_word_one_line"`
+	EnableReview              bool     `json:"enable_review"` // If true, pipeline pauses for subtitle review before TTS
 }
 
 type StartVideoSubtitleTaskResData struct {
@@ -49,14 +50,22 @@ type SubtitleInfo struct {
 type GetVideoSubtitleTaskResData struct {
 	TaskId            string          `json:"task_id"`
 	ProcessPercent    uint8           `json:"process_percent"`
+	Status            string          `json:"status"` // "processing", "waiting_review", "success", "failed"
 	VideoInfo         *VideoInfo      `json:"video_info"`
 	SubtitleInfo      []*SubtitleInfo `json:"subtitle_info"`
 	TargetLanguage    string          `json:"target_language"`
 	SpeechDownloadUrl string          `json:"speech_download_url"`
+	ReviewSrtContent  string          `json:"review_srt_content,omitempty"` // SRT content for user to review/edit
 }
 
 type GetVideoSubtitleTaskRes struct {
 	Error int32                        `json:"error"`
 	Msg   string                       `json:"msg"`
 	Data  *GetVideoSubtitleTaskResData `json:"data"`
+}
+
+// ApproveReviewReq is submitted by the user when they are done reviewing/editing subtitles
+type ApproveReviewReq struct {
+	TaskId         string `json:"task_id"`
+	EditedSrtContent string `json:"edited_srt_content"` // The (potentially edited) SRT content
 }

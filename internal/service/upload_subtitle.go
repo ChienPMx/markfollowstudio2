@@ -14,7 +14,7 @@ func (s Service) uploadSubtitles(ctx context.Context, stepParam *types.SubtitleT
 	var err error
 	for _, info := range stepParam.SubtitleInfos {
 		resultPath := info.Path
-		if len(stepParam.ReplaceWordsMap) > 0 { // 需要进行替换
+		if len(stepParam.ReplaceWordsMap) > 0 { // Words replacement required
 			replacedSrcFile := util.AddSuffixToFileName(resultPath, "_replaced")
 			err = util.ReplaceFileContent(resultPath, replacedSrcFile, stepParam.ReplaceWordsMap)
 			if err != nil {
@@ -29,12 +29,12 @@ func (s Service) uploadSubtitles(ctx context.Context, stepParam *types.SubtitleT
 			DownloadUrl: "/api/file/" + resultPath,
 		})
 	}
-	// 更新字幕任务信息
+	// Update subtitle task info
 	taskPtr := stepParam.TaskPtr
 	taskPtr.SubtitleInfos = subtitleInfos
 	taskPtr.Status = types.SubtitleTaskStatusSuccess
 	taskPtr.ProcessPct = 100
-	// 配音文件
+	// Voiceover file
 	if stepParam.TtsResultFilePath != "" {
 		taskPtr.SpeechDownloadUrl = "/api/file/" + stepParam.TtsResultFilePath
 	}

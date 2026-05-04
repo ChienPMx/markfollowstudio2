@@ -7,90 +7,92 @@ import (
 	"time"
 )
 
-// WordReplacement 词语替换
+// WordReplacement represents a word replacement pair
 type WordReplacement struct {
 	From string `json:"from"`
 	To   string `json:"to"`
 }
 
-// SubtitleTask 字幕任务
+// SubtitleTask represents a subtitle generation task
 type SubtitleTask struct {
-	URL                     string   `json:"url"`                                    // 视频URL
-	Language                string   `json:"language"`                               // 界面语言
-	OriginLang              string   `json:"origin_lang"`                            // 源语言
-	TargetLang              string   `json:"target_lang"`                            // 目标语言
-	Bilingual               int      `json:"bilingual"`                              // 是否双语 1:是 2:否
-	TranslationSubtitlePos  int      `json:"translation_subtitle_pos"`               // 翻译字幕位置 1:上方 2:下方
-	TTS                     int      `json:"tts"`                                    // 是否配音 1:是 2:否
-	TTSVoiceCode            string   `json:"tts_voice_code,omitempty"`               // 配音声音代码
-	TTSVoiceCloneSrcFileURL string   `json:"tts_voice_clone_src_file_url,omitempty"` // 音色克隆源文件URL
-	ModalFilter             int      `json:"modal_filter"`                           // 是否过滤语气词 1:是 2:否
-	Replace                 []string `json:"replace,omitempty"`                      // 词汇替换列表
-	EmbedSubtitleVideoType  string   `json:"embed_subtitle_video_type"`              // 字幕嵌入视频类型 none:不嵌入 horizontal:横屏 vertical:竖屏 all:全部
-	VerticalMajorTitle      string   `json:"vertical_major_title,omitempty"`         // 竖屏主标题
-	VerticalMinorTitle      string   `json:"vertical_minor_title,omitempty"`         // 竖屏副标题
+	URL                     string   `json:"url"`                                    // Video URL
+	Language                string   `json:"language"`                               // Interface Language
+	OriginLang              string   `json:"origin_lang"`                            // Source Language
+	TargetLang              string   `json:"target_lang"`                            // Target Language
+	Bilingual               int      `json:"bilingual"`                              // Is Bilingual 1:Yes 2:No
+	TranslationSubtitlePos  int      `json:"translation_subtitle_pos"`               // Translation Subtitle Position 1:Top 2:Bottom
+	TTS                     int      `json:"tts"`                                    // Is Dubbing 1:Yes 2:No
+	TTSVoiceCode            string   `json:"tts_voice_code,omitempty"`               // Dubbing Voice Code
+	TTSVoiceCloneSrcFileURL string   `json:"tts_voice_clone_src_file_url,omitempty"` // Voice Clone Source File URL
+	ModalFilter             int      `json:"modal_filter"`                           // Filter Filler Words 1:Yes 2:No
+	Replace                 []string `json:"replace,omitempty"`                      // Word Replacement List
+	EmbedSubtitleVideoType  string   `json:"embed_subtitle_video_type"`              // Subtitle Embedding Type: none, horizontal, vertical, all
+	VerticalMajorTitle      string   `json:"vertical_major_title,omitempty"`         // Vertical Video Major Title
+	VerticalMinorTitle      string   `json:"vertical_minor_title,omitempty"`         // Vertical Video Minor Title
+	EnableReview            bool     `json:"enable_review"`                          // Pause pipeline for subtitle review before TTS
 }
 
-// SubtitleResult 字幕结果
+// SubtitleResult represents the result of a subtitle generation
 type SubtitleResult struct {
-	Name        string `json:"name"`         // 文件名
-	DownloadURL string `json:"download_url"` // 下载URL
+	Name        string `json:"name"`         // Filename
+	DownloadURL string `json:"download_url"` // Download URL
 }
 
-// TaskStatus 任务状态
+// TaskStatus represents the current status of a task
 type TaskStatus struct {
-	TaskId            string           `json:"task_id"`             // 任务ID
-	ProcessPercent    int              `json:"process_percent"`     // 处理进度百分比
-	Status            string           `json:"status"`              // 任务状态
-	Message           string           `json:"message"`             // 状态消息
-	SubtitleInfo      []SubtitleResult `json:"subtitle_info"`       // 字幕信息
-	SpeechDownloadURL string           `json:"speech_download_url"` // 配音下载URL
+	TaskId            string           `json:"task_id"`             // Task ID
+	ProcessPercent    int              `json:"process_percent"`     // Progress Percentage
+	Status            string           `json:"status"`              // Task Status
+	Message           string           `json:"message"`             // Status Message
+	SubtitleInfo      []SubtitleResult `json:"subtitle_info"`       // Subtitle Information
+	SpeechDownloadURL string           `json:"speech_download_url"` // Dubbing Download URL
+	ReviewSrtContent  string           `json:"review_srt_content"`  // SRT content for user to review/edit
 }
 
-// CreateSubtitleTask 创建字幕任务
+// CreateSubtitleTask creates a new subtitle task
 func CreateSubtitleTask(task *SubtitleTask) (*TaskStatus, error) {
-	// 生成任务ID
+	// Generate Task ID
 	taskId := generateTaskId()
 
-	// 创建任务目录
+	// Create Task Directory
 	taskDir := filepath.Join("tasks", taskId)
 	if err := createTaskDirectory(taskDir); err != nil {
-		return nil, fmt.Errorf("创建任务目录失败: %v", err)
+		return nil, fmt.Errorf("Failed to create task directory: %v", err)
 	}
 
-	// 启动异步任务处理
+	// Start asynchronous task processing
 	go processTask(taskId, task)
 
 	return &TaskStatus{
 		TaskId:         taskId,
 		ProcessPercent: 0,
 		Status:         "created",
-		Message:        "任务已创建",
+		Message:        "Task created",
 	}, nil
 }
 
-// GetSubtitleTaskStatus 获取任务状态
+// GetSubtitleTaskStatus retrieves the status of a subtitle task
 func GetSubtitleTaskStatus(taskId string) (*TaskStatus, error) {
-	// 获取任务状态
+	// Get task status
 	status, err := getTaskStatus(taskId)
 	if err != nil {
-		return nil, fmt.Errorf("获取任务状态失败: %v", err)
+		return nil, fmt.Errorf("Failed to get task status: %v", err)
 	}
 
-	// 如果任务完成，添加下载链接
+	// If task complete, add download links
 	if status.ProcessPercent >= 100 {
 		status.SubtitleInfo = []SubtitleResult{
 			{
-				Name:        "字幕.srt",
+				Name:        "subtitle.srt",
 				DownloadURL: fmt.Sprintf("/tasks/%s/output/subtitle.srt", taskId),
 			},
 			{
-				Name:        "字幕.ass",
+				Name:        "subtitle.ass",
 				DownloadURL: fmt.Sprintf("/tasks/%s/output/subtitle.ass", taskId),
 			},
 		}
 
-		// 如果启用了配音，添加配音下载链接
+		// If dubbing enabled, add dubbing download link
 		if status.SpeechDownloadURL == "" {
 			status.SpeechDownloadURL = fmt.Sprintf("/tasks/%s/output/speech.mp3", taskId)
 		}
@@ -99,35 +101,35 @@ func GetSubtitleTaskStatus(taskId string) (*TaskStatus, error) {
 	return status, nil
 }
 
-// 以下是辅助函数，需要在实际使用时实现
+// Helper functions to be implemented
 func generateTaskId() string {
-	// TODO: 实现任务ID生成逻辑
+	// TODO: Implement task ID generation logic
 	return "task-" + time.Now().Format("20060102150405")
 }
 
 func createTaskDirectory(taskDir string) error {
-	// TODO: 实现任务目录创建逻辑
+	// TODO: Implement task directory creation logic
 	return os.MkdirAll(taskDir, 0755)
 }
 
 func processTask(taskId string, task *SubtitleTask) {
-	// TODO: 实现任务处理逻辑
-	// 1. 下载视频
-	// 2. 提取音频
-	// 3. 语音识别
-	// 4. 翻译字幕
-	// 5. 生成字幕文件
-	// 6. 如果需要，生成配音
-	// 7. 如果需要，嵌入字幕到视频
-	// 8. 更新任务状态
+	// TODO: Implement task processing logic
+	// 1. Download video
+	// 2. Extract audio
+	// 3. Speech recognition
+	// 4. Translate subtitles
+	// 5. Generate subtitle files
+	// 6. Generate dubbing if needed
+	// 7. Embed subtitles into video if needed
+	// 8. Update task status
 }
 
 func getTaskStatus(taskId string) (*TaskStatus, error) {
-	// TODO: 实现任务状态获取逻辑
+	// TODO: Implement task status retrieval logic
 	return &TaskStatus{
 		TaskId:         taskId,
 		ProcessPercent: 50,
 		Status:         "processing",
-		Message:        "正在处理中",
+		Message:        "Processing",
 	}, nil
 }

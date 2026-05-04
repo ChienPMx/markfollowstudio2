@@ -31,13 +31,13 @@ func (s Service) embedSubtitles(ctx context.Context, stepParam *types.SubtitleTa
 			return fmt.Errorf("embedSubtitles getResolution error: %w", err)
 		}
 
-		// 横屏可以合成竖屏的，但竖屏暂时不支持合成横屏的
+		// Landscape can be converted to portrait, but portrait to landscape is not supported yet.
 		if stepParam.EmbedSubtitleVideoType == "horizontal" || stepParam.EmbedSubtitleVideoType == "all" {
 			if width < height {
-				log.GetLogger().Info("检测到输入视频是竖屏，无法合成横屏视频，跳过")
+				log.GetLogger().Info("Input video is vertical, cannot create landscape video, skipping...")
 				return nil
 			}
-			log.GetLogger().Info("合成视频：横屏")
+			log.GetLogger().Info("Generating video: Landscape")
 			err = embedSubtitles(stepParam, true, stepParam.EnableTts)
 			if err != nil {
 				log.GetLogger().Error("embedSubtitles embedSubtitles error", zap.Any("step param", stepParam), zap.Error(err))
@@ -46,7 +46,7 @@ func (s Service) embedSubtitles(ctx context.Context, stepParam *types.SubtitleTa
 		}
 		if stepParam.EmbedSubtitleVideoType == "vertical" || stepParam.EmbedSubtitleVideoType == "all" {
 			if width > height {
-				// 生成竖屏视频
+				// Generate portrait video
 				transferredVerticalVideoPath := filepath.Join(stepParam.TaskBasePath, types.SubtitleTaskTransferredVerticalVideoFileName)
 				err = convertToVertical(stepParam.InputVideoPath, transferredVerticalVideoPath, stepParam.VerticalVideoMajorTitle, stepParam.VerticalVideoMinorTitle)
 				if err != nil {
@@ -55,22 +55,22 @@ func (s Service) embedSubtitles(ctx context.Context, stepParam *types.SubtitleTa
 				}
 				stepParam.InputVideoPath = transferredVerticalVideoPath
 			}
-			log.GetLogger().Info("合成视频：竖屏")
+			log.GetLogger().Info("Generating video: Portrait")
 			err = embedSubtitles(stepParam, false, stepParam.EnableTts)
 			if err != nil {
 				log.GetLogger().Error("embedSubtitles embedSubtitles error", zap.Any("step param", stepParam), zap.Error(err))
 				return fmt.Errorf("embedSubtitles embedSubtitles error: %w", err)
 			}
 		}
-		log.GetLogger().Info("字幕嵌入视频成功")
+		log.GetLogger().Info("Successfully embedded subtitles into video")
 		return nil
 	}
-	log.GetLogger().Info("合成视频：不合成")
+	log.GetLogger().Info("Generating video: No embedding")
 	return nil
 }
 
 func splitMajorTextInHorizontal(text string, language types.StandardLanguageCode, maxWordOneLine int) []string {
-	// 按语言情况分割
+	// Split based on language
 	var (
 		segments []string
 		sep      string
@@ -86,12 +86,12 @@ func splitMajorTextInHorizontal(text string, language types.StandardLanguageCode
 
 	totalWidth := len(segments)
 
-	// 直接返回原句子
+	// Return original sentence directly
 	if totalWidth <= maxWordOneLine {
 		return []string{text}
 	}
 
-	// 确定拆分点，按2/5和3/5的比例拆分
+	// Determine split point, splitting by 2/5 and 3/5 ratio.
 	line1MaxWidth := int(float64(totalWidth) * 2 / 5)
 	currentWidth := 0
 	splitIndex := 0
@@ -99,14 +99,14 @@ func splitMajorTextInHorizontal(text string, language types.StandardLanguageCode
 	for i := range segments {
 		currentWidth++
 
-		// 当达到 2/5 宽度时，设置拆分点
+		// Set split point when reaching 2/5 width.
 		if currentWidth >= line1MaxWidth {
 			splitIndex = i + 1
 			break
 		}
 	}
 
-	// 分割文本，保留原有句子格式
+	// Split text while preserving original sentence format.
 
 	line1 := util.CleanPunction(strings.Join(segments[:splitIndex], sep))
 	line2 := util.CleanPunction(strings.Join(segments[splitIndex:], sep))
@@ -194,14 +194,14 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 			if line == "" {
 				continue
 			}
-			// 读取时间戳行
+			// Read timestamp line
 			if !scanner.Scan() {
 				break
 			}
 			timestampLine := scanner.Text()
 			parts := strings.Split(timestampLine, " --> ")
 			if len(parts) != 2 {
-				continue // 无效时间戳格式
+				continue // Invalid timestamp format
 			}
 
 			startTimeStr := strings.TrimSpace(parts[0])
@@ -221,7 +221,7 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 			for scanner.Scan() {
 				textLine := scanner.Text()
 				if textLine == "" {
-					break // 字幕块结束
+					break // End of subtitle block
 				}
 				subtitleLines = append(subtitleLines, textLine)
 			}
@@ -230,7 +230,7 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 				continue
 			}
 			//var majorTextLanguage types.StandardLanguageCode
-			//if stepParam.SubtitleResultType == types.SubtitleResultTypeBilingualTranslationOnTop { // 一定是bilingual
+			//if stepParam.SubtitleResultType == types.SubtitleResultTypeBilingualTranslationOnTop { // Must be bilingual
 			//	majorTextLanguage = stepParam.TargetLanguage
 			//} else {
 			//	majorTextLanguage = stepParam.OriginLanguage
@@ -238,14 +238,14 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 
 			//majorLine := strings.Join(splitMajorTextInHorizontal(subtitleLines[0], majorTextLanguage, stepParam.MaxWordOneLine), "      \\N")
 
-			// ASS条目
+			// ASS entry
 			startFormatted := formatTimestamp(startTime)
 			endFormatted := formatTimestamp(endTime)
 			combinedText := fmt.Sprintf("{\\an2}{\\rMajor}%s\\N{\\rMinor}%s", subtitleLines[0], util.CleanPunction(subtitleLines[1]))
 			_, _ = assFile.WriteString(fmt.Sprintf("Dialogue: 0,%s,%s,Major,,0,0,0,,%s\n", startFormatted, endFormatted, combinedText))
 		}
 	} else {
-		// TODO 竖屏拆分调优
+		// TODO portrait split tuning
 		_, _ = assFile.WriteString(types.AssHeaderVertical)
 		for scanner.Scan() {
 			line := scanner.Text()
@@ -258,7 +258,7 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 			timestampLine := scanner.Text()
 			parts := strings.Split(timestampLine, " --> ")
 			if len(parts) != 2 {
-				continue // 无效时间戳格式
+				continue // Invalid timestamp format
 			}
 
 			startTimeStr := strings.TrimSpace(parts[0])
@@ -281,7 +281,7 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 			totalTime := endTime - startTime
 
 			if !util.ContainsAlphabetic(content) {
-				// 处理中文字幕
+				// Handle CJK subtitles
 				chineseLines := splitChineseText(content, 10)
 				for i, line := range chineseLines {
 					iStart := startTime + time.Duration(float64(i)*float64(totalTime)/float64(len(chineseLines)))
@@ -297,7 +297,7 @@ func srtToAss(inputSRT, outputASS string, isHorizontal bool, stepParam *types.Su
 					_, _ = assFile.WriteString(fmt.Sprintf("Dialogue: 0,%s,%s,Major,,0,0,0,,%s\n", startFormatted, endFormatted, combinedText))
 				}
 			} else {
-				// 处理英文字幕
+				// Handle Latin subtitles
 				startFormatted := formatTimestamp(startTime)
 				endFormatted := formatTimestamp(endTime)
 				cleanedText := util.CleanPunction(content)
@@ -337,7 +337,7 @@ func embedSubtitles(stepParam *types.SubtitleTaskStepParam, isHorizontal bool, w
 func getFontPaths() (string, string, error) {
 	switch runtime.GOOS {
 	case "windows":
-		return "C\\:/Windows/Fonts/msyhbd.ttc", "C\\:/Windows/Fonts/msyh.ttc", nil // 在ffmpeg参数里必须这样写
+		return "C\\:/Windows/Fonts/msyhbd.ttc", "C\\:/Windows/Fonts/msyh.ttc", nil // Must be written like this in ffmpeg parameters
 	case "darwin":
 		return "/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/System/Library/Fonts/Supplemental/Arial.ttf", nil
 	case "linux":
@@ -348,7 +348,7 @@ func getFontPaths() (string, string, error) {
 }
 
 func getResolution(inputVideo string) (int, int, error) {
-	// 获取视频信息
+	// Get video information
 	cmdArgs := []string{
 		"-v", "error",
 		"-select_streams", "v:0",
@@ -362,17 +362,17 @@ func getResolution(inputVideo string) (int, int, error) {
 	cmd.Stderr = &out
 
 	if err := cmd.Run(); err != nil {
-		log.GetLogger().Error("获取视频分辨率失败", zap.String("output", out.String()), zap.Error(err))
+		log.GetLogger().Error("Failed to get video resolution", zap.String("output", out.String()), zap.Error(err))
 		return 0, 0, err
 	}
 
 	output := strings.TrimSpace(out.String())
-	output = strings.TrimSuffix(output, "x") // 去除尾部可能存在的x,例如1920x1080x
+	output = strings.TrimSuffix(output, "x") // Remove trailing 'x', e.g., 1920x1080x
 
 	re := regexp.MustCompile(`^(\d+)x(\d+)$`)
 	dimensions := re.FindStringSubmatch(output)
 	if len(dimensions) != 3 {
-		log.GetLogger().Error("获取视频分辨率失败", zap.String("output", output))
+		log.GetLogger().Error("Failed to get video resolution", zap.String("output", output))
 		return 0, 0, fmt.Errorf("invalid resolution format: %s", output)
 	}
 
@@ -383,13 +383,13 @@ func getResolution(inputVideo string) (int, int, error) {
 
 func convertToVertical(inputVideo, outputVideo, majorTitle, minorTitle string) error {
 	if _, err := os.Stat(outputVideo); err == nil {
-		log.GetLogger().Info("竖屏视频已存在", zap.String("outputVideo", outputVideo))
+		log.GetLogger().Info("Portrait video already exists", zap.String("outputVideo", outputVideo))
 		return nil
 	}
 
 	fontBold, fontRegular, err := getFontPaths()
 	if err != nil {
-		log.GetLogger().Error("获取字体路径失败", zap.Error(err))
+		log.GetLogger().Error("Failed to get font paths", zap.Error(err))
 		return err
 	}
 
@@ -410,10 +410,10 @@ func convertToVertical(inputVideo, outputVideo, majorTitle, minorTitle string) e
 	var output []byte
 	output, err = cmd.CombinedOutput()
 	if err != nil {
-		log.GetLogger().Error("视频转竖屏失败", zap.String("output", string(output)), zap.Error(err))
+		log.GetLogger().Error("Failed to convert video to portrait", zap.String("output", string(output)), zap.Error(err))
 		return err
 	}
 
-	fmt.Printf("竖屏视频已保存到: %s\n", outputVideo)
+	fmt.Printf("Portrait video saved to: %s\n", outputVideo)
 	return nil
 }

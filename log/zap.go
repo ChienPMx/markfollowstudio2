@@ -11,7 +11,7 @@ var Logger *zap.Logger
 func InitLogger() {
 	file, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		panic("无法打开日志文件: " + err.Error())
+		panic("Failed to open log file: " + err.Error())
 	}
 
 	fileSyncer := zapcore.AddSync(file)
@@ -21,8 +21,8 @@ func InitLogger() {
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
 	core := zapcore.NewTee(
-		zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), fileSyncer, zap.DebugLevel),      // 写入文件（JSON 格式）
-		zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), consoleSyncer, zap.InfoLevel), // 输出到终端
+		zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), fileSyncer, zap.DebugLevel),      // Write to file (JSON format)
+		zapcore.NewCore(zapcore.NewConsoleEncoder(encoderConfig), consoleSyncer, zap.InfoLevel), // Output to console
 	)
 
 	Logger = zap.New(core, zap.AddCaller())

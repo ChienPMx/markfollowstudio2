@@ -9,10 +9,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// 全局变量，用于标记配置是否需要重新初始化
+// Global variable to mark if configuration needs re-initialization
 var configUpdated bool
 
-// ConfigRequest 定义前端发送的配置数据结构
+// ConfigRequest defines the configuration data structure from frontend
 type ConfigRequest struct {
 	App struct {
 		SegmentDuration       int    `json:"segmentDuration"`
@@ -49,18 +49,6 @@ type ConfigRequest struct {
 		Whispercpp struct {
 			Model string `json:"model"`
 		} `json:"whispercpp"`
-		Aliyun struct {
-			Oss struct {
-				AccessKeyId     string `json:"accessKeyId"`
-				AccessKeySecret string `json:"accessKeySecret"`
-				Bucket          string `json:"bucket"`
-			} `json:"oss"`
-			Speech struct {
-				AccessKeyId     string `json:"accessKeyId"`
-				AccessKeySecret string `json:"accessKeySecret"`
-				AppKey          string `json:"appKey"`
-			} `json:"speech"`
-		} `json:"aliyun"`
 	} `json:"transcribe"`
 	Tts struct {
 		Provider string `json:"provider"`
@@ -68,27 +56,28 @@ type ConfigRequest struct {
 			BaseUrl string `json:"baseUrl"`
 			ApiKey  string `json:"apiKey"`
 			Model   string `json:"model"`
+			Voice   string `json:"voice"`
 		} `json:"openai"`
-		Aliyun struct {
-			Oss struct {
-				AccessKeyId     string `json:"accessKeyId"`
-				AccessKeySecret string `json:"accessKeySecret"`
-				Bucket          string `json:"bucket"`
-			} `json:"oss"`
-			Speech struct {
-				AccessKeyId     string `json:"accessKeyId"`
-				AccessKeySecret string `json:"accessKeySecret"`
-				AppKey          string `json:"appKey"`
-			} `json:"speech"`
-		} `json:"aliyun"`
+		EdgeTts struct {
+			Voice string `json:"voice"`
+		} `json:"edge-tts"`
+		VClip struct {
+			ApiKey  string  `json:"apiKey"`
+			VoiceID string  `json:"voiceId"`
+			Speed   float64 `json:"speed"`
+		} `json:"vclip"`
 	} `json:"tts"`
 }
 
-// GetConfig 获取当前配置
+// GetConfig retrieves the current configuration
 func (h Handler) GetConfig(c *gin.Context) {
-	log.GetLogger().Info("获取配置信息")
+	log.GetLogger().Info("Getting configuration info")
 
-	// 转换配置为前端需要的格式
+	if configUpdated {
+		log.GetLogger().Info("Detected config update, re-initializing service...")
+	}
+
+	// Convert configuration to the format needed by frontend
 	configResponse := ConfigRequest{
 		App: struct {
 			SegmentDuration       int    `json:"segmentDuration"`
@@ -125,7 +114,7 @@ func (h Handler) GetConfig(c *gin.Context) {
 		},
 	}
 
-	// 转录配置
+	// Transcribe configuration
 	configResponse.Transcribe.Provider = config.Conf.Transcribe.Provider
 	configResponse.Transcribe.EnableGpuAcceleration = config.Conf.Transcribe.EnableGpuAcceleration
 	configResponse.Transcribe.Openai.BaseUrl = config.Conf.Transcribe.Openai.BaseUrl
@@ -134,54 +123,47 @@ func (h Handler) GetConfig(c *gin.Context) {
 	configResponse.Transcribe.Fasterwhisper.Model = config.Conf.Transcribe.Fasterwhisper.Model
 	configResponse.Transcribe.Whisperkit.Model = config.Conf.Transcribe.Whisperkit.Model
 	configResponse.Transcribe.Whispercpp.Model = config.Conf.Transcribe.Whispercpp.Model
-	configResponse.Transcribe.Aliyun.Oss.AccessKeyId = config.Conf.Transcribe.Aliyun.Oss.AccessKeyId
-	configResponse.Transcribe.Aliyun.Oss.AccessKeySecret = config.Conf.Transcribe.Aliyun.Oss.AccessKeySecret
-	configResponse.Transcribe.Aliyun.Oss.Bucket = config.Conf.Transcribe.Aliyun.Oss.Bucket
-	configResponse.Transcribe.Aliyun.Speech.AccessKeyId = config.Conf.Transcribe.Aliyun.Speech.AccessKeyId
-	configResponse.Transcribe.Aliyun.Speech.AccessKeySecret = config.Conf.Transcribe.Aliyun.Speech.AccessKeySecret
-	configResponse.Transcribe.Aliyun.Speech.AppKey = config.Conf.Transcribe.Aliyun.Speech.AppKey
 
-	// TTS配置
+	// TTS configuration
 	configResponse.Tts.Provider = config.Conf.Tts.Provider
 	configResponse.Tts.Openai.BaseUrl = config.Conf.Tts.Openai.BaseUrl
 	configResponse.Tts.Openai.ApiKey = config.Conf.Tts.Openai.ApiKey
 	configResponse.Tts.Openai.Model = config.Conf.Tts.Openai.Model
-	configResponse.Tts.Aliyun.Oss.AccessKeyId = config.Conf.Tts.Aliyun.Oss.AccessKeyId
-	configResponse.Tts.Aliyun.Oss.AccessKeySecret = config.Conf.Tts.Aliyun.Oss.AccessKeySecret
-	configResponse.Tts.Aliyun.Oss.Bucket = config.Conf.Tts.Aliyun.Oss.Bucket
-	configResponse.Tts.Aliyun.Speech.AccessKeyId = config.Conf.Tts.Aliyun.Speech.AccessKeyId
-	configResponse.Tts.Aliyun.Speech.AccessKeySecret = config.Conf.Tts.Aliyun.Speech.AccessKeySecret
-	configResponse.Tts.Aliyun.Speech.AppKey = config.Conf.Tts.Aliyun.Speech.AppKey
+	configResponse.Tts.Openai.Voice = config.Conf.Tts.Openai.Voice
+	configResponse.Tts.EdgeTts.Voice = config.Conf.Tts.EdgeTts.Voice
+	configResponse.Tts.VClip.ApiKey = config.Conf.Tts.VClip.ApiKey
+	configResponse.Tts.VClip.VoiceID = config.Conf.Tts.VClip.VoiceID
+	configResponse.Tts.VClip.Speed = config.Conf.Tts.VClip.Speed
 
 	response.R(c, response.Response{
 		Error: 0,
-		Msg:   "获取配置成功",
+		Msg:   "Get configuration successful",
 		Data:  configResponse,
 	})
 }
 
-// UpdateConfig 更新配置
+// UpdateConfig updates the configuration
 func (h Handler) UpdateConfig(c *gin.Context) {
 	var req ConfigRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.GetLogger().Error("UpdateConfig ShouldBindJSON err", zap.Error(err))
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "参数错误: " + err.Error(),
+			Msg:   "Parameter error",
 			Data:  nil,
 		})
 		return
 	}
 
-	log.GetLogger().Info("更新配置信息")
+	log.GetLogger().Info("Updating configuration info")
 
-	// 更新配置备份，确保桌面应用能检测到配置变化
+	// Update config backup to ensure desktop app detects changes
 	config.ConfigBackup = config.Conf
 
-	// 标记配置已更新，需要重新初始化服务
+	// Mark config as updated, service needs re-initialization
 	configUpdated = true
 
-	// 更新应用配置
+	// Update app configuration
 	config.Conf.App.SegmentDuration = req.App.SegmentDuration
 	config.Conf.App.TranscribeParallelNum = req.App.TranscribeParallelNum
 	config.Conf.App.TranslateParallelNum = req.App.TranslateParallelNum
@@ -190,16 +172,16 @@ func (h Handler) UpdateConfig(c *gin.Context) {
 	config.Conf.App.MaxSentenceLength = req.App.MaxSentenceLength
 	config.Conf.App.Proxy = req.App.Proxy
 
-	// 更新服务器配置
+	// Update server configuration
 	config.Conf.Server.Host = req.Server.Host
 	config.Conf.Server.Port = req.Server.Port
 
-	// 更新LLM配置
+	// Update LLM configuration
 	config.Conf.Llm.BaseUrl = req.Llm.BaseUrl
 	config.Conf.Llm.ApiKey = req.Llm.ApiKey
 	config.Conf.Llm.Model = req.Llm.Model
 
-	// 更新转录配置
+	// Update transcribe configuration
 	config.Conf.Transcribe.Provider = req.Transcribe.Provider
 	config.Conf.Transcribe.EnableGpuAcceleration = req.Transcribe.EnableGpuAcceleration
 	config.Conf.Transcribe.Openai.BaseUrl = req.Transcribe.Openai.BaseUrl
@@ -208,53 +190,46 @@ func (h Handler) UpdateConfig(c *gin.Context) {
 	config.Conf.Transcribe.Fasterwhisper.Model = req.Transcribe.Fasterwhisper.Model
 	config.Conf.Transcribe.Whisperkit.Model = req.Transcribe.Whisperkit.Model
 	config.Conf.Transcribe.Whispercpp.Model = req.Transcribe.Whispercpp.Model
-	config.Conf.Transcribe.Aliyun.Oss.AccessKeyId = req.Transcribe.Aliyun.Oss.AccessKeyId
-	config.Conf.Transcribe.Aliyun.Oss.AccessKeySecret = req.Transcribe.Aliyun.Oss.AccessKeySecret
-	config.Conf.Transcribe.Aliyun.Oss.Bucket = req.Transcribe.Aliyun.Oss.Bucket
-	config.Conf.Transcribe.Aliyun.Speech.AccessKeyId = req.Transcribe.Aliyun.Speech.AccessKeyId
-	config.Conf.Transcribe.Aliyun.Speech.AccessKeySecret = req.Transcribe.Aliyun.Speech.AccessKeySecret
-	config.Conf.Transcribe.Aliyun.Speech.AppKey = req.Transcribe.Aliyun.Speech.AppKey
 
-	// 更新TTS配置
+	// Update TTS configuration
 	config.Conf.Tts.Provider = req.Tts.Provider
 	config.Conf.Tts.Openai.BaseUrl = req.Tts.Openai.BaseUrl
 	config.Conf.Tts.Openai.ApiKey = req.Tts.Openai.ApiKey
 	config.Conf.Tts.Openai.Model = req.Tts.Openai.Model
-	config.Conf.Tts.Aliyun.Oss.AccessKeyId = req.Tts.Aliyun.Oss.AccessKeyId
-	config.Conf.Tts.Aliyun.Oss.AccessKeySecret = req.Tts.Aliyun.Oss.AccessKeySecret
-	config.Conf.Tts.Aliyun.Oss.Bucket = req.Tts.Aliyun.Oss.Bucket
-	config.Conf.Tts.Aliyun.Speech.AccessKeyId = req.Tts.Aliyun.Speech.AccessKeyId
-	config.Conf.Tts.Aliyun.Speech.AccessKeySecret = req.Tts.Aliyun.Speech.AccessKeySecret
-	config.Conf.Tts.Aliyun.Speech.AppKey = req.Tts.Aliyun.Speech.AppKey
+	config.Conf.Tts.Openai.Voice = req.Tts.Openai.Voice
+	config.Conf.Tts.EdgeTts.Voice = req.Tts.EdgeTts.Voice
+	config.Conf.Tts.VClip.ApiKey = req.Tts.VClip.ApiKey
+	config.Conf.Tts.VClip.VoiceID = req.Tts.VClip.VoiceID
+	config.Conf.Tts.VClip.Speed = req.Tts.VClip.Speed
 
-	// 验证配置
+	// Validate configuration
 	if err := config.CheckConfig(); err != nil {
-		log.GetLogger().Error("配置验证失败", zap.Error(err))
-		// 恢复原配置
+		log.GetLogger().Error("Configuration validation failed", zap.Error(err))
+		// Restore original configuration
 		config.Conf = config.ConfigBackup
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "配置验证失败: " + err.Error(),
+			Msg:   "Configuration validation failed: " + err.Error(),
 			Data:  nil,
 		})
 		return
 	}
 
-	// 保存配置到文件
+	// Save configuration to file
 	if err := config.SaveConfig(); err != nil {
-		log.GetLogger().Error("保存配置失败", zap.Error(err))
+		log.GetLogger().Error("Save configuration failed", zap.Error(err))
 		response.R(c, response.Response{
 			Error: -1,
-			Msg:   "保存配置失败: " + err.Error(),
+			Msg:   "Save configuration failed: " + err.Error(),
 			Data:  nil,
 		})
 		return
 	}
 
-	log.GetLogger().Info("配置更新成功")
+	log.GetLogger().Info("Update configuration successful")
 	response.R(c, response.Response{
 		Error: 0,
-		Msg:   "配置更新成功",
+		Msg:   "Update configuration successful",
 		Data:  nil,
 	})
 }

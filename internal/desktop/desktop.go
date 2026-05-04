@@ -20,7 +20,7 @@ import (
 func createNavButton(text string, icon fyne.Resource, isSelected bool, onTap func()) *widget.Button {
 	btn := widget.NewButtonWithIcon(text, icon, onTap)
 
-	// 根据选中状态设置颜色
+	// Set color based on selection state
 	if isSelected {
 		btn.Importance = widget.HighImportance
 	} else {
@@ -30,15 +30,15 @@ func createNavButton(text string, icon fyne.Resource, isSelected bool, onTap fun
 	return btn
 }
 
-// Show 展示桌面
+// Show starts the desktop UI
 func Show() {
 	myApp := app.New()
 	myWindow := myApp.NewWindow("KrillinAI")
 
-	// 创建主题管理器
+	// Create theme manager
 	themeManager := NewThemeManager(myApp, myWindow)
 
-	// 设置全局主题管理器
+	// Set global theme manager
 	SetGlobalThemeManager(themeManager)
 
 	logoContainer := container.NewVBox()
@@ -59,7 +59,7 @@ func Show() {
 	logoContainer.Add(separator)
 	logoContainer.Add(slogan)
 
-	navItems := []string{"工作台 Dashboard", "LLM 配置", "配置 Settings"}
+	navItems := []string{"Dashboard", "LLM Config", "Settings"}
 	navIcons := []fyne.Resource{theme.DocumentIcon(), theme.ComputerIcon(), theme.SettingsIcon()}
 
 	var navButtons []*widget.Button
@@ -103,13 +103,13 @@ func Show() {
 
 	refreshContent()
 
-	// 添加主题切换回调来刷新内容
+	// Add theme toggle callback to refresh content
 	themeManager.AddThemeChangeCallback(func(isDark bool) {
 		refreshContent()
 	})
 
 	for i, item := range navItems {
-		index := i // 捕获变量
+		index := i // Capture variable
 		isSelected := i == currentSelectedIndex
 
 		navBtn := createNavButton(item, navIcons[i], isSelected, func() {
@@ -125,10 +125,10 @@ func Show() {
 				}
 			}
 
-			// 保存配置并切换界面
+			// Save config and switch interface
 			err := config.SaveConfig()
 			if err != nil {
-				dialog.ShowError(fmt.Errorf("保存配置失败: %v", err), myWindow)
+				dialog.ShowError(fmt.Errorf("Failed to save configuration: %v", err), myWindow)
 			}
 
 			switch index {
@@ -186,7 +186,7 @@ func Show() {
 		statusBgColor = color.NRGBA{R: 255, G: 255, B: 255, A: 150}
 	}
 
-	statusText := canvas.NewText("就绪", statusTextColor)
+	statusText := canvas.NewText("Ready", statusTextColor)
 	statusText.TextSize = 12
 
 	statusBarBackground := canvas.NewRectangle(statusBgColor)
@@ -207,11 +207,11 @@ func Show() {
 	myWindow.CenterOnScreen()
 	myWindow.ShowAndRun()
 
-	// 关闭窗口时保存配置
+	// Save config when closing window
 	err := config.SaveConfig()
 	if err != nil {
-		log.GetLogger().Error("保存配置失败 Failed to save config", zap.Error(err))
+		log.GetLogger().Error("Failed to save config", zap.Error(err))
 		return
 	}
-	log.GetLogger().Info("配置已保存 Config saved successfully")
+	log.GetLogger().Info("Config saved successfully")
 }

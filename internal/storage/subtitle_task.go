@@ -4,4 +4,4 @@ import (
 	"sync"
 )
 
-var SubtitleTasks = sync.Map{} // task id -> SubtitleTask，用于接口查询数据
+var SubtitleTasks = sync.Map{} // task id -> SubtitleTask, used for API data queries

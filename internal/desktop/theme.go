@@ -7,7 +7,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 )
 
-// ThemeMode 主题模式
+// ThemeMode Theme Mode
 type ThemeMode int
 
 const (
@@ -16,12 +16,12 @@ const (
 	ThemeModeAuto
 )
 
-// customTheme 自定义主题
+// customTheme Custom Theme
 type customTheme struct {
 	baseTheme fyne.Theme
 	mode      ThemeMode
 	forceDark bool
-	// 添加主题变化回调
+	// Add theme change callback
 	onThemeChange []func(ThemeMode)
 }
 
@@ -42,100 +42,100 @@ func (t *customTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant)
 	return t.lightColors(name)
 }
 
-// lightColors 明亮主题配色方案
+// lightColors Light theme color scheme
 func (t *customTheme) lightColors(name fyne.ThemeColorName) color.Color {
 	switch name {
-	// 主色系 - 更现代的蓝色
+	// Primary colors - Modern blue
 	case theme.ColorNamePrimary:
-		return color.NRGBA{R: 59, G: 130, B: 246, A: 255} // 更鲜艳的蓝色
+		return color.NRGBA{R: 59, G: 130, B: 246, A: 255} // Vibrant blue
 
-	// 背景与前景
+	// Background and foreground
 	case theme.ColorNameBackground:
-		return color.NRGBA{R: 248, G: 250, B: 252, A: 255} // 极浅灰背景
+		return color.NRGBA{R: 248, G: 250, B: 252, A: 255} // Off-white background
 	case theme.ColorNameForeground:
-		return color.NRGBA{R: 17, G: 24, B: 39, A: 255} // 深灰文字
+		return color.NRGBA{R: 17, G: 24, B: 39, A: 255} // Dark grey text
 	case theme.ColorNameDisabled:
-		return color.NRGBA{R: 156, G: 163, B: 175, A: 150} // 柔和禁用色
+		return color.NRGBA{R: 156, G: 163, B: 175, A: 150} // Soft disabled color
 
-	// 按钮状态
+	// Button states
 	case theme.ColorNameButton:
 		return color.NRGBA{R: 59, G: 130, B: 246, A: 255}
 	case theme.ColorNameHover:
-		return color.NRGBA{R: 37, G: 99, B: 235, A: 255} // 深蓝悬停
+		return color.NRGBA{R: 37, G: 99, B: 235, A: 255} // Deep blue hover
 	case theme.ColorNamePressed:
-		return color.NRGBA{R: 29, G: 78, B: 216, A: 255} // 更深蓝按下
+		return color.NRGBA{R: 29, G: 78, B: 216, A: 255} // Darker blue pressed
 
-	// 输入组件
+	// Input components
 	case theme.ColorNameInputBackground:
-		return color.NRGBA{R: 255, G: 255, B: 255, A: 255} // 纯白输入框
+		return color.NRGBA{R: 255, G: 255, B: 255, A: 255} // White input box
 	case theme.ColorNameInputBorder:
-		return color.NRGBA{R: 209, G: 213, B: 219, A: 255} // 浅灰边框
+		return color.NRGBA{R: 209, G: 213, B: 219, A: 255} // Light grey border
 	case theme.ColorNamePlaceHolder:
-		return color.NRGBA{R: 156, G: 163, B: 175, A: 200} // 灰占位符
+		return color.NRGBA{R: 156, G: 163, B: 175, A: 200} // Grey placeholder
 
-	// 其他
+	// Others
 	case theme.ColorNameSelection:
-		return color.NRGBA{R: 219, G: 234, B: 254, A: 180} // 淡蓝选中
+		return color.NRGBA{R: 219, G: 234, B: 254, A: 180} // Light blue selection
 	case theme.ColorNameScrollBar:
 		return color.NRGBA{R: 209, G: 213, B: 219, A: 200}
 	case theme.ColorNameShadow:
-		return color.NRGBA{R: 0, G: 0, B: 0, A: 25} // 柔和阴影
+		return color.NRGBA{R: 0, G: 0, B: 0, A: 25} // Soft shadow
 
-	// 状态色
+	// Status colors
 	case theme.ColorNameError:
-		return color.NRGBA{R: 239, G: 68, B: 68, A: 255} // 红色错误
+		return color.NRGBA{R: 239, G: 68, B: 68, A: 255} // Red error
 	case theme.ColorNameWarning:
-		return color.NRGBA{R: 245, G: 158, B: 11, A: 255} // 橙色警告
+		return color.NRGBA{R: 245, G: 158, B: 11, A: 255} // Orange warning
 	case theme.ColorNameSuccess:
-		return color.NRGBA{R: 34, G: 197, B: 94, A: 255} // 绿色成功
+		return color.NRGBA{R: 34, G: 197, B: 94, A: 255} // Green success
 	case theme.ColorNameFocus:
-		return color.NRGBA{R: 59, G: 130, B: 246, A: 100} // 半透明焦点
+		return color.NRGBA{R: 59, G: 130, B: 246, A: 100} // Translucent focus
 
 	default:
 		return t.baseTheme.Color(name, theme.VariantLight)
 	}
 }
 
-// darkColors 夜晚主题配色方案
+// darkColors Dark theme color scheme
 func (t *customTheme) darkColors(name fyne.ThemeColorName) color.Color {
 	switch name {
-	// 主色系
+	// Primary colors
 	case theme.ColorNamePrimary:
-		return color.NRGBA{R: 96, G: 165, B: 250, A: 255} // 亮蓝色
+		return color.NRGBA{R: 96, G: 165, B: 250, A: 255} // Light blue
 
-	// 背景与前景
+	// Background and foreground
 	case theme.ColorNameBackground:
-		return color.NRGBA{R: 15, G: 23, B: 42, A: 255} // 深蓝灰背景
+		return color.NRGBA{R: 15, G: 23, B: 42, A: 255} // Dark blue-grey background
 	case theme.ColorNameForeground:
-		return color.NRGBA{R: 248, G: 250, B: 252, A: 255} // 浅灰文字
+		return color.NRGBA{R: 248, G: 250, B: 252, A: 255} // Light grey text
 	case theme.ColorNameDisabled:
-		return color.NRGBA{R: 100, G: 116, B: 139, A: 150} // 深色禁用
+		return color.NRGBA{R: 100, G: 116, B: 139, A: 150} // Dark disabled
 
-	// 按钮状态
+	// Button states
 	case theme.ColorNameButton:
-		return color.NRGBA{R: 30, G: 41, B: 59, A: 255} // 深按钮背景
+		return color.NRGBA{R: 30, G: 41, B: 59, A: 255} // Dark button background
 	case theme.ColorNameHover:
-		return color.NRGBA{R: 51, G: 65, B: 85, A: 255} // 浅灰悬停
+		return color.NRGBA{R: 51, G: 65, B: 85, A: 255} // Light grey hover
 	case theme.ColorNamePressed:
-		return color.NRGBA{R: 15, G: 23, B: 42, A: 255} // 更深按下
+		return color.NRGBA{R: 15, G: 23, B: 42, A: 255} // Deeper pressed
 
-	// 输入组件
+	// Input components
 	case theme.ColorNameInputBackground:
-		return color.NRGBA{R: 30, G: 41, B: 59, A: 255} // 深输入框背景
+		return color.NRGBA{R: 30, G: 41, B: 59, A: 255} // Dark input box background
 	case theme.ColorNameInputBorder:
-		return color.NRGBA{R: 51, G: 65, B: 85, A: 255} // 深边框
+		return color.NRGBA{R: 51, G: 65, B: 85, A: 255} // Dark border
 	case theme.ColorNamePlaceHolder:
-		return color.NRGBA{R: 148, G: 163, B: 184, A: 200} // 灰占位符
+		return color.NRGBA{R: 148, G: 163, B: 184, A: 200} // Grey placeholder
 
-	// 其他
+	// Others
 	case theme.ColorNameSelection:
-		return color.NRGBA{R: 59, G: 130, B: 246, A: 180} // 蓝色选中
+		return color.NRGBA{R: 59, G: 130, B: 246, A: 180} // Blue selection
 	case theme.ColorNameScrollBar:
-		return color.NRGBA{R: 51, G: 65, B: 85, A: 200} // 深滚动条
+		return color.NRGBA{R: 51, G: 65, B: 85, A: 200} // Dark scrollbar
 	case theme.ColorNameShadow:
-		return color.NRGBA{R: 0, G: 0, B: 0, A: 50} // 深色阴影
+		return color.NRGBA{R: 0, G: 0, B: 0, A: 50} // Dark shadow
 
-	// 状态色（更鲜艳）
+	// Status colors (vibrant)
 	case theme.ColorNameError:
 		return color.NRGBA{R: 248, G: 113, B: 113, A: 255}
 	case theme.ColorNameWarning:
@@ -181,24 +181,24 @@ func (t *customTheme) Size(name fyne.ThemeSizeName) float32 {
 	}
 }
 
-// GetThemeMode 获取当前主题模式
+// GetThemeMode gets the current theme mode
 func (t *customTheme) GetThemeMode() ThemeMode {
 	return t.mode
 }
 
-// SetThemeMode 设置主题模式
+// SetThemeMode sets the theme mode
 func (t *customTheme) SetThemeMode(mode ThemeMode) {
 	if t.mode != mode {
 		t.mode = mode
 		t.forceDark = mode == ThemeModeDark
-		// 通知所有回调函数
+		// Notify all callbacks
 		for _, callback := range t.onThemeChange {
 			callback(mode)
 		}
 	}
 }
 
-// AddThemeChangeCallback 添加主题变化回调
+// AddThemeChangeCallback adds a theme change callback
 func (t *customTheme) AddThemeChangeCallback(callback func(ThemeMode)) {
 	t.onThemeChange = append(t.onThemeChange, callback)
 }

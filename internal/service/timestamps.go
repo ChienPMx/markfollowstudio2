@@ -145,7 +145,7 @@ func (tg *TimestampGenerator) GenerateTimestamps(srtBlocks []*util.SrtBlock, wor
 // 		return 0, 0, errors.New("getSentenceTimestamps no valid sentence")
 // 	}
 
-// 	// 找到最大连续子数组后，再去找整个句子开始和结束的时间戳
+// 	// After finding the maximum continuous subarray, find the start and end timestamps for the entire sentence
 // 	beginWord := matchedWords[beginWordIndex]
 // 	endWord := matchedWords[endWordIndex-1]
 // 	if endWordIndex-beginWordIndex == len(matchedWords) {
@@ -337,19 +337,19 @@ func (jlm *BaseLanguageMatcher) MatchSentenceTimestamp(sentence string, words []
 		return 0, 0, fmt.Errorf("empty sentence or words")
 	}
 
-	// 使用新的字符串匹配方法
+	// Use new string matching method
 	return jlm.matchSentenceByStringAlignment(sentence, words, lastTs)
 }
 
-// matchSentenceByStringAlignment 使用字符串对齐的方法匹配句子时间戳
+// matchSentenceByStringAlignment matches sentence timestamps using string alignment
 func (jlm *BaseLanguageMatcher) matchSentenceByStringAlignment(sentence string, words []types.Word, lastTs float64) (startTime, endTime float64, err error) {
-	// 步骤1: 合并 Whisper 的所有词文本
+	// Step 1: Combine all Whisper word texts
 	whisperFullText := jlm.buildWhisperFullText(words)
 	if whisperFullText == "" {
 		return 0, 0, fmt.Errorf("no valid text from whisper words")
 	}
 
-	// 步骤2: 清理句子，移除多余的空格和标点符号
+	// Step 2: Clean sentence, removing redundant spaces and punctuation
 	cleanSentence := jlm.cleanBaseText(sentence)
 	cleanWhisperText := jlm.cleanBaseText(whisperFullText)
 
@@ -357,14 +357,14 @@ func (jlm *BaseLanguageMatcher) matchSentenceByStringAlignment(sentence string, 
 		return 0, 0, fmt.Errorf("empty sentence after cleaning")
 	}
 
-	// 步骤3: 在完整文本中查找句子的所有可能位置
+	// Step 3: Find all possible positions of the sentence in the full text
 	allMatches := jlm.findAllMatches(cleanSentence, cleanWhisperText)
 	if len(allMatches) == 0 {
-		// 如果直接匹配失败，尝试模糊匹配
+		// If direct match fails, try fuzzy matching
 		return jlm.fuzzyMatchSentence(cleanSentence, words, lastTs)
 	}
 
-	// 步骤4: 对每个可能的匹配位置，尝试计算时间戳
+	// Step 4: Attempt to calculate timestamps for each possible match position
 	var bestStartTime, bestEndTime float64
 	var bestErr error
 	found := false
@@ -374,13 +374,13 @@ func (jlm *BaseLanguageMatcher) matchSentenceByStringAlignment(sentence string, 
 
 		startTime, endTime, err := jlm.calculateTimestampsByCharIndex(startCharIndex, endCharIndex, words, lastTs)
 		if err == nil && startTime >= lastTs {
-			// 找到一个有效的匹配，使用它
+			// Valid match found; use it
 			bestStartTime = startTime
 			bestEndTime = endTime
 			found = true
 			break
 		} else if err == nil {
-			// 记录这个匹配，但继续寻找更好的
+			// Record this match but keep searching for a better one
 			if !found || startTime > bestStartTime {
 				bestStartTime = startTime
 				bestEndTime = endTime
@@ -388,7 +388,7 @@ func (jlm *BaseLanguageMatcher) matchSentenceByStringAlignment(sentence string, 
 				found = true
 			}
 		} else {
-			// 记录错误，以防没有找到有效匹配
+			// Record error in case no valid match is found
 			if bestErr == nil {
 				bestErr = err
 			}
@@ -399,12 +399,12 @@ func (jlm *BaseLanguageMatcher) matchSentenceByStringAlignment(sentence string, 
 		return bestStartTime, bestEndTime, bestErr
 	}
 
-	// 如果所有匹配都失败，回退到模糊匹配
+	// If all matches fail, fallback to fuzzy matching
 	// return jlm.fuzzyMatchSentence(cleanSentence, words, lastTs)
 	return 0, 0, fmt.Errorf("no valid timestamps found for sentence: %s, error: %v", cleanSentence, bestErr)
 }
 
-// buildWhisperFullText 合并所有 Whisper 词的文本
+// buildWhisperFullText combines all Whisper word texts
 func (jlm *BaseLanguageMatcher) buildWhisperFullText(words []types.Word) string {
 	var fullText strings.Builder
 	for _, word := range words {
@@ -415,11 +415,11 @@ func (jlm *BaseLanguageMatcher) buildWhisperFullText(words []types.Word) string 
 	return fullText.String()
 }
 
-// cleanBaseText 清理文本，移除空格、标点符号和特殊符号
+// cleanBaseText cleans text, removing spaces, punctuation, and special symbols
 func (jlm *BaseLanguageMatcher) cleanBaseText(text string) string {
 	var cleaned strings.Builder
 	for _, r := range text {
-		// 移除标点符号、空格和特殊符号，保留字母、数字和其他语言字符
+		// Remove punctuation, spaces, and symbols; keep alphanumeric and other language characters
 		if !unicode.IsPunct(r) && !unicode.IsSpace(r) && !unicode.IsSymbol(r) {
 			cleaned.WriteRune(r)
 		}
@@ -427,7 +427,7 @@ func (jlm *BaseLanguageMatcher) cleanBaseText(text string) string {
 	return cleaned.String()
 }
 
-// findAllMatches 找到所有匹配位置
+// findAllMatches finds all matching positions
 func (jlm *BaseLanguageMatcher) findAllMatches(sentence, fullText string) []int {
 	var matches []int
 	sentenceRunes := []rune(sentence)
@@ -446,7 +446,7 @@ func (jlm *BaseLanguageMatcher) findAllMatches(sentence, fullText string) []int 
 	return matches
 }
 
-// matchesAt 检查在指定位置是否匹配
+// matchesAt checks for a match at the specified position
 func (jlm *BaseLanguageMatcher) matchesAt(fullText, sentence []rune, pos int) bool {
 	if pos+len(sentence) > len(fullText) {
 		return false
@@ -460,7 +460,7 @@ func (jlm *BaseLanguageMatcher) matchesAt(fullText, sentence []rune, pos int) bo
 	return true
 }
 
-// calculateTimestampsByCharIndex 根据字符索引计算时间戳
+// calculateTimestampsByCharIndex calculates timestamps based on character indices
 func (jlm *BaseLanguageMatcher) calculateTimestampsByCharIndex(startCharIndex, endCharIndex int, words []types.Word, lastTs float64) (startTime, endTime float64, err error) {
 	var resultStartTime, resultEndTime float64
 	var startWordFound, endWordFound bool
@@ -471,14 +471,14 @@ func (jlm *BaseLanguageMatcher) calculateTimestampsByCharIndex(startCharIndex, e
 			continue
 		}
 
-		// 计算当前词的清理后文本长度
+		// Calculate cleaned text length of current word
 		cleanWordText := jlm.cleanBaseText(word.Text)
 		wordCharLength := len([]rune(cleanWordText))
 
 		wordStartIndex := currentCharIndex
 		wordEndIndex := currentCharIndex + wordCharLength
 
-		// 检查是否找到开始时间戳
+		// Check if start timestamp is found
 		if !startWordFound && wordEndIndex > startCharIndex {
 			if word.Start >= lastTs {
 				resultStartTime = word.Start
@@ -486,7 +486,7 @@ func (jlm *BaseLanguageMatcher) calculateTimestampsByCharIndex(startCharIndex, e
 			}
 		}
 
-		// 检查是否找到结束时间戳
+		// Check if end timestamp is found
 		if wordStartIndex < endCharIndex {
 			if word.End >= lastTs {
 				resultEndTime = word.End
@@ -494,7 +494,7 @@ func (jlm *BaseLanguageMatcher) calculateTimestampsByCharIndex(startCharIndex, e
 			}
 		}
 
-		// 如果已经超过了结束索引，停止搜索
+		// Stop searching if end index is exceeded
 		if wordStartIndex >= endCharIndex {
 			break
 		}
@@ -509,9 +509,9 @@ func (jlm *BaseLanguageMatcher) calculateTimestampsByCharIndex(startCharIndex, e
 	return resultStartTime, resultEndTime, nil
 }
 
-// fuzzyMatchSentence 当直接匹配失败时的模糊匹配方法
+// fuzzyMatchSentence fuzzy matching method for when direct match fails
 func (jlm *BaseLanguageMatcher) fuzzyMatchSentence(sentence string, words []types.Word, lastTs float64) (startTime, endTime float64, err error) {
-	// 将句子拆分成字符，寻找包含这些字符的词
+	// Split sentence into characters and look for words containing them
 	sentenceRunes := []rune(sentence)
 	var matchedWords []types.Word
 
@@ -520,7 +520,7 @@ func (jlm *BaseLanguageMatcher) fuzzyMatchSentence(sentence string, words []type
 			continue
 		}
 
-		// 检查词是否包含句子中的字符
+		// Check if word contains characters from the sentence
 		wordRunes := []rune(jlm.cleanBaseText(word.Text))
 		if jlm.containsBaseChars(wordRunes, sentenceRunes) {
 			matchedWords = append(matchedWords, word)
@@ -528,7 +528,7 @@ func (jlm *BaseLanguageMatcher) fuzzyMatchSentence(sentence string, words []type
 	}
 
 	if len(matchedWords) == 0 {
-		// 如果在 lastTs 之后没找到，从头开始搜索
+		// If not found after lastTs, search from the beginning
 		for _, word := range words {
 			wordRunes := []rune(jlm.cleanBaseText(word.Text))
 			if jlm.containsBaseChars(wordRunes, sentenceRunes) {
@@ -541,11 +541,11 @@ func (jlm *BaseLanguageMatcher) fuzzyMatchSentence(sentence string, words []type
 		return 0, 0, fmt.Errorf("no matching words found for fuzzy matching")
 	}
 
-	// 使用第一个和最后一个匹配的词来确定时间范围
+	// Use first and last matched words to determine time range
 	resultStartTime := matchedWords[0].Start
 	resultEndTime := matchedWords[len(matchedWords)-1].End
 
-	// 应用 lastTs 约束
+	// Apply lastTs constraint
 	if resultStartTime < lastTs {
 		resultStartTime = lastTs
 	}
@@ -553,7 +553,7 @@ func (jlm *BaseLanguageMatcher) fuzzyMatchSentence(sentence string, words []type
 	return resultStartTime, resultEndTime, nil
 }
 
-// containsBaseChars 检查词中是否包含句子中的字符
+// containsBaseChars checks if the word contains characters from the sentence
 func (jlm *BaseLanguageMatcher) containsBaseChars(wordRunes, sentenceRunes []rune) bool {
 	for _, sentenceChar := range sentenceRunes {
 		found := false

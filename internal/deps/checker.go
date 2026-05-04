@@ -17,80 +17,80 @@ import (
 func CheckDependency() error {
 	err := checkAndDownloadFfmpeg()
 	if err != nil {
-		log.GetLogger().Error("ffmpeg环境准备失败", zap.Error(err))
+		log.GetLogger().Error("Failed to prepare ffmpeg environment", zap.Error(err))
 		return err
 	}
 	err = checkAndDownloadFfprobe()
 	if err != nil {
-		log.GetLogger().Error("ffprobe环境准备失败", zap.Error(err))
+		log.GetLogger().Error("Failed to prepare ffprobe environment", zap.Error(err))
 		return err
 	}
 	err = checkAndDownloadYtDlp()
 	if err != nil {
-		log.GetLogger().Error("yt-dlp环境准备失败", zap.Error(err))
+		log.GetLogger().Error("Failed to prepare yt-dlp environment", zap.Error(err))
 		return err
 	}
 	if config.Conf.Transcribe.Provider == "fasterwhisper" {
 		err = checkFasterWhisper()
 		if err != nil {
-			log.GetLogger().Error("fasterwhisper环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare fasterwhisper environment", zap.Error(err))
 			return err
 		}
 		err = checkModel("fasterwhisper")
 		if err != nil {
-			log.GetLogger().Error("本地模型环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare local model environment", zap.Error(err))
 			return err
 		}
 	}
 	if config.Conf.Transcribe.Provider == "whisperkit" {
 		if err = checkWhisperKit(); err != nil {
-			log.GetLogger().Error("whisperkit环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare whisperkit environment", zap.Error(err))
 			return err
 		}
 		err = checkModel("whisperkit")
 		if err != nil {
-			log.GetLogger().Error("本地模型环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare local model environment", zap.Error(err))
 			return err
 		}
 	}
 	if config.Conf.Transcribe.Provider == "whisperx" {
 		err = checkWhisperX()
 		if err != nil {
-			log.GetLogger().Error("whisperx环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare whisperx environment", zap.Error(err))
 			return err
 		}
 		err = checkModel("whisperx")
 		if err != nil {
-			log.GetLogger().Error("本地模型环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare local model environment", zap.Error(err))
 			return err
 		}
 	}
 	if config.Conf.Transcribe.Provider == "whispercpp" {
 		if err = checkWhispercpp(); err != nil {
-			log.GetLogger().Error("whispercpp环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare whispercpp environment", zap.Error(err))
 			return err
 		}
 		err = checkModel("whispercpp")
 		if err != nil {
-			log.GetLogger().Error("whispercpp本地模型环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare local whispercpp model environment", zap.Error(err))
 			return err
 		}
 	}
 	if config.Conf.Tts.Provider == "edge-tts" {
 		if err = checkEdgeTts(); err != nil {
-			log.GetLogger().Error("edge-tts环境准备失败", zap.Error(err))
+			log.GetLogger().Error("Failed to prepare edge-tts environment", zap.Error(err))
 		}
 	}
 
 	return nil
 }
 
-// 检测并安装ffmpeg
+// Detect and install ffmpeg
 func checkAndDownloadFfmpeg() error {
-	// 检查ffmpeg是否已经安装
+	// Check if ffmpeg is already installed
 	_, err := exec.LookPath("ffmpeg")
 	if err == nil {
-		log.GetLogger().Info("已找到ffmpeg")
+		log.GetLogger().Info("Found ffmpeg")
 		storage.FfmpegPath = "ffmpeg"
 		return nil
 	}
@@ -99,18 +99,18 @@ func checkAndDownloadFfmpeg() error {
 	if runtime.GOOS == "windows" {
 		ffmpegBinFilePath += ".exe"
 	}
-	// 先前下载过的
+	// Previous download
 	if _, err = os.Stat(ffmpegBinFilePath); err == nil {
-		log.GetLogger().Info("已找到ffmpeg")
+		log.GetLogger().Info("Found ffmpeg")
 		storage.FfmpegPath = ffmpegBinFilePath
 		return nil
 	}
 
-	log.GetLogger().Info("没有找到ffmpeg，即将开始自动安装")
-	// 确保./bin目录存在
+	log.GetLogger().Info("ffmpeg not found, starting automatic installation...")
+	// Ensure ./bin directory exists
 	err = os.MkdirAll("./bin", 0755)
 	if err != nil {
-		log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+		log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 		return err
 	}
 
@@ -122,44 +122,44 @@ func checkAndDownloadFfmpeg() error {
 	} else if runtime.GOOS == "windows" {
 		ffmpegURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffmpeg-6.1-win-64.zip"
 	} else {
-		log.GetLogger().Error("不支持你当前的操作系统", zap.String("当前系统", runtime.GOOS))
+		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 	}
 
-	// 下载
+	// Download
 	ffmpegDownloadPath := "./bin/ffmpeg.zip"
 	err = util.DownloadFile(ffmpegURL, ffmpegDownloadPath, config.Conf.App.Proxy)
 	if err != nil {
-		log.GetLogger().Error("下载ffmpeg失败", zap.Error(err))
+		log.GetLogger().Error("Failed to download ffmpeg", zap.Error(err))
 		return err
 	}
 	err = util.Unzip(ffmpegDownloadPath, "./bin")
 	if err != nil {
-		log.GetLogger().Error("解压ffmpeg失败", zap.Error(err))
+		log.GetLogger().Error("Failed to unzip ffmpeg", zap.Error(err))
 		return err
 	}
-	log.GetLogger().Info("ffmpeg解压成功")
+	log.GetLogger().Info("Successfully unzipped ffmpeg")
 
 	if runtime.GOOS != "windows" {
 		err = os.Chmod(ffmpegBinFilePath, 0755)
 		if err != nil {
-			log.GetLogger().Error("设置文件权限失败", zap.Error(err))
+			log.GetLogger().Error("Failed to set file permissions", zap.Error(err))
 			return err
 		}
 	}
 
 	storage.FfmpegPath = ffmpegBinFilePath
-	log.GetLogger().Info("ffmpeg安装完成", zap.String("路径", ffmpegBinFilePath))
+	log.GetLogger().Info("ffmpeg installation complete", zap.String("Path", ffmpegBinFilePath))
 
 	return nil
 }
 
-// 检测并安装ffprobe
+// Detect and install ffprobe
 func checkAndDownloadFfprobe() error {
-	// 检查检测并安装ffprobe是否已经安装
+	// Check if ffprobe is already installed
 	_, err := exec.LookPath("ffprobe")
 	if err == nil {
-		log.GetLogger().Info("已找到ffprobe")
+		log.GetLogger().Info("Found ffprobe")
 		storage.FfprobePath = "ffprobe"
 		return nil
 	}
@@ -168,18 +168,18 @@ func checkAndDownloadFfprobe() error {
 	if runtime.GOOS == "windows" {
 		ffprobeBinFilePath += ".exe"
 	}
-	// 先前下载过的
+	// Previous download
 	if _, err = os.Stat(ffprobeBinFilePath); err == nil {
-		log.GetLogger().Info("已找到ffprobe")
+		log.GetLogger().Info("Found ffprobe")
 		storage.FfprobePath = ffprobeBinFilePath
 		return nil
 	}
 
-	log.GetLogger().Info("没有找到ffprobe，即将开始自动安装")
-	// 确保./bin目录存在
+	log.GetLogger().Info("ffprobe not found, starting automatic installation...")
+	// Ensure ./bin directory exists
 	err = os.MkdirAll("./bin", 0755)
 	if err != nil {
-		log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+		log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 		return err
 	}
 
@@ -191,43 +191,43 @@ func checkAndDownloadFfprobe() error {
 	} else if runtime.GOOS == "windows" {
 		ffprobeURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffprobe-6.1-win-64.zip"
 	} else {
-		log.GetLogger().Error("不支持你当前的操作系统", zap.String("当前系统", runtime.GOOS))
+		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 	}
 
-	// 下载
+	// Download
 	ffprobeDownloadPath := "./bin/ffprobe.zip"
 	err = util.DownloadFile(ffprobeURL, ffprobeDownloadPath, config.Conf.App.Proxy)
 	if err != nil {
-		log.GetLogger().Error("下载ffprobe失败", zap.Error(err))
+		log.GetLogger().Error("Failed to download ffprobe", zap.Error(err))
 		return err
 	}
 	err = util.Unzip(ffprobeDownloadPath, "./bin")
 	if err != nil {
-		log.GetLogger().Error("解压ffprobe失败", zap.Error(err))
+		log.GetLogger().Error("Failed to unzip ffprobe", zap.Error(err))
 		return err
 	}
-	log.GetLogger().Info("ffprobe解压成功")
+	log.GetLogger().Info("Successfully unzipped ffprobe")
 
 	if runtime.GOOS != "windows" {
 		err = os.Chmod(ffprobeBinFilePath, 0755)
 		if err != nil {
-			log.GetLogger().Error("设置文件权限失败", zap.Error(err))
+			log.GetLogger().Error("Failed to set file permissions", zap.Error(err))
 			return err
 		}
 	}
 
 	storage.FfprobePath = ffprobeBinFilePath
-	log.GetLogger().Info("ffprobe安装完成", zap.String("路径", ffprobeBinFilePath))
+	log.GetLogger().Info("ffprobe installation complete", zap.String("Path", ffprobeBinFilePath))
 
 	return nil
 }
 
-// 检测并安装yt-dlp
+// Detect and install yt-dlp
 func checkAndDownloadYtDlp() error {
 	_, err := exec.LookPath("yt-dlp")
 	if err == nil {
-		log.GetLogger().Info("已找到yt-dlp")
+		log.GetLogger().Info("Found yt-dlp")
 		storage.YtdlpPath = "yt-dlp"
 		return nil
 	}
@@ -236,17 +236,17 @@ func checkAndDownloadYtDlp() error {
 	if runtime.GOOS == "windows" {
 		ytdlpBinFilePath += ".exe"
 	}
-	// 先前下载过的
+	// Previous download
 	if _, err = os.Stat(ytdlpBinFilePath); err == nil {
-		log.GetLogger().Info("已找到ytdlp")
+		log.GetLogger().Info("Found yt-dlp")
 		storage.YtdlpPath = ytdlpBinFilePath
 		return nil
 	}
 
-	log.GetLogger().Info("没有找到yt-dlp，即将开始自动安装")
+	log.GetLogger().Info("yt-dlp not found, starting automatic installation...")
 	err = os.MkdirAll("./bin", 0755)
 	if err != nil {
-		log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+		log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 		return err
 	}
 
@@ -258,31 +258,31 @@ func checkAndDownloadYtDlp() error {
 	} else if runtime.GOOS == "windows" {
 		ytDlpURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/yt-dlp.exe"
 	} else {
-		log.GetLogger().Error("不支持你当前的操作系统", zap.String("当前系统", runtime.GOOS))
+		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 	}
 
 	err = util.DownloadFile(ytDlpURL, ytdlpBinFilePath, config.Conf.App.Proxy)
 	if err != nil {
-		log.GetLogger().Error("下载yt-dlp失败", zap.Error(err))
+		log.GetLogger().Error("Failed to download yt-dlp", zap.Error(err))
 		return err
 	}
 
 	if runtime.GOOS != "windows" {
 		err = os.Chmod(ytdlpBinFilePath, 0755)
 		if err != nil {
-			log.GetLogger().Error("设置文件权限失败", zap.Error(err))
+			log.GetLogger().Error("Failed to set file permissions", zap.Error(err))
 			return err
 		}
 	}
 
 	storage.YtdlpPath = ytdlpBinFilePath
-	log.GetLogger().Info("yt-dlp安装完成", zap.String("路径", ytdlpBinFilePath))
+	log.GetLogger().Info("yt-dlp installation complete", zap.String("Path", ytdlpBinFilePath))
 
 	return nil
 }
 
-// 检测faster whisper
+// Detect faster-whisper
 func checkFasterWhisper() error {
 	var (
 		filePath string
@@ -293,13 +293,13 @@ func checkFasterWhisper() error {
 	} else if runtime.GOOS == "linux" {
 		filePath = "./bin/faster-whisper/Whisper-Faster-XXL/whisper-faster-xxl"
 	} else {
-		return fmt.Errorf("fasterwhisper不支持你当前的操作系统: %s，请选择其它transcription provider", runtime.GOOS)
+		return fmt.Errorf("fasterwhisper does not support your OS: %s, please choose another provider", runtime.GOOS)
 	}
 	if _, err = os.Stat(filePath); os.IsNotExist(err) {
-		log.GetLogger().Info("没有找到faster-whisper，即将开始自动下载，文件较大请耐心等待")
+		log.GetLogger().Info("faster-whisper not found, starting automatic download (please wait...)")
 		err = os.MkdirAll("./bin", 0755)
 		if err != nil {
-			log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+			log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 			return err
 		}
 		var downloadUrl string
@@ -310,48 +310,48 @@ func checkFasterWhisper() error {
 		}
 		err = util.DownloadFile(downloadUrl, "./bin/faster-whisper.zip", config.Conf.App.Proxy)
 		if err != nil {
-			log.GetLogger().Error("下载faster-whisper失败", zap.Error(err))
+			log.GetLogger().Error("Failed to download faster-whisper", zap.Error(err))
 			return err
 		}
-		log.GetLogger().Info("开始解压faster-whisper")
+		log.GetLogger().Info("Starting to unzip faster-whisper")
 		err = util.Unzip("./bin/faster-whisper.zip", "./bin/faster-whisper/")
 		if err != nil {
-			log.GetLogger().Error("解压faster-whisper失败", zap.Error(err))
+			log.GetLogger().Error("Failed to unzip faster-whisper", zap.Error(err))
 			return err
 		}
 	}
 	if runtime.GOOS != "windows" {
 		err = os.Chmod(filePath, 0755)
 		if err != nil {
-			log.GetLogger().Error("设置文件权限失败", zap.Error(err))
+			log.GetLogger().Error("Failed to set file permissions", zap.Error(err))
 			return err
 		}
 	}
 	storage.FasterwhisperPath = filePath
-	log.GetLogger().Info("faster-whisper检查完成", zap.String("路径", filePath))
+	log.GetLogger().Info("faster-whisper check complete", zap.String("Path", filePath))
 	return nil
 }
 
-// 检测whisperkit
+// Detect whisperkit
 func checkWhisperKit() error {
 	cmd := exec.Command("which", "whisperkit-cli")
 	err := cmd.Run()
 	if err != nil {
-		log.GetLogger().Info("没有找到whisperkit-cli，即将开始自动安装")
+		log.GetLogger().Info("whisperkit-cli not found, starting automatic installation...")
 		cmd = exec.Command("brew", "install", "whisperkit-cli")
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			log.GetLogger().Error("whisperkit-cli 安装失败", zap.String("info", string(output)), zap.Error(err))
+			log.GetLogger().Error("Failed to install whisperkit-cli", zap.String("Info", string(output)), zap.Error(err))
 			return err
 		}
-		log.GetLogger().Info("whisperkit-cli 安装成功")
+		log.GetLogger().Info("Successfully installed whisperkit-cli")
 	}
 	storage.WhisperKitPath = "whisperkit-cli"
-	log.GetLogger().Info("检测到whisperkit-cli已安装")
+	log.GetLogger().Info("Detected whisperkit-cli installed")
 	return nil
 }
 
-// 检测whisperx
+// Detect whisperx
 func checkWhisperX() error {
 	var (
 		filePath  string
@@ -365,16 +365,16 @@ func checkWhisperX() error {
 		filePath = "./bin/whisperx/.venv/bin/whisperx"
 		_filePath = "./bin/whisperx/.venv/bin/whisperx"
 	} else {
-		return fmt.Errorf("WhisperX不支持你当前的操作系统: %s，请选择WhisperKit", runtime.GOOS)
+		return fmt.Errorf("WhisperX does not support your OS: %s, please choose WhisperKit", runtime.GOOS)
 	}
 
 	if _, err = os.Stat(_filePath); os.IsNotExist(err) {
 		var cmd *exec.Cmd
-		// TODO: 下载压缩包
-		// log.GetLogger().Info("没有找到WhisperX，即将开始自动下载，文件较大请耐心等待")
+		// TODO: Download compressed package
+		// log.GetLogger().Info("WhisperX not found, starting automatic download, large file please wait...")
 		// err = os.MkdirAll("./bin", 0755)
 		// if err != nil {
-		// 	log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+		// 	log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 		// 	return err
 		// }
 		// var downloadUrl string
@@ -387,20 +387,20 @@ func checkWhisperX() error {
 		// }
 		// err = util.DownloadFile(downloadUrl, "./bin/WhisperX.zip", config.Conf.App.Proxy)
 		// if err != nil {
-		// 	log.GetLogger().Error("下载WhisperX失败", zap.Error(err))
+		// 	log.GetLogger().Error("Failed to download WhisperX", zap.Error(err))
 		// 	return err
 		// }
-		log.GetLogger().Info("开始解压WhisperX")
+		log.GetLogger().Info("Starting to unzip WhisperX")
 		err = util.Unzip("./bin/WhisperX.zip", "./bin/whisperx/")
 		if err != nil {
-			log.GetLogger().Error("解压WhisperX失败", zap.Error(err))
+			log.GetLogger().Error("Failed to unzip WhisperX", zap.Error(err))
 			return err
 		}
 		if runtime.GOOS == "windows" {
 			cmd = exec.Command(".\\bin\\whisperx\\python\\python.exe", "-m", "venv", ".\\bin\\whisperx\\.venv")
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				log.GetLogger().Error("创建python虚拟环境失败", zap.String("info", string(output)), zap.Error(err))
+				log.GetLogger().Error("Failed to create Python virtual environment", zap.String("Info", string(output)), zap.Error(err))
 				return err
 			}
 			cmd = exec.Command(".\\bin\\whisperx\\.venv\\Scripts\\activate", "&&", "pip", "install", "-r", ".\\bin\\whisperx\\requirements_win.txt")
@@ -408,23 +408,23 @@ func checkWhisperX() error {
 		} else {
 			os.Chmod("./bin/whisperx/python/bin/python3.12", 0755)
 			os.Chmod("./bin/whisperx/install.sh", 0755)
-			log.GetLogger().Info("开始安装WhisperX")
+			log.GetLogger().Info("Starting WhisperX installation")
 			cmd = exec.Command("bash", "./bin/whisperx/install.sh")
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				log.GetLogger().Error("WhisperX 安装失败", zap.String("info", string(output)), zap.Error(err))
+				log.GetLogger().Error("Failed to install WhisperX", zap.String("Info", string(output)), zap.Error(err))
 				return err
 			}
 		}
-		log.GetLogger().Info("WhisperX 安装成功")
+		log.GetLogger().Info("Successfully installed WhisperX")
 	}
 
 	storage.WhisperXPath = filePath
-	log.GetLogger().Info("WhisperX检查完成", zap.String("路径", _filePath))
+	log.GetLogger().Info("WhisperX check complete", zap.String("Path", _filePath))
 	return nil
 }
 
-// 检测whispercpp
+// Detect whispercpp
 func checkWhispercpp() error {
 	var (
 		filePath string
@@ -433,13 +433,13 @@ func checkWhispercpp() error {
 	if runtime.GOOS == "windows" {
 		filePath = filepath.Join("bin", "whispercpp", "whisper-cli.exe")
 	} else {
-		return fmt.Errorf("whisper.cpp不支持你当前的操作系统: %s，请选择其它transcription provider", runtime.GOOS)
+		return fmt.Errorf("whisper.cpp does not support your OS: %s, please choose another provider", runtime.GOOS)
 	}
 	if _, err = os.Stat(filePath); os.IsNotExist(err) {
-		log.GetLogger().Info("没有找到whispercpp，即将开始自动下载，文件较大请耐心等待")
+		log.GetLogger().Info("whispercpp not found, starting automatic download (please wait...)")
 		err = os.MkdirAll("bin", 0755)
 		if err != nil {
-			log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+			log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 			return err
 		}
 		var downloadUrl string
@@ -449,123 +449,123 @@ func checkWhispercpp() error {
 		zipFilePath := filepath.Join("bin", "whispercpp-windows-cuda.zip")
 		err = util.DownloadFile(downloadUrl, zipFilePath, config.Conf.App.Proxy)
 		if err != nil {
-			log.GetLogger().Error("下载whispercpp失败", zap.Error(err))
+			log.GetLogger().Error("Failed to download whispercpp", zap.Error(err))
 			return err
 		}
-		log.GetLogger().Info("开始解压whispercpp")
+		log.GetLogger().Info("Starting to unzip whispercpp")
 		err = util.Unzip(zipFilePath, filepath.Join("bin", "whispercpp")+string(filepath.Separator))
 		if err != nil {
-			log.GetLogger().Error("解压whispercpp失败", zap.Error(err))
+			log.GetLogger().Error("Failed to unzip whispercpp", zap.Error(err))
 			return err
 		}
 	}
 	if runtime.GOOS != "windows" {
 		err = os.Chmod(filePath, 0755)
 		if err != nil {
-			log.GetLogger().Error("设置文件权限失败", zap.Error(err))
+			log.GetLogger().Error("Failed to set file permissions", zap.Error(err))
 			return err
 		}
 	}
 	storage.WhispercppPath = filePath
-	log.GetLogger().Info("whispercpp检查完成", zap.String("路径", filePath))
+	log.GetLogger().Info("whispercpp check complete", zap.String("Path", filePath))
 	return nil
 }
 
-// 检测本地模型
+// Detect local model
 func checkModel(whisperType string) error {
 	var err error
 	if _, err = os.Stat("./models/whisperkit"); os.IsNotExist(err) {
 		err = os.MkdirAll("./models/whisperkit", 0755)
 		if err != nil {
-			log.GetLogger().Error("创建./models目录失败", zap.Error(err))
+			log.GetLogger().Error("Failed to create ./models directory", zap.Error(err))
 			return err
 		}
 	}
-	// 模型文件
+	// Model files
 	var model string
-	var modelPath string // cli中使用的model path
+	var modelPath string // model path used in cli
 	switch whisperType {
 	case "fasterwhisper":
 		model = config.Conf.Transcribe.Fasterwhisper.Model
 		modelPath = fmt.Sprintf("./models/faster-whisper-%s/model.bin", model)
 		if _, err = os.Stat(modelPath); os.IsNotExist(err) {
-			// 下载
-			log.GetLogger().Info(fmt.Sprintf("没有找到模型文件%s,即将开始自动下载", modelPath))
+			// Download
+			log.GetLogger().Info(fmt.Sprintf("Model file %s not found, starting automatic download...", modelPath))
 			downloadUrl := fmt.Sprintf("https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/faster-whisper-%s.zip", model)
 			err = util.DownloadFile(downloadUrl, fmt.Sprintf("./models/faster-whisper-%s.zip", model), config.Conf.App.Proxy)
 			if err != nil {
-				log.GetLogger().Error("下载fasterwhisper模型失败", zap.Error(err))
+				log.GetLogger().Error("Failed to download fasterwhisper model", zap.Error(err))
 				return err
 			}
 			err = util.Unzip(fmt.Sprintf("./models/faster-whisper-%s.zip", model), fmt.Sprintf("./models/faster-whisper-%s/", model))
 			if err != nil {
-				log.GetLogger().Error("解压模型失败", zap.Error(err))
+				log.GetLogger().Error("Failed to unzip model", zap.Error(err))
 				return err
 			}
-			log.GetLogger().Info("模型下载完成", zap.String("路径", modelPath))
+			log.GetLogger().Info("Model download complete", zap.String("Path", modelPath))
 		}
 	//case "whisperx":
 	//	// TODO: upload models
 	//	model = config.Conf.Transcribe.Whisperx.Model
 	//	modelDir := fmt.Sprintf("./models/whisperx/models--Systran--faster-whisper-%s", model)
 	//	if _, err = os.Stat(modelDir); os.IsNotExist(err) {
-	//		log.GetLogger().Info(fmt.Sprintf("没有找到WhisperX模型%s,即将开始自动下载", modelDir))
+	//		log.GetLogger().Info(fmt.Sprintf("WhisperX model %s not found, starting automatic download", modelDir))
 	//		// downloadUrl := fmt.Sprintf("https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/WhisperX_models_%s.zip", model)
 	//		// err = util.DownloadFile(downloadUrl, fmt.Sprintf("./models/WhisperX_models_%s.zip", model), config.Conf.App.Proxy)
 	//		// if err != nil {
-	//		// 	log.GetLogger().Info("下载WhisperX模型失败", zap.Error(err))
+	//		// 	log.GetLogger().Info("Failed to download WhisperX model", zap.Error(err))
 	//		// 	return err
 	//		// }
 	//		err = util.Unzip(fmt.Sprintf("./models/WhisperX_models_%s.zip", model), "./models/whisperx/")
 	//		if err != nil {
-	//			log.GetLogger().Error("解压模型失败", zap.Error(err))
+	//			log.GetLogger().Error("Failed to unzip model", zap.Error(err))
 	//			return err
 	//		}
-	//		log.GetLogger().Info("WhisperX模型下载完成", zap.String("路径", modelDir))
+	//		log.GetLogger().Info("WhisperX model download complete", zap.String("Path", modelDir))
 	//	}
 	case "whispercpp":
 		model = config.Conf.Transcribe.Whispercpp.Model
 		modelPath = fmt.Sprintf("./models/whispercpp/ggml-%s.bin", model)
 		if _, err = os.Stat(modelPath); os.IsNotExist(err) {
-			log.GetLogger().Info(fmt.Sprintf("没有找到whisper.cpp模型%s,即将开始自动下载", modelPath))
+			log.GetLogger().Info(fmt.Sprintf("whisper.cpp model %s not found, starting automatic download...", modelPath))
 			downloadUrl := fmt.Sprintf("https://gitcode.com/hf_mirrors/ai-gitcode/whisper.cpp/blob/main/ggml-%s.bin", model)
 			err = util.DownloadFile(downloadUrl, fmt.Sprintf("./models/whispercpp/ggml-%s.bin", model), config.Conf.App.Proxy)
 			if err != nil {
-				log.GetLogger().Info("下载whisper.cpp模型失败", zap.Error(err))
+				log.GetLogger().Info("Failed to download whisper.cpp model", zap.Error(err))
 				return err
 			}
-			log.GetLogger().Info("whisper.cpp模型下载完成", zap.String("路径", modelPath))
+			log.GetLogger().Info("whisper.cpp model download complete", zap.String("Path", modelPath))
 		}
 	case "whisperkit":
 		model = config.Conf.Transcribe.Whisperkit.Model
 		modelPath = fmt.Sprintf("./models/whisperkit/openai_whisper-%s", model)
 		files, _ := os.ReadDir(modelPath)
 		if len(files) == 0 {
-			log.GetLogger().Info("没有找到whisperkit模型，即将开始自动下载")
+			log.GetLogger().Info("whisperkit model not found, starting automatic download...")
 			downloadUrl := "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/whisperkit-large-v2.zip"
 			err = util.DownloadFile(downloadUrl, "./models/whisperkit/openai_whisper-large-v2.zip", config.Conf.App.Proxy)
 			if err != nil {
-				log.GetLogger().Info("下载whisperkit模型失败", zap.Error(err))
+				log.GetLogger().Info("Failed to download whisperkit model", zap.Error(err))
 				return err
 			}
 			err = util.Unzip("./models/whisperkit/openai_whisper-large-v2.zip", "./models/whisperkit/")
 			if err != nil {
-				log.GetLogger().Error("解压whisperkit模型失败", zap.Error(err))
+				log.GetLogger().Error("Failed to unzip whisperkit model", zap.Error(err))
 				return err
 			}
-			log.GetLogger().Info("whisperkit模型下载完成", zap.String("路径", modelPath))
+			log.GetLogger().Info("whisperkit model download complete", zap.String("Path", modelPath))
 		}
 	}
 
-	log.GetLogger().Info("模型检查完成", zap.String("路径", modelPath))
+	log.GetLogger().Info("Model check complete", zap.String("Path", modelPath))
 	return nil
 }
 
 func checkEdgeTts() error {
-	// 检查edge-tts是否已经安装
+	// Check if edge-tts is already installed
 	_, err := exec.LookPath("edge-tts")
 	if err == nil {
-		log.GetLogger().Info("已找到edge-tts")
+		log.GetLogger().Info("Found edge-tts")
 		storage.EdgeTtsPath = "edge-tts"
 		return nil
 	}
@@ -574,17 +574,17 @@ func checkEdgeTts() error {
 	if runtime.GOOS == "windows" {
 		EdgeTtsBinFilePath += ".exe"
 	}
-	// 先前下载过的
+	// Previous download
 	if _, err = os.Stat(EdgeTtsBinFilePath); err == nil {
-		log.GetLogger().Info("已找到edge-tts")
+		log.GetLogger().Info("Found edge-tts")
 		storage.EdgeTtsPath = EdgeTtsBinFilePath
 		return nil
 	}
-	log.GetLogger().Info("没有找到edge-tts，即将开始自动安装")
-	// 确保./bin目录存在
+	log.GetLogger().Info("edge-tts not found, starting automatic installation...")
+	// Ensure ./bin directory exists
 	err = os.MkdirAll("./bin", 0755)
 	if err != nil {
-		log.GetLogger().Error("创建./bin目录失败", zap.Error(err))
+		log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
 	}
 
 	var downloadUrl string
@@ -596,7 +596,7 @@ func checkEdgeTts() error {
 		} else if runtime.GOARCH == "arm64" {
 			downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-linux-arm64"
 		} else {
-			log.GetLogger().Error("不支持你当前的操作系统", zap.String("当前系统", runtime.GOOS))
+			log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 			return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 		}
 	} else if runtime.GOOS == "darwin" {
@@ -605,19 +605,19 @@ func checkEdgeTts() error {
 		} else if runtime.GOARCH == "arm64" {
 			downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-macos-apple"
 		} else {
-			log.GetLogger().Error("不支持你当前的操作系统", zap.String("当前系统", runtime.GOOS))
+			log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 			return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 		}
 	} else {
-		log.GetLogger().Error("不支持你当前的操作系统", zap.String("当前系统", runtime.GOOS))
+		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
 	}
 	err = util.DownloadFile(downloadUrl, EdgeTtsBinFilePath, config.Conf.App.Proxy)
 	if err != nil {
-		log.GetLogger().Error("下载edge-tts失败", zap.Error(err))
+		log.GetLogger().Error("Failed to download edge-tts", zap.Error(err))
 		return err
 	}
 	storage.EdgeTtsPath = EdgeTtsBinFilePath
-	log.GetLogger().Info("edge-tts安装完成", zap.String("路径", EdgeTtsBinFilePath))
+	log.GetLogger().Info("edge-tts installation complete", zap.String("Path", EdgeTtsBinFilePath))
 	return nil
 }

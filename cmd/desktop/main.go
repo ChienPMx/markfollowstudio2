@@ -14,16 +14,19 @@ func main() {
 	defer log.GetLogger().Sync()
 
 	if !config.LoadConfig() {
-		// 确保有最基础的配置
-		err := config.SaveConfig()
-		if err != nil {
-			log.GetLogger().Error("保存配置失败", zap.Error(err))
+		// Ensure basic configuration exists
+		if err := config.CheckConfig(); err != nil {
+			log.GetLogger().Error("Failed to load config", zap.Error(err))
 			os.Exit(1)
 		}
 	}
 	go func() {
+		if err := deps.CheckDependency(); err != nil {
+			log.GetLogger().Error("Failed to prepare dependencies", zap.Error(err))
+			os.Exit(1)
+		}
 		if err := server.StartBackend(); err != nil {
-			log.GetLogger().Error("后端服务启动失败", zap.Error(err))
+			log.GetLogger().Error("Failed to start backend service", zap.Error(err))
 			os.Exit(1)
 		}
 	}()

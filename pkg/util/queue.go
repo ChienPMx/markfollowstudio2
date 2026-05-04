@@ -6,17 +6,17 @@ type Queue[T any] interface {
 	IsEmpty() bool
 	IsFull() bool
 	Size() int
-	Peek() (T, bool) // 可选，根据需求添加
+	Peek() (T, bool) // Optional, add as needed
 }
 
 type CircularQueue[T any] struct {
 	data  []T
-	front int // 队首指针
-	rear  int // 队尾指针
-	count int // 跟踪元素数量
+	front int // Front pointer
+	rear  int // Rear pointer
+	count int // Tracks element count
 }
 
-// 创建一个新的循环队列
+// NewCircularQueue creates a new circular queue
 func NewCircularQueue[T any](maxSize int) *CircularQueue[T] {
 	return &CircularQueue[T]{
 		data:  make([]T, maxSize),

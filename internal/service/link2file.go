@@ -25,7 +25,7 @@ func (s Service) linkToFile(ctx context.Context, stepParam *types.SubtitleTaskSt
 	videoPath := fmt.Sprintf("%s/%s", stepParam.TaskBasePath, types.SubtitleTaskVideoFileName)
 	stepParam.TaskPtr.ProcessPct = 3
 	if strings.Contains(link, "local:") {
-		// 本地文件
+		// Local file
 		videoPath = strings.ReplaceAll(link, "local:", "")
 		cmd := exec.Command(storage.FfmpegPath, "-i", videoPath, "-vn", "-ar", "44100", "-ac", "2", "-ab", "192k", "-f", "mp3", audioPath)
 		output, err = cmd.CombinedOutput()
@@ -41,7 +41,7 @@ func (s Service) linkToFile(ctx context.Context, stepParam *types.SubtitleTaskSt
 			return fmt.Errorf("linkToFile.GetYouTubeID error: %w", err)
 		}
 		stepParam.Link = "https://www.youtube.com/watch?v=" + videoId
-		// 使用更灵活的音频格式选择器，避免 HTTP 403 错误
+		// Use a more flexible audio format selector to avoid HTTP 403 errors
 		cmdArgs := []string{
 			"-f", "bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio/worst",
 			"--extract-audio",
@@ -90,7 +90,7 @@ func (s Service) linkToFile(ctx context.Context, stepParam *types.SubtitleTaskSt
 	stepParam.AudioFilePath = audioPath
 
 	if !strings.HasPrefix(link, "local:") && stepParam.EmbedSubtitleVideoType != "none" {
-		// 需要下载原视频
+		// Need to download original video
 		cmdArgs := []string{"-f", "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]", "-o", videoPath, stepParam.Link}
 		if config.Conf.App.Proxy != "" {
 			cmdArgs = append(cmdArgs, "--proxy", config.Conf.App.Proxy)
@@ -107,7 +107,7 @@ func (s Service) linkToFile(ctx context.Context, stepParam *types.SubtitleTaskSt
 	}
 	stepParam.InputVideoPath = videoPath
 
-	// 更新字幕任务信息
+	// Update subtitle task info
 	stepParam.TaskPtr.ProcessPct = 10
 	return nil
 }
