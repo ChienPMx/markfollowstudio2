@@ -2,7 +2,6 @@
 tasks/
 cookies.txt
 .vscode/
-config/config.toml
 bin/
 models/
 uploads/
@@ -13,3 +12,8 @@ dist/
 # MACOS
 .DS_Store
 ._*
+
+config/config.toml
+*.exe
+*.zip
+*.log

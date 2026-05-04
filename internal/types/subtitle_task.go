@@ -205,15 +205,15 @@ var SplitTextWithContextPrompt = `You are a professional subtitle translation ex
 
 [STRICT TRANSLATION TASK]
 **Objective**: 
-Translate ONLY the "Target Sentence" below into %s.
-Use "Previous Sentences" ONLY to understand the context of referents (e.g. pronouns or ellipses), not to infer meaning.
+Translate the "Target Sentence" below into %s. 
+Ensure the translation is natural, fluent, and captures the original meaning perfectly for video subtitles.
 
 **Critical Rules**:
-1. OUTPUT MUST BE A SINGLE LINE: only the translation of the target sentence
-2. Do NOT infer or explain the meaning of the target sentence. Do NOT add any logical connections or causal phrases
-3. If the sentence is fragmentary or dependent (e.g. starts with "that"), KEEP IT THAT WAY in translation
-4. Do NOT complete or rewrite the sentence for fluency
-5. IGNORE the "Next Sentences" completely
+1. OUTPUT MUST BE A SINGLE LINE: only the translation of the target sentence.
+2. **100%% TRANSLATION**: The output MUST be entirely in %s. Do NOT leave any characters or words from the source language in the result.
+3. **Contextual Accuracy**: Use "Previous Sentences" and "Next Sentences" to understand the context and flow, ensuring the translation is coherent with the rest of the video.
+4. **Tone**: Maintain a professional, natural, and elegant tone suitable for the content.
+5. Do NOT add any explanations, notes, or additional formatting.
 
 **Context**:
 [Previous Sentences]
@@ -225,7 +225,7 @@ Use "Previous Sentences" ONLY to understand the context of referents (e.g. prono
 [Next Sentences]
 %s
 
-**Your output must be literal, minimal, and on a single line. Provide only the translation result:**`
+**Provide only the final translation result on a single line:**`
 
 type SmallAudio struct {
 	AudioFile         string
