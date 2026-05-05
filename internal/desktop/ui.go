@@ -3,12 +3,12 @@ package desktop
 import (
 	"fmt"
 	"image/color"
-	"krillin-ai/config"
-	"krillin-ai/internal/deps"
-	"krillin-ai/internal/server"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/static"
+	"markflow-studio/config"
+	"markflow-studio/internal/deps"
+	"markflow-studio/internal/server"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/static"
 	"net/url"
 	"path/filepath"
 	"strconv"
@@ -159,17 +159,17 @@ func createApiProvidersCard() *fyne.Container {
 			}
 		}
 	}
-	// Qwen Card
-	qwenCard := createProviderCard(
-		"Aliyun Qwen",
-		"Aliyun Large Model Service",
-		"https://bailian.console.aliyun.com/",
-		color.NRGBA{R: 99, G: 54, B: 231, A: 255}, // Qwen purple
-		"qwen",
+	// VClip Card
+	vclipCard := createProviderCard(
+		"VClip TTS",
+		"High Quality Voice Synthesis",
+		"https://vclip.io/",
+		color.NRGBA{R: 255, G: 105, B: 180, A: 255}, // Hot pink
+		"vclip",
 		func() {
-			setProvider("https://dashscope.aliyuncs.com/compatible-mode/v1", []string{
-				"qwen-turbo", "qwen-plus", "qwen-max",
-			})
+			// No LLM settings to set, just a shortcut card
+			setProvider("", []string{})
+			config.Conf.Tts.Provider = "vclip"
 		},
 	)
 
@@ -205,7 +205,7 @@ func createApiProvidersCard() *fyne.Container {
 	addProviderCard := createProviderCard(
 		"Add",
 		"Add custom provider",
-		"https://example.com/krillinai/add-provider", // Placeholder link, can be replaced later
+		"https://example.com/MarkFlow Studio/add-provider", // Placeholder link, can be replaced later
 		color.NRGBA{R: 14, G: 165, B: 233, A: 255},   // Cyan accent
 		"add",
 		func() {
@@ -215,7 +215,7 @@ func createApiProvidersCard() *fyne.Container {
 
 	providersGrid := container.New(
 		layout.NewGridLayoutWithColumns(2),
-		qwenCard,
+		vclipCard,
 		openaiCard,
 		deepseekCard,
 		addProviderCard,
@@ -391,8 +391,8 @@ func createLlmGuideCard() *fyne.Container {
 
 ## API Base URL: (Choose according to platform)  
    - OpenAI Official: https://api.openai.com/v1  
-   - Aliyun Qwen: https://dashscope.aliyuncs.com/compatible-mode/v1  
-   - DeepSeek: https://api.deepseek.com/v1  
+   - DeepSeek: https://api.deepseek.com/v1
+   - Local Models: http://localhost:11434/v1 (Ollama)
 
 ## API Key:  
    - Obtain from the respective platform's console  
@@ -400,8 +400,8 @@ func createLlmGuideCard() *fyne.Container {
 
 ## Model Name:  
    - OpenAI: gpt-3.5-turbo, gpt-4, gpt-4-turbo...
-   - Aliyun: qwen-turbo, qwen-plus, qwen-max...
    - DeepSeek: deepseek-chat, deepseek-coder...
+   - Local Models: llama3, mistral...
 
 ## Usage Advice:
    - Choose the appropriate model based on your needs
@@ -689,7 +689,7 @@ func createTranscribeConfigGroup() *fyne.Container {
 
 // Create TTS config group
 func createTtsConfigGroup() *fyne.Container {
-	providerOptions := []string{"openai", "edge-tts", "vclip"}
+	providerOptions := []string{"openai", "vclip"}
 	providerSelect := widget.NewSelect(providerOptions, func(value string) {
 		config.Conf.Tts.Provider = value
 	})
@@ -704,8 +704,7 @@ func createTtsConfigGroup() *fyne.Container {
 	openaiVoiceEntry := StyledEntry("Default Voice (e.g., alloy)")
 	openaiVoiceEntry.Bind(binding.BindString(&config.Conf.Tts.Openai.Voice))
 
-	edgeTtsVoiceEntry := StyledEntry("Edge-TTS Voice (e.g., en-US-AndrewNeural)")
-	edgeTtsVoiceEntry.Bind(binding.BindString(&config.Conf.Tts.EdgeTts.Voice))
+
 
 	vclipApiKeyEntry := StyledPasswordEntry("VClip API Key")
 	vclipApiKeyEntry.Bind(binding.BindString(&config.Conf.Tts.VClip.ApiKey))
@@ -722,7 +721,6 @@ func createTtsConfigGroup() *fyne.Container {
 		widget.NewFormItem("OpenAI Model", openaiModelEntry),
 		widget.NewFormItem("OpenAI Voice", openaiVoiceEntry),
 
-		widget.NewFormItem("Edge-TTS Voice", edgeTtsVoiceEntry),
 
 		widget.NewFormItem("VClip API Key", vclipApiKeyEntry),
 		widget.NewFormItem("VClip Voice ID", vclipVoiceIdEntry),
@@ -898,8 +896,6 @@ func createVoiceSettingsCard(sm *SubtitleManager) *fyne.Container {
 	switch config.Conf.Tts.Provider {
 	case "openai":
 		defaultVoice = config.Conf.Tts.Openai.Voice
-	case "edge-tts":
-		defaultVoice = config.Conf.Tts.EdgeTts.Voice
 	case "vclip":
 		defaultVoice = config.Conf.Tts.VClip.VoiceID
 	}

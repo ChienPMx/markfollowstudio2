@@ -9,7 +9,7 @@ docker run -d \
   -p 8888:8888 \
   -v /path/to/config.toml:/app/config/config.toml \
   -v /path/to/tasks:/app/tasks \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### docker-compose 시작
@@ -17,7 +17,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:
@@ -26,7 +26,7 @@ services:
 ```
 
 ## 모델 지속성
-fasterwhisper 모델을 사용하는 경우, KrillinAI는 모델에 필요한 파일을 `/app/models` 디렉토리와 `/app/bin` 디렉토리로 자동 다운로드합니다. 컨테이너가 삭제되면 이러한 파일은 사라집니다. 모델을 지속적으로 유지하려면 이 두 디렉토리를 호스트 머신의 디렉토리에 매핑할 수 있습니다.
+fasterwhisper 모델을 사용하는 경우, MarkFlow Studio는 모델에 필요한 파일을 `/app/models` 디렉토리와 `/app/bin` 디렉토리로 자동 다운로드합니다. 컨테이너가 삭제되면 이러한 파일은 사라집니다. 모델을 지속적으로 유지하려면 이 두 디렉토리를 호스트 머신의 디렉토리에 매핑할 수 있습니다.
 
 ### docker run 시작
 ```bash
@@ -36,7 +36,7 @@ docker run -d \
   -v /path/to/tasks:/app/tasks \
   -v /path/to/models:/app/models \
   -v /path/to/bin:/app/bin \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### docker-compose 시작
@@ -44,7 +44,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:

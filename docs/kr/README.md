@@ -1,23 +1,23 @@
 <div align="center">
-  <img src="/docs/images/logo.jpg" alt="KrillinAI" height="90">
+  <img src="/docs/images/logo.jpg" alt="MarkFlow Studio" height="90">
 
 # 미니멀리스트 AI 비디오 번역 및 더빙 도구
 
-<a href="https://trendshift.io/repositories/13360" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13360" alt="KrillinAI%2FKrillinAI | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/13360" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13360" alt="MarkFlow Studio%2FMarkFlow Studio | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 **[English](/README.md)｜[简体中文](/docs/zh/README.md)｜[日本語](/docs/jp/README.md)｜[한국어](/docs/kr/README.md)｜[Tiếng Việt](/docs/vi/README.md)｜[Français](/docs/fr/README.md)｜[Deutsch](/docs/de/README.md)｜[Español](/docs/es/README.md)｜[Português](/docs/pt/README.md)｜[Русский](/docs/rus/README.md)｜[اللغة العربية](/docs/ar/README.md)**
 
-[![Twitter](https://img.shields.io/badge/Twitter-KrillinAI-orange?logo=twitter)](https://x.com/KrillinAI)
+[![Twitter](https://img.shields.io/badge/Twitter-MarkFlow Studio-orange?logo=twitter)](https://x.com/MarkFlow Studio)
 [![QQ 群](https://img.shields.io/badge/QQ%20群-754069680-green?logo=tencent-qq)](https://jq.qq.com/?_wv=1027&k=754069680)
 [![Bilibili](https://img.shields.io/badge/dynamic/json?label=Bilibili&query=%24.data.follower&suffix=粉丝&url=https%3A%2F%2Fapi.bilibili.com%2Fx%2Frelation%2Fstat%3Fvmid%3D242124650&logo=bilibili&color=00A1D6&labelColor=FE7398&logoColor=FFFFFF)](https://space.bilibili.com/242124650)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/krillinai/KrillinAI)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MarkFlow Studio/MarkFlow Studio)
 
 </div>
 
 ## 프로젝트 소개  ([지금 온라인 버전 사용해보기!](https://www.klic.studio/))
 [**빠른 시작**](#-quick-start)
 
-KrillinAI는 Krillin AI가 개발한 다재다능한 오디오 및 비디오 현지화 및 향상 솔루션입니다. 이 미니멀하면서도 강력한 도구는 비디오 번역, 더빙 및 음성 클로닝을 통합하여 모든 주요 플랫폼(Bilibili, Xiaohongshu, Douyin, WeChat Video, Kuaishou, YouTube, TikTok 등)에서 완벽한 프레젠테이션을 보장하는 가로 및 세로 형식을 지원합니다. 엔드 투 엔드 워크플로우를 통해 원자재를 몇 번의 클릭만으로 아름답게 사용할 수 있는 크로스 플랫폼 콘텐츠로 변환할 수 있습니다.
+MarkFlow Studio는 MarkFlow Studio가 개발한 다재다능한 오디오 및 비디오 현지화 및 향상 솔루션입니다. 이 미니멀하면서도 강력한 도구는 비디오 번역, 더빙 및 음성 클로닝을 통합하여 모든 주요 플랫폼(Bilibili, Xiaohongshu, Douyin, WeChat Video, Kuaishou, YouTube, TikTok 등)에서 완벽한 프레젠테이션을 보장하는 가로 및 세로 형식을 지원합니다. 엔드 투 엔드 워크플로우를 통해 원자재를 몇 번의 클릭만으로 아름답게 사용할 수 있는 크로스 플랫폼 콘텐츠로 변환할 수 있습니다.
 
 ## 주요 기능 및 기능:
 
@@ -119,11 +119,11 @@ _**아래 표의 모든 로컬 모델은 실행 파일 + 모델 파일의 자동
 
 ## 🚀 빠른 시작
 
-[KrillinAI의 Deepwiki](https://deepwiki.com/krillinai/KrillinAI)에서 질문할 수 있습니다. 이곳은 리포지토리의 파일을 색인화하여 빠르게 답변을 찾을 수 있습니다.
+[MarkFlow Studio의 Deepwiki](https://deepwiki.com/MarkFlow Studio/MarkFlow Studio)에서 질문할 수 있습니다. 이곳은 리포지토리의 파일을 색인화하여 빠르게 답변을 찾을 수 있습니다.
 
 ### 기본 단계
 
-먼저, [Release](https://github.com/KrillinAI/KrillinAI/releases)에서 장치 시스템에 맞는 실행 파일을 다운로드한 후, 아래 튜토리얼에 따라 데스크탑 버전 또는 비데스크탑 버전을 선택합니다. 소프트웨어 다운로드를 빈 폴더에 두세요. 실행하면 일부 디렉토리가 생성되며, 빈 폴더에 두면 관리가 더 쉬워집니다.
+먼저, [Release](https://github.com/MarkFlow Studio/MarkFlow Studio/releases)에서 장치 시스템에 맞는 실행 파일을 다운로드한 후, 아래 튜토리얼에 따라 데스크탑 버전 또는 비데스크탑 버전을 선택합니다. 소프트웨어 다운로드를 빈 폴더에 두세요. 실행하면 일부 디렉토리가 생성되며, 빈 폴더에 두면 관리가 더 쉬워집니다.
 
 【데스크탑 버전인 경우, 즉 "desktop"이 포함된 릴리스 파일인 경우, 여기를 참조하세요】
 _데스크탑 버전은 새로운 사용자가 구성 파일을 올바르게 편집하는 데 어려움을 겪는 문제를 해결하기 위해 새로 출시되었으며, 지속적으로 업데이트되는 몇 가지 버그가 있습니다._
@@ -142,24 +142,24 @@ _비데스크탑 버전은 초기 버전으로, 구성은 더 복잡하지만 �
 【데스크탑 버전인 경우, 즉 "desktop"이 포함된 릴리스 파일인 경우, 여기를 참조하세요】
 서명 문제로 인해 현재 데스크탑 버전은 두 번 클릭하여 실행하거나 dmg를 통해 설치할 수 없습니다. 애플리케이션을 수동으로 신뢰해야 합니다. 방법은 다음과 같습니다:
 
-1. 실행 파일이 있는 디렉토리에서 터미널을 엽니다 (파일 이름이 KrillinAI_1.0.0_desktop_macOS_arm64라고 가정).
+1. 실행 파일이 있는 디렉토리에서 터미널을 엽니다 (파일 이름이 MarkFlow Studio_1.0.0_desktop_macOS_arm64라고 가정).
 2. 다음 명령을 순서대로 실행합니다:
 
 ```
-sudo xattr -cr ./KrillinAI_1.0.0_desktop_macOS_arm64
-sudo chmod +x ./KrillinAI_1.0.0_desktop_macOS_arm64 
-./KrillinAI_1.0.0_desktop_macOS_arm64
+sudo xattr -cr ./MarkFlow Studio_1.0.0_desktop_macOS_arm64
+sudo chmod +x ./MarkFlow Studio_1.0.0_desktop_macOS_arm64 
+./MarkFlow Studio_1.0.0_desktop_macOS_arm64
 ```
 
 【비데스크탑 버전인 경우, 즉 "desktop"이 포함되지 않은 릴리스 파일인 경우, 여기를 참조하세요】
 이 소프트웨어는 서명되지 않았으므로 macOS에서 실행할 때 "기본 단계"에서 파일 구성을 완료한 후에도 애플리케이션을 수동으로 신뢰해야 합니다. 방법은 다음과 같습니다:
 
-1. 실행 파일이 있는 디렉토리에서 터미널을 엽니다 (파일 이름이 KrillinAI_1.0.0_macOS_arm64라고 가정).
+1. 실행 파일이 있는 디렉토리에서 터미널을 엽니다 (파일 이름이 MarkFlow Studio_1.0.0_macOS_arm64라고 가정).
 2. 다음 명령을 순서대로 실행합니다:
    ```
-   sudo xattr -rd com.apple.quarantine ./KrillinAI_1.0.0_macOS_arm64
-   sudo chmod +x ./KrillinAI_1.0.0_macOS_arm64
-   ./KrillinAI_1.0.0_macOS_arm64
+   sudo xattr -rd com.apple.quarantine ./MarkFlow Studio_1.0.0_macOS_arm64
+   sudo chmod +x ./MarkFlow Studio_1.0.0_macOS_arm64
+   ./MarkFlow Studio_1.0.0_macOS_arm64
    ```
    
    이렇게 하면 서비스가 시작됩니다.
@@ -215,4 +215,4 @@ sudo chmod +x ./KrillinAI_1.0.0_desktop_macOS_arm64
 
 ## 스타 역사
 
-[![스타 역사 차트](https://api.star-history.com/svg?repos=KrillinAI/KrillinAI&type=Date)](https://star-history.com/#KrillinAI/KrillinAI&Date)
+[![스타 역사 차트](https://api.star-history.com/svg?repos=MarkFlow Studio/MarkFlow Studio&type=Date)](https://star-history.com/#MarkFlow Studio/MarkFlow Studio&Date)

@@ -2,10 +2,10 @@ package main
 
 import (
 	"go.uber.org/zap"
-	"krillin-ai/config"
-	"krillin-ai/internal/desktop"
-	"krillin-ai/internal/server"
-	"krillin-ai/log"
+	"markflow-studio/config"
+	"markflow-studio/internal/desktop"
+	"markflow-studio/internal/server"
+	"markflow-studio/log"
 	"os"
 )
 

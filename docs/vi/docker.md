@@ -9,7 +9,7 @@ docker run -d \
   -p 8888:8888 \
   -v /path/to/config.toml:/app/config/config.toml \
   -v /path/to/tasks:/app/tasks \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### Khởi động bằng docker-compose
@@ -17,7 +17,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:
@@ -26,7 +26,7 @@ services:
 ```
 
 ## Lưu trữ mô hình
-Nếu sử dụng mô hình fasterwhisper, KrillinAI sẽ tự động tải xuống các tệp cần thiết cho mô hình vào thư mục `/app/models` và thư mục `/app/bin`. Sau khi xóa container, các tệp này sẽ bị mất. Nếu cần lưu trữ mô hình, bạn có thể ánh xạ hai thư mục này đến thư mục của máy chủ.
+Nếu sử dụng mô hình fasterwhisper, MarkFlow Studio sẽ tự động tải xuống các tệp cần thiết cho mô hình vào thư mục `/app/models` và thư mục `/app/bin`. Sau khi xóa container, các tệp này sẽ bị mất. Nếu cần lưu trữ mô hình, bạn có thể ánh xạ hai thư mục này đến thư mục của máy chủ.
 
 ### Khởi động bằng docker run
 ```bash
@@ -36,7 +36,7 @@ docker run -d \
   -v /path/to/tasks:/app/tasks \
   -v /path/to/models:/app/models \
   -v /path/to/bin:/app/bin \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### Khởi động bằng docker-compose
@@ -44,7 +44,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:

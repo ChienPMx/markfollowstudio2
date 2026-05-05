@@ -9,7 +9,7 @@ docker run -d \
   -p 8888:8888 \
   -v /path/to/config.toml:/app/config/config.toml \
   -v /path/to/tasks:/app/tasks \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### بدء تشغيل docker-compose
@@ -17,7 +17,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:
@@ -26,7 +26,7 @@ services:
 ```
 
 ## نماذج الاستمرارية
-إذا كنت تستخدم نموذج fasterwhisper، سيقوم KrillinAI بتنزيل الملفات المطلوبة للنموذج تلقائيًا إلى دليل `/app/models` ودليل `/app/bin`. ستفقد هذه الملفات بعد حذف الحاوية. إذا كنت بحاجة إلى استمرارية النموذج، يمكنك ربط هذين الدليلين بدليل المضيف.
+إذا كنت تستخدم نموذج fasterwhisper، سيقوم MarkFlow Studio بتنزيل الملفات المطلوبة للنموذج تلقائيًا إلى دليل `/app/models` ودليل `/app/bin`. ستفقد هذه الملفات بعد حذف الحاوية. إذا كنت بحاجة إلى استمرارية النموذج، يمكنك ربط هذين الدليلين بدليل المضيف.
 
 ### بدء تشغيل docker run
 ```bash
@@ -36,7 +36,7 @@ docker run -d \
   -v /path/to/tasks:/app/tasks \
   -v /path/to/models:/app/models \
   -v /path/to/bin:/app/bin \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### بدء تشغيل docker-compose
@@ -44,7 +44,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:

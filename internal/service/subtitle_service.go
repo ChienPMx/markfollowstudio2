@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"krillin-ai/internal/dto"
-	"krillin-ai/internal/storage"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/pkg/util"
+	"markflow-studio/internal/dto"
+	"markflow-studio/internal/storage"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/pkg/util"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -81,9 +81,10 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 
 	// Create task; initialize review channel if review mode is enabled
 	taskPtr := &types.SubtitleTask{
-		TaskId:   taskId,
-		VideoSrc: req.Url,
-		Status:   types.SubtitleTaskStatusProcessing,
+		TaskId:       taskId,
+		VideoSrc:     req.Url,
+		TtsVoiceCode: req.TtsVoiceCode,
+		Status:       types.SubtitleTaskStatusProcessing,
 	}
 	if req.EnableReview {
 		taskPtr.ReviewDoneCh = make(chan struct{})
@@ -167,8 +168,22 @@ func (s Service) StartSubtitleTask(req dto.StartVideoSubtitleTaskReq) (*dto.Star
 			log.GetLogger().Info("Review approved, resuming pipeline", zap.String("taskId", taskId))
 			taskPtr.Status = types.SubtitleTaskStatusProcessing
 
+			// Sync settings from taskPtr (updated by ApproveReview API) to stepParam
+			stepParam.RenderSettings = taskPtr.RenderSettings
+			stepParam.VoiceSettings = taskPtr.VoiceSettings
+			if taskPtr.VoiceSettings != nil && taskPtr.VoiceSettings.VoiceId != "" {
+				stepParam.TtsVoiceCode = taskPtr.VoiceSettings.VoiceId
+			}
+
 			// Ensure the TTS engine reads from the user-reviewed file
 			stepParam.TtsSourceFilePath = taskPtr.ReviewSrtPath
+			// Ensure we have a valid subtitle file path for embedding
+			stepParam.BilingualSrtFilePath = taskPtr.ReviewSrtPath
+
+			// If no embed type was selected, default to horizontal so the user gets a video with subs
+			if stepParam.EmbedSubtitleVideoType == "none" || stepParam.EmbedSubtitleVideoType == "" {
+				stepParam.EmbedSubtitleVideoType = "horizontal"
+			}
 		}
 		// ─────────────────────────────────────────────────────────────────────
 
@@ -240,7 +255,15 @@ func (s Service) GetTaskStatus(req dto.GetVideoSubtitleTaskReq) (*dto.GetVideoSu
 			}
 		}),
 		TargetLanguage:    taskPtr.TargetLanguage,
+		TtsVoiceCode:      taskPtr.TtsVoiceCode,
 		SpeechDownloadUrl: taskPtr.SpeechDownloadUrl,
+	}
+
+	// Set VideoUrl for frontend
+	if strings.HasPrefix(taskPtr.VideoSrc, "local:") {
+		res.VideoUrl = "/api/file/" + strings.TrimPrefix(taskPtr.VideoSrc, "local:")
+	} else {
+		res.VideoUrl = taskPtr.VideoSrc
 	}
 
 	// Provide SRT content when the pipeline is waiting for review
@@ -278,6 +301,38 @@ func (s Service) ApproveReview(req dto.ApproveReviewReq) error {
 			return fmt.Errorf("Failed to save edited subtitles: %w", err)
 		}
 		log.GetLogger().Info("ApproveReview: edited SRT saved", zap.String("taskId", req.TaskId))
+	}
+
+	// Persist RenderSettings
+	if req.RenderSettings != nil {
+		taskPtr.RenderSettings = &types.RenderSettings{
+			OriginalVolume:  req.RenderSettings.OriginalVolume,
+			SubtitleStyle:   req.RenderSettings.SubtitleStyle,
+			FontFamily:      req.RenderSettings.FontFamily,
+			FontSize:        req.RenderSettings.FontSize,
+			FontColor:       req.RenderSettings.FontColor,
+			BorderColor:     req.RenderSettings.BorderColor,
+			BorderWidth:     req.RenderSettings.BorderWidth,
+			BgPadding:       req.RenderSettings.BgPadding,
+			BottomDistance:  req.RenderSettings.BottomDistance,
+			LineSpacing:     req.RenderSettings.LineSpacing,
+			BgColor:         req.RenderSettings.BgColor,
+			IsBold:          req.RenderSettings.IsBold,
+			DisplayMode:     req.RenderSettings.DisplayMode,
+			HighlightColor:  req.RenderSettings.HighlightColor,
+			MaxWordsPerLine: req.RenderSettings.MaxWordsPerLine,
+			VideoRatio:      req.RenderSettings.VideoRatio,
+			FitMode:         req.RenderSettings.FitMode,
+		}
+	}
+
+	// Persist VoiceSettings
+	if req.VoiceSettings != nil {
+		taskPtr.VoiceSettings = &types.VoiceSettings{
+			VoiceId: req.VoiceSettings.VoiceId,
+			Speed:   req.VoiceSettings.Speed,
+			Emotion: req.VoiceSettings.Emotion,
+		}
 	}
 
 	// Unblock the pipeline

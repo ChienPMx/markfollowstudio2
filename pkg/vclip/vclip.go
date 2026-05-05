@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"krillin-ai/log"
+	"markflow-studio/log"
 )
 
 const (
@@ -62,8 +62,8 @@ type ttsLongTextResponse struct {
 		ProjectExportID string `json:"projectExportId"`
 	} `json:"result"`
 	Error *struct {
-		Code    int    `json:"code"`
-		Message string `json:"message"`
+		Code    interface{} `json:"code"`
+		Message string      `json:"message"`
 	} `json:"error"`
 }
 
@@ -74,8 +74,8 @@ type exportStatusResponse struct {
 		URL   string `json:"url"`
 	} `json:"result"`
 	Error *struct {
-		Code    int    `json:"code"`
-		Message string `json:"message"`
+		Code    interface{} `json:"code"`
+		Message string      `json:"message"`
 	} `json:"error"`
 }
 
@@ -141,7 +141,7 @@ func (c *Client) Text2Speech(text, voice, outputFile string) error {
 		return err
 	}
 	if ttsResp.Error != nil {
-		return fmt.Errorf("vclip: API error %d: %s", ttsResp.Error.Code, ttsResp.Error.Message)
+		return fmt.Errorf("vclip: API error %v: %s", ttsResp.Error.Code, ttsResp.Error.Message)
 	}
 
 	exportID := ttsResp.Result.ProjectExportID
@@ -166,7 +166,7 @@ func (c *Client) Text2Speech(text, voice, outputFile string) error {
 			continue
 		}
 		if statusResp.Error != nil {
-			return fmt.Errorf("vclip: status API error %d: %s", statusResp.Error.Code, statusResp.Error.Message)
+			return fmt.Errorf("vclip: status API error %v: %s", statusResp.Error.Code, statusResp.Error.Message)
 		}
 
 		state := statusResp.Result.State

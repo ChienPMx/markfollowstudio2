@@ -3,8 +3,8 @@ package desktop
 import (
 	"fmt"
 	"image/color"
-	"krillin-ai/config"
-	"krillin-ai/log"
+	"markflow-studio/config"
+	"markflow-studio/log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -33,7 +33,7 @@ func createNavButton(text string, icon fyne.Resource, isSelected bool, onTap fun
 // Show starts the desktop UI
 func Show() {
 	myApp := app.New()
-	myWindow := myApp.NewWindow("KrillinAI")
+	myWindow := myApp.NewWindow("MarkFlow Studio")
 
 	// Create theme manager
 	themeManager := NewThemeManager(myApp, myWindow)
@@ -43,7 +43,7 @@ func Show() {
 
 	logoContainer := container.NewVBox()
 
-	logo := canvas.NewText("KrillinAI", color.NRGBA{R: 59, G: 130, B: 246, A: 255})
+	logo := canvas.NewText("MarkFlow Studio", color.NRGBA{R: 59, G: 130, B: 246, A: 255})
 	logo.TextSize = 28
 	logo.TextStyle = fyne.TextStyle{Bold: true}
 	logo.Alignment = fyne.TextAlignCenter
@@ -51,7 +51,7 @@ func Show() {
 	separator := canvas.NewRectangle(color.NRGBA{R: 209, G: 213, B: 219, A: 255})
 	separator.SetMinSize(fyne.NewSize(0, 2))
 
-	slogan := canvas.NewText("AI Video Translation & Dubbing by Krillin AI", color.NRGBA{R: 107, G: 114, B: 128, A: 255})
+	slogan := canvas.NewText("AI Video Translation & Dubbing by MarkFlow Studio", color.NRGBA{R: 107, G: 114, B: 128, A: 255})
 	slogan.TextSize = 12
 	slogan.Alignment = fyne.TextAlignCenter
 

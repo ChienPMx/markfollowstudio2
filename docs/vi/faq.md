@@ -9,7 +9,7 @@
   ```
   /── config/
   │   └── config.toml
-  └── krillinai.exe (tệp thực thi của bạn)
+  └── MarkFlow Studio.exe (tệp thực thi của bạn)
   ```
 * **Đối với người dùng Windows:** Nên đặt toàn bộ thư mục phần mềm vào một thư mục không nằm trên ổ C: để tránh các vấn đề về quyền truy cập.
 
@@ -34,7 +34,7 @@ Lỗi này chỉ ra một vấn đề với trình tải video, thường liên 
 
 Điều này hầu như luôn do thiếu phông chữ trên hệ thống, đặc biệt là những phông hỗ trợ ký tự Trung Quốc. Để khắc phục điều này, bạn cần cài đặt các phông chữ cần thiết.
 
-1. Tải xuống các phông chữ cần thiết, chẳng hạn như [Microsoft YaHei](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) và [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
+1. Tải xuống các phông chữ cần thiết, chẳng hạn như [Microsoft YaHei](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) và [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
 2. Tạo một thư mục phông chữ mới: `sudo mkdir -p /usr/share/fonts/msyh`.
 3. Sao chép các tệp phông `.ttc` đã tải xuống vào thư mục mới này.
 4. Thực hiện các lệnh sau để xây dựng lại bộ nhớ cache phông chữ:
@@ -45,14 +45,14 @@ Lỗi này chỉ ra một vấn đề với trình tải video, thường liên 
     sudo fc-cache -fv
     ```
 
-### 4. Trên macOS, ứng dụng không khởi động và hiển thị lỗi như "KrillinAI bị hỏng và không thể mở."
+### 4. Trên macOS, ứng dụng không khởi động và hiển thị lỗi như "MarkFlow Studio bị hỏng và không thể mở."
 
 Điều này do tính năng bảo mật của macOS, Gatekeeper, hạn chế các ứng dụng từ các nhà phát triển không xác định. Để khắc phục điều này, bạn phải xóa thuộc tính cách ly một cách thủ công.
 
 1. Mở ứng dụng **Terminal**.
-2. Gõ lệnh `xattr -cr` theo sau là một khoảng trắng, sau đó kéo tệp `KrillinAI.app` từ cửa sổ Finder của bạn vào Terminal. Lệnh sẽ trông giống như sau:
+2. Gõ lệnh `xattr -cr` theo sau là một khoảng trắng, sau đó kéo tệp `MarkFlow Studio.app` từ cửa sổ Finder của bạn vào Terminal. Lệnh sẽ trông giống như sau:
     ```
-    xattr -cr /Applications/KrillinAI.app
+    xattr -cr /Applications/MarkFlow Studio.app
     ```
 3. Nhấn Enter. Bây giờ bạn nên có thể mở ứng dụng.
 
@@ -86,7 +86,7 @@ Các giọng nói có sẵn và mã tương ứng của chúng được xác đ�
 
 ### 9. Làm thế nào tôi có thể sử dụng một Mô Hình Ngôn Ngữ Lớn (LLM) cục bộ, như một cái chạy trên Ollama, để dịch?
 
-Có, bạn có thể cấu hình KrillinAI để sử dụng bất kỳ LLM cục bộ nào cung cấp một điểm cuối API tương thích với OpenAI.
+Có, bạn có thể cấu hình MarkFlow Studio để sử dụng bất kỳ LLM cục bộ nào cung cấp một điểm cuối API tương thích với OpenAI.
 
 1. **Khởi động LLM Cục Bộ của Bạn:** Đảm bảo dịch vụ cục bộ của bạn (ví dụ: Ollama chạy Llama3) đang hoạt động và có thể truy cập.
 2. **Chỉnh sửa `config.toml`:** Trong phần cho mô hình ngôn ngữ lớn (người dịch):
@@ -98,13 +98,13 @@ Có, bạn có thể cấu hình KrillinAI để sử dụng bất kỳ LLM cụ
 
 ### 10. Tôi có thể tùy chỉnh kiểu phụ đề (phông chữ, kích thước, màu sắc) trong video cuối không?
 
-Không. Hiện tại, KrillinAI tạo ra **phụ đề cứng**, có nghĩa là chúng được đốt trực tiếp vào các khung video. Ứng dụng **không cung cấp tùy chọn để tùy chỉnh kiểu phụ đề**; nó sử dụng một kiểu đã được định sẵn.
+Không. Hiện tại, MarkFlow Studio tạo ra **phụ đề cứng**, có nghĩa là chúng được đốt trực tiếp vào các khung video. Ứng dụng **không cung cấp tùy chọn để tùy chỉnh kiểu phụ đề**; nó sử dụng một kiểu đã được định sẵn.
 
 Để tùy chỉnh nâng cao, cách làm việc được khuyến nghị là:
 
-1. Sử dụng KrillinAI để tạo tệp phụ đề `.srt` đã dịch.
+1. Sử dụng MarkFlow Studio để tạo tệp phụ đề `.srt` đã dịch.
 2. Nhập video gốc của bạn và tệp `.srt` này vào một trình chỉnh sửa video chuyên nghiệp (ví dụ: Premiere Pro, Final Cut Pro, DaVinci Resolve) để áp dụng các kiểu tùy chỉnh trước khi xuất.
 
-### 11. Tôi đã có một tệp `.srt` đã dịch. KrillinAI có thể sử dụng nó chỉ để thực hiện lồng ghép không?
+### 11. Tôi đã có một tệp `.srt` đã dịch. MarkFlow Studio có thể sử dụng nó chỉ để thực hiện lồng ghép không?
 
 Không, tính năng này hiện không được hỗ trợ. Ứng dụng chạy một quy trình đầy đủ từ chuyển đổi đến tạo video cuối cùng.

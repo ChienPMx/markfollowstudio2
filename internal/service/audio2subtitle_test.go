@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"krillin-ai/config"
-	"krillin-ai/log"
+	"markflow-studio/config"
+	"markflow-studio/log"
 	"os"
 	"testing"
 

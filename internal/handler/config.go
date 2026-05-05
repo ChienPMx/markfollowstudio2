@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"krillin-ai/config"
-	"krillin-ai/internal/response"
-	"krillin-ai/log"
+	"markflow-studio/config"
+	"markflow-studio/internal/response"
+	"markflow-studio/log"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -15,12 +15,12 @@ var configUpdated bool
 // ConfigRequest defines the configuration data structure from frontend
 type ConfigRequest struct {
 	App struct {
-		SegmentDuration       int    `json:"segmentDuration"`
-		TranscribeParallelNum int    `json:"transcribeParallelNum"`
-		TranslateParallelNum  int    `json:"translateParallelNum"`
-		TranscribeMaxAttempts int    `json:"transcribeMaxAttempts"`
-		TranslateMaxAttempts  int    `json:"translateMaxAttempts"`
-		MaxSentenceLength     int    `json:"maxSentenceLength"`
+		SegmentDuration       int    `json:"segment_duration"`
+		TranscribeParallelNum int    `json:"transcribe_parallel_num"`
+		TranslateParallelNum  int    `json:"translate_parallel_num"`
+		TranscribeMaxAttempts int    `json:"transcribe_max_attempts"`
+		TranslateMaxAttempts  int    `json:"translate_max_attempts"`
+		MaxSentenceLength     int    `json:"max_sentence_length"`
 		Proxy                 string `json:"proxy"`
 	} `json:"app"`
 	Server struct {
@@ -28,16 +28,16 @@ type ConfigRequest struct {
 		Port int    `json:"port"`
 	} `json:"server"`
 	Llm struct {
-		BaseUrl string `json:"baseUrl"`
-		ApiKey  string `json:"apiKey"`
+		BaseUrl string `json:"base_url"`
+		ApiKey  string `json:"api_key"`
 		Model   string `json:"model"`
 	} `json:"llm"`
 	Transcribe struct {
 		Provider              string `json:"provider"`
-		EnableGpuAcceleration bool   `json:"enableGpuAcceleration"`
+		EnableGpuAcceleration bool   `json:"enable_gpu_acceleration"`
 		Openai                struct {
-			BaseUrl string `json:"baseUrl"`
-			ApiKey  string `json:"apiKey"`
+			BaseUrl string `json:"base_url"`
+			ApiKey  string `json:"api_key"`
 			Model   string `json:"model"`
 		} `json:"openai"`
 		Fasterwhisper struct {
@@ -53,19 +53,18 @@ type ConfigRequest struct {
 	Tts struct {
 		Provider string `json:"provider"`
 		Openai   struct {
-			BaseUrl string `json:"baseUrl"`
-			ApiKey  string `json:"apiKey"`
+			BaseUrl string `json:"base_url"`
+			ApiKey  string `json:"api_key"`
 			Model   string `json:"model"`
 			Voice   string `json:"voice"`
 		} `json:"openai"`
-		EdgeTts struct {
-			Voice string `json:"voice"`
-		} `json:"edge-tts"`
+
 		VClip struct {
-			ApiKey  string  `json:"apiKey"`
-			VoiceID string  `json:"voiceId"`
+			ApiKey  string  `json:"api_key"`
+			VoiceID string  `json:"voice_id"`
 			Speed   float64 `json:"speed"`
 		} `json:"vclip"`
+		Voices []config.VoiceEntry `json:"voices"`
 	} `json:"tts"`
 }
 
@@ -80,12 +79,12 @@ func (h Handler) GetConfig(c *gin.Context) {
 	// Convert configuration to the format needed by frontend
 	configResponse := ConfigRequest{
 		App: struct {
-			SegmentDuration       int    `json:"segmentDuration"`
-			TranscribeParallelNum int    `json:"transcribeParallelNum"`
-			TranslateParallelNum  int    `json:"translateParallelNum"`
-			TranscribeMaxAttempts int    `json:"transcribeMaxAttempts"`
-			TranslateMaxAttempts  int    `json:"translateMaxAttempts"`
-			MaxSentenceLength     int    `json:"maxSentenceLength"`
+			SegmentDuration       int    `json:"segment_duration"`
+			TranscribeParallelNum int    `json:"transcribe_parallel_num"`
+			TranslateParallelNum  int    `json:"translate_parallel_num"`
+			TranscribeMaxAttempts int    `json:"transcribe_max_attempts"`
+			TranslateMaxAttempts  int    `json:"translate_max_attempts"`
+			MaxSentenceLength     int    `json:"max_sentence_length"`
 			Proxy                 string `json:"proxy"`
 		}{
 			SegmentDuration:       config.Conf.App.SegmentDuration,
@@ -104,8 +103,8 @@ func (h Handler) GetConfig(c *gin.Context) {
 			Port: config.Conf.Server.Port,
 		},
 		Llm: struct {
-			BaseUrl string `json:"baseUrl"`
-			ApiKey  string `json:"apiKey"`
+			BaseUrl string `json:"base_url"`
+			ApiKey  string `json:"api_key"`
 			Model   string `json:"model"`
 		}{
 			BaseUrl: config.Conf.Llm.BaseUrl,
@@ -130,10 +129,10 @@ func (h Handler) GetConfig(c *gin.Context) {
 	configResponse.Tts.Openai.ApiKey = config.Conf.Tts.Openai.ApiKey
 	configResponse.Tts.Openai.Model = config.Conf.Tts.Openai.Model
 	configResponse.Tts.Openai.Voice = config.Conf.Tts.Openai.Voice
-	configResponse.Tts.EdgeTts.Voice = config.Conf.Tts.EdgeTts.Voice
 	configResponse.Tts.VClip.ApiKey = config.Conf.Tts.VClip.ApiKey
 	configResponse.Tts.VClip.VoiceID = config.Conf.Tts.VClip.VoiceID
 	configResponse.Tts.VClip.Speed = config.Conf.Tts.VClip.Speed
+	configResponse.Tts.Voices = config.Conf.Tts.Voices
 
 	response.R(c, response.Response{
 		Error: 0,
@@ -197,10 +196,10 @@ func (h Handler) UpdateConfig(c *gin.Context) {
 	config.Conf.Tts.Openai.ApiKey = req.Tts.Openai.ApiKey
 	config.Conf.Tts.Openai.Model = req.Tts.Openai.Model
 	config.Conf.Tts.Openai.Voice = req.Tts.Openai.Voice
-	config.Conf.Tts.EdgeTts.Voice = req.Tts.EdgeTts.Voice
 	config.Conf.Tts.VClip.ApiKey = req.Tts.VClip.ApiKey
 	config.Conf.Tts.VClip.VoiceID = req.Tts.VClip.VoiceID
 	config.Conf.Tts.VClip.Speed = req.Tts.VClip.Speed
+	config.Conf.Tts.Voices = req.Tts.Voices
 
 	// Validate configuration
 	if err := config.CheckConfig(); err != nil {

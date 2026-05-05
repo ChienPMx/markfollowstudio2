@@ -2,7 +2,7 @@ package openai
 
 import (
 	"github.com/sashabaranov/go-openai"
-	"krillin-ai/config"
+	"markflow-studio/config"
 	"net/http"
 )
 

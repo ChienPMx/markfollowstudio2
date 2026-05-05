@@ -9,7 +9,7 @@ Dies ist ein häufiges Einrichtungsproblem. Es gibt einige Gründe, warum dies p
   ```
   /── config/
   │   └── config.toml
-  └── krillinai.exe (Ihre ausführbare Datei)
+  └── MarkFlow Studio.exe (Ihre ausführbare Datei)
   ```
 * **Für Windows-Benutzer:** Es wird empfohlen, das gesamte Softwareverzeichnis in einen Ordner zu legen, der sich nicht auf dem C:-Laufwerk befindet, um mögliche Berechtigungsprobleme zu vermeiden.
 
@@ -34,7 +34,7 @@ Dieser Fehler weist auf ein Problem mit dem Video-Downloader hin, das normalerwe
 
 Dies wird fast immer durch fehlende Schriftarten im System verursacht, insbesondere solche, die chinesische Zeichen unterstützen. Um dies zu beheben, müssen Sie die erforderlichen Schriftarten installieren.
 
-1. Laden Sie die benötigten Schriftarten herunter, wie [Microsoft YaHei](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) und [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
+1. Laden Sie die benötigten Schriftarten herunter, wie [Microsoft YaHei](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) und [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
 2. Erstellen Sie ein neues Schriftartenverzeichnis: `sudo mkdir -p /usr/share/fonts/msyh`.
 3. Kopieren Sie die heruntergeladenen `.ttc`-Schriftartdateien in dieses neue Verzeichnis.
 4. Führen Sie die folgenden Befehle aus, um den Schriftarten-Cache neu zu erstellen:
@@ -45,14 +45,14 @@ Dies wird fast immer durch fehlende Schriftarten im System verursacht, insbesond
     sudo fc-cache -fv
     ```
 
-### 4. Unter macOS startet die Anwendung nicht und zeigt einen Fehler wie "KrillinAI ist beschädigt und kann nicht geöffnet werden."
+### 4. Unter macOS startet die Anwendung nicht und zeigt einen Fehler wie "MarkFlow Studio ist beschädigt und kann nicht geöffnet werden."
 
 Dies wird durch die Sicherheitsfunktion von macOS, Gatekeeper, verursacht, die Apps von nicht identifizierten Entwicklern einschränkt. Um dies zu beheben, müssen Sie manuell das Quarantäne-Attribut entfernen.
 
 1. Öffnen Sie die **Terminal**-App.
-2. Geben Sie den Befehl `xattr -cr` gefolgt von einem Leerzeichen ein, und ziehen Sie dann die Datei `KrillinAI.app` aus Ihrem Finder-Fenster in das Terminal. Der Befehl sieht dann etwa so aus:
+2. Geben Sie den Befehl `xattr -cr` gefolgt von einem Leerzeichen ein, und ziehen Sie dann die Datei `MarkFlow Studio.app` aus Ihrem Finder-Fenster in das Terminal. Der Befehl sieht dann etwa so aus:
     ```
-    xattr -cr /Applications/KrillinAI.app
+    xattr -cr /Applications/MarkFlow Studio.app
     ```
 3. Drücken Sie die Eingabetaste. Sie sollten nun in der Lage sein, die Anwendung zu öffnen.
 
@@ -86,7 +86,7 @@ Die verfügbaren Stimmen und ihre entsprechenden Codes werden vom Sprachdienstan
 
 ### 9. Wie kann ich ein lokales großes Sprachmodell (LLM), wie eines, das auf Ollama läuft, für Übersetzungen verwenden?
 
-Ja, Sie können KrillinAI so konfigurieren, dass es jedes lokale LLM verwendet, das einen OpenAI-kompatiblen API-Endpunkt bereitstellt.
+Ja, Sie können MarkFlow Studio so konfigurieren, dass es jedes lokale LLM verwendet, das einen OpenAI-kompatiblen API-Endpunkt bereitstellt.
 
 1. **Starten Sie Ihr lokales LLM:** Stellen Sie sicher, dass Ihr lokaler Dienst (z. B. Ollama, das Llama3 ausführt) aktiv und zugänglich ist.
 2. **Bearbeiten Sie `config.toml`:** Im Abschnitt für das große Sprachmodell (Übersetzer):
@@ -98,13 +98,13 @@ Ja, Sie können KrillinAI so konfigurieren, dass es jedes lokale LLM verwendet, 
 
 ### 10. Kann ich den Untertitelstil (Schriftart, Größe, Farbe) im endgültigen Video anpassen?
 
-Nein. Derzeit generiert KrillinAI **hardcodierte Untertitel**, was bedeutet, dass sie direkt in die Videorahmen eingebrannt werden. Die Anwendung **bietet keine Optionen zur Anpassung des Untertitelstils**; sie verwendet einen vordefinierten Stil.
+Nein. Derzeit generiert MarkFlow Studio **hardcodierte Untertitel**, was bedeutet, dass sie direkt in die Videorahmen eingebrannt werden. Die Anwendung **bietet keine Optionen zur Anpassung des Untertitelstils**; sie verwendet einen vordefinierten Stil.
 
 Für eine erweiterte Anpassung ist der empfohlene Workaround:
 
-1. Verwenden Sie KrillinAI, um die übersetzte `.srt`-Untertiteldatei zu generieren.
+1. Verwenden Sie MarkFlow Studio, um die übersetzte `.srt`-Untertiteldatei zu generieren.
 2. Importieren Sie Ihr Originalvideo und diese `.srt`-Datei in einen professionellen Video-Editor (z. B. Premiere Pro, Final Cut Pro, DaVinci Resolve), um benutzerdefinierte Stile vor dem Rendern anzuwenden.
 
-### 11. Ich habe bereits eine übersetzte `.srt`-Datei. Kann KrillinAI sie verwenden, um nur das Synchronisieren durchzuführen?
+### 11. Ich habe bereits eine übersetzte `.srt`-Datei. Kann MarkFlow Studio sie verwenden, um nur das Synchronisieren durchzuführen?
 
 Nein, diese Funktion wird derzeit nicht unterstützt. Die Anwendung führt eine vollständige Pipeline von der Transkription bis zur endgültigen Videoerstellung aus.

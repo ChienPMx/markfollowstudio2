@@ -1,6 +1,6 @@
 package handler
 
-import "krillin-ai/internal/service"
+import "markflow-studio/internal/service"
 
 type Handler struct {
 	Service *service.Service

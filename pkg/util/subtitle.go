@@ -3,8 +3,8 @@ package util
 import (
 	"bufio"
 	"fmt"
-	"krillin-ai/internal/storage"
-	"krillin-ai/internal/types"
+	"markflow-studio/internal/storage"
+	"markflow-studio/internal/types"
 	"os"
 	"os/exec"
 	"path/filepath"

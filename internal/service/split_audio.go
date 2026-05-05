@@ -3,8 +3,8 @@ package service
 import (
 	"fmt"
 	"io"
-	"krillin-ai/internal/storage"
-	"krillin-ai/pkg/util"
+	"markflow-studio/internal/storage"
+	"markflow-studio/pkg/util"
 	"math"
 	"os/exec"
 	"runtime"
@@ -136,7 +136,7 @@ func GetSplitPoints(input string, segmentDuration float64) ([]float64, error) {
 		return nil, fmt.Errorf("failed to get quietest time points: %w", err)
 	}
 	// If the last segment is shorter than the minimum duration, merge it with the previous one.
-	if audioDuration-timePoints[segmentNum-1] < MIN_DURATION {
+	if segmentNum > 1 && audioDuration-timePoints[segmentNum-1] < MIN_DURATION {
 		timePoints = timePoints[:segmentNum]
 	}
 	timePoints[len(timePoints)-1] = audioDuration

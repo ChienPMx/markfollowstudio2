@@ -199,21 +199,25 @@ Requirements:
 
 // Please provide only the translation result:`
 
-var SplitTextWithContextPrompt = `You are a professional subtitle translation expert.
+var SplitTextWithContextPrompt = `You are a world-class subtitle translator who creates translations that feel completely natural to native speakers — as if the content was originally written in the target language.
 
-[STRICT TRANSLATION TASK]
-**Objective**: 
-Translate the "Target Sentence" below into %s. 
-Ensure the translation is natural, fluent, and captures the original meaning perfectly for video subtitles.
+[TRANSLATION TASK]
+Translate the [Target Sentence] into %s.
 
-**Critical Rules**:
-1. OUTPUT MUST BE A SINGLE LINE: only the translation of the target sentence.
-2. **100%% TRANSLATION**: The output MUST be entirely in %s. Do NOT leave any characters or words from the source language in the result.
-3. **Contextual Accuracy**: Use "Previous Sentences" and "Next Sentences" to understand the context and flow, ensuring the translation is coherent with the rest of the video.
-4. **Tone**: Maintain a professional, natural, and elegant tone suitable for the content.
-5. Do NOT add any explanations, notes, or additional formatting.
+**Translation Style**:
+- Write as a native speaker would naturally say it — NOT word-by-word translation.
+- Use everyday, conversational language appropriate for video subtitles.
+- Preserve the tone, emotion, and intent of the original.
+- If the original is casual/funny, the translation should feel casual/funny too.
+- Adapt idioms and cultural references to equivalents in the target language.
+- Keep it concise — subtitles should be short and easy to read quickly.
 
-**Context**:
+**Strict Rules**:
+1. Output ONLY the translated sentence — nothing else.
+2. The output must be 100%% in %s. No source language characters allowed.
+3. Use the context below to ensure the translation flows naturally with surrounding sentences.
+4. Do NOT translate the context sentences — only the target sentence.
+
 [Previous Sentences]
 %s
 
@@ -223,7 +227,7 @@ Ensure the translation is natural, fluent, and captures the original meaning per
 [Next Sentences]
 %s
 
-**Provide only the final translation result on a single line:**`
+Translation:`
 
 type SmallAudio struct {
 	AudioFile         string
@@ -316,6 +320,32 @@ type SubtitleFileInfo struct {
 	LanguageIdentifier string // Identifier for language in final download files, e.g., zh_cn, en, bilingual
 }
 
+type RenderSettings struct {
+	OriginalVolume  int
+	SubtitleStyle   string
+	FontFamily      string
+	FontSize        float64
+	FontColor       string
+	BorderColor     string
+	BorderWidth     int
+	BgPadding       int
+	BottomDistance  int
+	LineSpacing     float64
+	BgColor         string
+	IsBold          bool
+	DisplayMode     string
+	HighlightColor  string
+	MaxWordsPerLine int
+	VideoRatio      string
+	FitMode         string
+}
+
+type VoiceSettings struct {
+	VoiceId string
+	Speed   float64
+	Emotion float64
+}
+
 type SubtitleTaskStepParam struct {
 	TaskId                      string
 	TaskPtr                     *SubtitleTask // Corresponds to the one in storage
@@ -342,6 +372,8 @@ type SubtitleTaskStepParam struct {
 	VerticalVideoMinorTitle     string
 	MaxWordOneLine              int    // Max words per line
 	VideoWithTtsFilePath        string // Path to video with TTS audio replacement
+	RenderSettings              *RenderSettings
+	VoiceSettings               *VoiceSettings
 }
 
 type SrtSentence struct {
@@ -384,12 +416,15 @@ type SubtitleTask struct {
 	SubtitleInfos         []SubtitleInfo `gorm:"foreignKey:TaskId;references:TaskId"`
 	Cover                 string         `json:"cover" gorm:"column:cover"`
 	SpeechDownloadUrl     string         `json:"speech_download_url" gorm:"column:speech_download_url"`
+	TtsVoiceCode          string         `json:"tts_voice_code" gorm:"column:tts_voice_code"`
 	CreateTime            int64          `json:"create_time" gorm:"column:create_time;autoCreateTime"`
 	UpdateTime            int64          `json:"update_time" gorm:"column:update_time;autoUpdateTime"`
 
 	// Review flow fields (not persisted to DB)
 	ReviewSrtPath   string `json:"-" gorm:"-"` // Path to the SRT file awaiting review
 	ReviewDoneCh    chan struct{} `json:"-" gorm:"-"` // Closed by the review API to resume the pipeline
+	RenderSettings  *RenderSettings `json:"-" gorm:"-"`
+	VoiceSettings   *VoiceSettings `json:"-" gorm:"-"`
 }
 
 type Word struct {

@@ -1,8 +1,9 @@
 package router
 
 import (
-	"krillin-ai/internal/handler"
-	"krillin-ai/static"
+	"io/fs"
+	"markflow-studio/internal/handler"
+	"markflow-studio/static"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,8 +24,27 @@ func SetupRouter(r *gin.Engine) {
 		api.POST("/config", hdl.UpdateConfig)
 	}
 
-	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, "/static")
+	// Redirect old static paths
+	r.GET("/static", func(c *gin.Context) { c.Redirect(301, "/") })
+	r.GET("/static/*any", func(c *gin.Context) { c.Redirect(301, "/") })
+
+	// Serve static assets from dist/assets
+	assetsFS, err := fs.Sub(static.EmbeddedFiles, "dist/assets")
+	if err == nil {
+		r.StaticFS("/assets", http.FS(assetsFS))
+	}
+
+	// Serve the main page at root and handle SPA routing
+	r.NoRoute(func(c *gin.Context) {
+		// Try to serve static file from dist first
+		// (though assets are already handled above)
+		
+		// Fallback to index.html for SPA
+		indexFile, err := static.EmbeddedFiles.ReadFile("dist/index.html")
+		if err != nil {
+			c.String(http.StatusNotFound, "Index not found")
+			return
+		}
+		c.Data(http.StatusOK, "text/html; charset=utf-8", indexFile)
 	})
-	r.StaticFS("/static", http.FS(static.EmbeddedFiles))
 }

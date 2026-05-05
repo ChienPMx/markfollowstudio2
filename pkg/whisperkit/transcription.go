@@ -2,10 +2,10 @@ package whisperkit
 
 import (
 	"encoding/json"
-	"krillin-ai/internal/storage"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/pkg/util"
+	"markflow-studio/internal/storage"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/pkg/util"
 	"os"
 	"os/exec"
 	"strings"

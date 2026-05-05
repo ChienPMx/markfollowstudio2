@@ -9,7 +9,7 @@
   ```
   /── config/
   │   └── config.toml
-  └── krillinai.exe（あなたの実行可能ファイル）
+  └── MarkFlow Studio.exe（あなたの実行可能ファイル）
   ```
 * **Windowsユーザー向け：** 潜在的な権限の問題を避けるために、ソフトウェアのディレクトリ全体をC:ドライブ以外のフォルダーに配置することをお勧めします。
 
@@ -34,7 +34,7 @@
 
 これはほとんど常に、特に中国語の文字をサポートするフォントがシステムに欠けていることが原因です。これを修正するには、必要なフォントをインストールする必要があります。
 
-1. 必要なフォントをダウンロードします。例えば、[Microsoft YaHei](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) と [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc)。
+1. 必要なフォントをダウンロードします。例えば、[Microsoft YaHei](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) と [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc)。
 2. 新しいフォントディレクトリを作成します： `sudo mkdir -p /usr/share/fonts/msyh`。
 3. ダウンロードした `.ttc` フォントファイルをこの新しいディレクトリにコピーします。
 4. フォントキャッシュを再構築するために次のコマンドを実行します：
@@ -45,14 +45,14 @@
     sudo fc-cache -fv
     ```
 
-### 4. macOSでアプリケーションが起動せず、「KrillinAIは破損しており、開けません」と表示されます。
+### 4. macOSでアプリケーションが起動せず、「MarkFlow Studioは破損しており、開けません」と表示されます。
 
 これはmacOSのセキュリティ機能であるGatekeeperによって引き起こされ、未確認の開発者からのアプリを制限します。これを修正するには、手動で隔離属性を削除する必要があります。
 
 1. **ターミナル**アプリを開きます。
-2. `xattr -cr` コマンドを入力し、スペースを空けてからFinderウィンドウから `KrillinAI.app` ファイルをターミナルにドラッグします。コマンドは次のようになります：
+2. `xattr -cr` コマンドを入力し、スペースを空けてからFinderウィンドウから `MarkFlow Studio.app` ファイルをターミナルにドラッグします。コマンドは次のようになります：
     ```
-    xattr -cr /Applications/KrillinAI.app
+    xattr -cr /Applications/MarkFlow Studio.app
     ```
 3. Enterを押します。これでアプリケーションを開けるようになるはずです。
 
@@ -86,7 +86,7 @@
 
 ### 9. Ollamaで実行されているローカル大規模言語モデル（LLM）を翻訳に使用するにはどうすればよいですか？
 
-はい、KrillinAIをOpenAI互換のAPIエンドポイントを提供する任意のローカルLLMを使用するように構成できます。
+はい、MarkFlow StudioをOpenAI互換のAPIエンドポイントを提供する任意のローカルLLMを使用するように構成できます。
 
 1. **ローカルLLMを起動する：** ローカルサービス（例：Ollamaで実行されているLlama3）がアクティブでアクセス可能であることを確認します。
 2. **`config.toml`を編集する：** 大規模言語モデル（翻訳者）のセクションで：
@@ -98,13 +98,13 @@
 
 ### 10. 最終ビデオの字幕スタイル（フォント、サイズ、色）をカスタマイズできますか？
 
-いいえ。現在、KrillinAIは**ハードコーディングされた字幕**を生成します。つまり、字幕はビデオフレームに直接焼き付けられています。アプリケーションは**字幕スタイルをカスタマイズするオプションを提供していません**。プリセットスタイルを使用します。
+いいえ。現在、MarkFlow Studioは**ハードコーディングされた字幕**を生成します。つまり、字幕はビデオフレームに直接焼き付けられています。アプリケーションは**字幕スタイルをカスタマイズするオプションを提供していません**。プリセットスタイルを使用します。
 
 高度なカスタマイズのための推奨される回避策は次のとおりです：
 
-1. KrillinAIを使用して翻訳された `.srt` 字幕ファイルを生成します。
+1. MarkFlow Studioを使用して翻訳された `.srt` 字幕ファイルを生成します。
 2. 元のビデオとこの `.srt` ファイルをプロフェッショナルなビデオ編集ソフトウェア（例：Premiere Pro、Final Cut Pro、DaVinci Resolve）にインポートして、カスタムスタイルを適用してからレンダリングします。
 
-### 11. すでに翻訳された `.srt` ファイルがあります。KrillinAIはそれを使用してダビングだけを行えますか？
+### 11. すでに翻訳された `.srt` ファイルがあります。MarkFlow Studioはそれを使用してダビングだけを行えますか？
 
 いいえ、この機能は現在サポートされていません。アプリケーションは文字起こしから最終ビデオ生成までのフルパイプラインを実行します。

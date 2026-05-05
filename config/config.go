@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"krillin-ai/log"
+	"markflow-studio/log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -51,8 +51,9 @@ type Transcribe struct {
 	Whispercpp            LocalModelConfig       `toml:"whispercpp"`
 }
 
-type EdgeTtsConfig struct {
-	Voice string `toml:"voice"`
+type VoiceEntry struct {
+	Name string `toml:"name" json:"name"`
+	ID   string `toml:"id" json:"id"`
 }
 
 type VClipConfig struct {
@@ -64,8 +65,8 @@ type VClipConfig struct {
 type Tts struct {
 	Provider string                 `toml:"provider"`
 	Openai   OpenaiCompatibleConfig `toml:"openai"`
-	EdgeTts  EdgeTtsConfig          `toml:"edge-tts"`
 	VClip    VClipConfig            `toml:"vclip"`
+	Voices   []VoiceEntry           `toml:"voices" json:"voices"`
 }
 
 type Config struct {
@@ -109,16 +110,19 @@ var Conf = Config{
 		},
 	},
 	Tts: Tts{
-		Provider: "openai",
+		Provider: "vclip",
 		Openai: OpenaiCompatibleConfig{
 			Model: "tts-1",
 			Voice: "alloy",
 		},
-		EdgeTts: EdgeTtsConfig{
-			Voice: "en-US-AndrewNeural",
-		},
 		VClip: VClipConfig{
 			Speed: 1.0,
+		},
+		Voices: []VoiceEntry{
+			{Name: "VClip Nam - Quang Anh", ID: "j8Lc9oB8wuT719K57mQKyG"},
+			{Name: "VClip Nữ - Hoài Thu", ID: "tALuifcrB7kpJ74hVXsSWx"},
+			{Name: "OpenAI Alloy", ID: "alloy"},
+			{Name: "OpenAI Shimmer", ID: "shimmer"},
 		},
 	},
 }
@@ -129,30 +133,32 @@ func validateConfig() error {
 	switch Conf.Transcribe.Provider {
 	case "openai":
 		if Conf.Transcribe.Openai.ApiKey == "" {
-			return errors.New("Using OpenAI service requires API Key configuration")
+			return errors.New("Transcription service (OpenAI) requires an API Key")
 		}
 	case "fasterwhisper":
-		if Conf.Transcribe.Fasterwhisper.Model != "tiny" && Conf.Transcribe.Fasterwhisper.Model != "medium" && Conf.Transcribe.Fasterwhisper.Model != "large-v2" {
-			return errors.New("Fasterwhisper is enabled but model configuration is incorrect, please check")
+		if Conf.Transcribe.Fasterwhisper.Model != "tiny" && Conf.Transcribe.Fasterwhisper.Model != "medium" && Conf.Transcribe.Fasterwhisper.Model != "large-v2" && Conf.Transcribe.Fasterwhisper.Model != "large-v3" {
+			return errors.New("Fasterwhisper model configuration is incorrect")
 		}
 	case "whisperkit":
 		if runtime.GOOS != "darwin" {
-			log.GetLogger().Error("whisperkit only supports macOS", zap.String("Current OS", runtime.GOOS))
-			return fmt.Errorf("whisperkit only supports macOS")
-		}
-		if Conf.Transcribe.Whisperkit.Model != "large-v2" {
-			return errors.New("Whisperkit is enabled but model configuration is incorrect, please check")
+			return fmt.Errorf("WhisperKit only supports macOS")
 		}
 	case "whispercpp":
 		if runtime.GOOS != "windows" {
-			log.GetLogger().Error("whispercpp only support windows", zap.String("current os", runtime.GOOS))
-			return fmt.Errorf("whispercpp only support windows")
+			return fmt.Errorf("Whisper.cpp only supports Windows")
 		}
-		if Conf.Transcribe.Whispercpp.Model != "large-v2" {
-			return errors.New("whisper.cpp is enabled but model configuration is incorrect, please check")
+	}
+
+	// Check TTS provider configuration
+	switch Conf.Tts.Provider {
+	case "openai":
+		if Conf.Tts.Openai.ApiKey == "" {
+			return errors.New("Dubbing service (OpenAI TTS) requires an API Key")
 		}
-	default:
-		return errors.New("Transcribe provider not supported")
+	case "vclip":
+		if Conf.Tts.VClip.ApiKey == "" {
+			return errors.New("Dubbing service (VClip) requires an API Key")
+		}
 	}
 
 	return nil

@@ -9,7 +9,7 @@ Este é um problema comum de configuração. Existem algumas razões pelas quais
   ```
   /── config/
   │   └── config.toml
-  └── krillinai.exe (seu arquivo executável)
+  └── MarkFlow Studio.exe (seu arquivo executável)
   ```
 * **Para usuários do Windows:** É recomendável colocar todo o diretório do software em uma pasta que não esteja na unidade C: para evitar possíveis problemas de permissão.
 
@@ -34,7 +34,7 @@ Esse erro aponta para um problema com o downloader de vídeo, que geralmente est
 
 Isso é quase sempre causado pela falta de fontes no sistema, particularmente aquelas que suportam caracteres chineses. Para corrigir isso, você precisa instalar as fontes necessárias.
 
-1. Baixe as fontes necessárias, como [Microsoft YaHei](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) e [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
+1. Baixe as fontes necessárias, como [Microsoft YaHei](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) e [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
 2. Crie um novo diretório de fontes: `sudo mkdir -p /usr/share/fonts/msyh`.
 3. Copie os arquivos de fonte `.ttc` baixados para este novo diretório.
 4. Execute os seguintes comandos para reconstruir o cache de fontes:
@@ -45,14 +45,14 @@ Isso é quase sempre causado pela falta de fontes no sistema, particularmente aq
     sudo fc-cache -fv
     ```
 
-### 4. No macOS, o aplicativo não inicia e mostra um erro como "KrillinAI está danificado e não pode ser aberto."
+### 4. No macOS, o aplicativo não inicia e mostra um erro como "MarkFlow Studio está danificado e não pode ser aberto."
 
 Isso é causado pelo recurso de segurança do macOS, Gatekeeper, que restringe aplicativos de desenvolvedores não identificados. Para corrigir isso, você deve remover manualmente o atributo de quarentena.
 
 1. Abra o aplicativo **Terminal**.
-2. Digite o comando `xattr -cr` seguido de um espaço, e arraste o arquivo `KrillinAI.app` da sua janela do Finder para o Terminal. O comando ficará assim:
+2. Digite o comando `xattr -cr` seguido de um espaço, e arraste o arquivo `MarkFlow Studio.app` da sua janela do Finder para o Terminal. O comando ficará assim:
     ```
-    xattr -cr /Applications/KrillinAI.app
+    xattr -cr /Applications/MarkFlow Studio.app
     ```
 3. Pressione Enter. Agora você deve conseguir abrir o aplicativo.
 
@@ -86,7 +86,7 @@ As vozes disponíveis e seus códigos correspondentes são definidos pelo proved
 
 ### 9. Como posso usar um Modelo de Linguagem Grande (LLM) local, como um rodando no Ollama, para tradução?
 
-Sim, você pode configurar o KrillinAI para usar qualquer LLM local que forneça um endpoint de API compatível com OpenAI.
+Sim, você pode configurar o MarkFlow Studio para usar qualquer LLM local que forneça um endpoint de API compatível com OpenAI.
 
 1. **Inicie Seu LLM Local:** Certifique-se de que seu serviço local (por exemplo, Ollama rodando Llama3) esteja ativo e acessível.
 2. **Edite `config.toml`:** Na seção para o modelo de linguagem grande (tradutor):
@@ -98,13 +98,13 @@ Sim, você pode configurar o KrillinAI para usar qualquer LLM local que forneça
 
 ### 10. Posso personalizar o estilo das legendas (fonte, tamanho, cor) no vídeo final?
 
-Não. Atualmente, o KrillinAI gera **legendas codificadas**, o que significa que elas são queimadas diretamente nos quadros do vídeo. O aplicativo **não oferece opções para personalizar o estilo das legendas**; ele usa um estilo predefinido.
+Não. Atualmente, o MarkFlow Studio gera **legendas codificadas**, o que significa que elas são queimadas diretamente nos quadros do vídeo. O aplicativo **não oferece opções para personalizar o estilo das legendas**; ele usa um estilo predefinido.
 
 Para personalização avançada, a solução alternativa recomendada é:
 
-1. Usar o KrillinAI para gerar o arquivo de legenda traduzido `.srt`.
+1. Usar o MarkFlow Studio para gerar o arquivo de legenda traduzido `.srt`.
 2. Importar seu vídeo original e este arquivo `.srt` em um editor de vídeo profissional (por exemplo, Premiere Pro, Final Cut Pro, DaVinci Resolve) para aplicar estilos personalizados antes da renderização.
 
-### 11. Eu já tenho um arquivo `.srt` traduzido. O KrillinAI pode usá-lo apenas para fazer a dublagem?
+### 11. Eu já tenho um arquivo `.srt` traduzido. O MarkFlow Studio pode usá-lo apenas para fazer a dublagem?
 
 Não, esse recurso não é atualmente suportado. O aplicativo executa um pipeline completo desde a transcrição até a geração do vídeo final.

@@ -9,7 +9,7 @@ docker run -d \
   -p 8888:8888 \
   -v /path/to/config.toml:/app/config/config.toml \
   -v /path/to/tasks:/app/tasks \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### docker-compose启动
@@ -17,7 +17,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:
@@ -26,7 +26,7 @@ services:
 ```
 
 ## 持久化模型
-如果使用fasterwhisper模型， KrillinAI 会自动下载模型所需文件到`/app/models`目录和`/app/bin`目录。容器删除后，这些文件会丢失。如果需要持久化模型，可以将这两个目录映射到宿主机的目录。
+如果使用fasterwhisper模型， MarkFlow Studio 会自动下载模型所需文件到`/app/models`目录和`/app/bin`目录。容器删除后，这些文件会丢失。如果需要持久化模型，可以将这两个目录映射到宿主机的目录。
 
 ### docker run启动
 ```bash
@@ -36,7 +36,7 @@ docker run -d \
   -v /path/to/tasks:/app/tasks \
   -v /path/to/models:/app/models \
   -v /path/to/bin:/app/bin \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### docker-compose启动
@@ -44,7 +44,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:

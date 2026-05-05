@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/texttheater/golang-levenshtein/levenshtein"
 	"io"
-	"krillin-ai/internal/types"
+	"markflow-studio/internal/types"
 	"math"
 	"math/rand"
 	"net/url"

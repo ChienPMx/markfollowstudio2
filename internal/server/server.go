@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
-	"krillin-ai/config"
-	"krillin-ai/internal/router"
-	"krillin-ai/log"
+	"markflow-studio/config"
+	"markflow-studio/internal/router"
+	"markflow-studio/log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

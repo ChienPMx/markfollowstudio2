@@ -2,10 +2,10 @@ package deps
 
 import (
 	"fmt"
-	"krillin-ai/config"
-	"krillin-ai/internal/storage"
-	"krillin-ai/log"
-	"krillin-ai/pkg/util"
+	"markflow-studio/config"
+	"markflow-studio/internal/storage"
+	"markflow-studio/log"
+	"markflow-studio/pkg/util"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -76,11 +76,7 @@ func CheckDependency() error {
 			return err
 		}
 	}
-	if config.Conf.Tts.Provider == "edge-tts" {
-		if err = checkEdgeTts(); err != nil {
-			log.GetLogger().Error("Failed to prepare edge-tts environment", zap.Error(err))
-		}
-	}
+
 
 	return nil
 }
@@ -116,11 +112,11 @@ func checkAndDownloadFfmpeg() error {
 
 	var ffmpegURL string
 	if runtime.GOOS == "linux" {
-		ffmpegURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffmpeg-6.1-linux-64.zip"
+		ffmpegURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/ffmpeg-6.1-linux-64.zip"
 	} else if runtime.GOOS == "darwin" {
-		ffmpegURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffmpeg-6.1-macos-64.zip"
+		ffmpegURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/ffmpeg-6.1-macos-64.zip"
 	} else if runtime.GOOS == "windows" {
-		ffmpegURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffmpeg-6.1-win-64.zip"
+		ffmpegURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/ffmpeg-6.1-win-64.zip"
 	} else {
 		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
@@ -185,11 +181,11 @@ func checkAndDownloadFfprobe() error {
 
 	var ffprobeURL string
 	if runtime.GOOS == "linux" {
-		ffprobeURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffprobe-6.1-linux-64.zip"
+		ffprobeURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/ffprobe-6.1-linux-64.zip"
 	} else if runtime.GOOS == "darwin" {
-		ffprobeURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffprobe-6.1-macos-64.zip"
+		ffprobeURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/ffprobe-6.1-macos-64.zip"
 	} else if runtime.GOOS == "windows" {
-		ffprobeURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/ffprobe-6.1-win-64.zip"
+		ffprobeURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/ffprobe-6.1-win-64.zip"
 	} else {
 		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
@@ -252,11 +248,11 @@ func checkAndDownloadYtDlp() error {
 
 	var ytDlpURL string
 	if runtime.GOOS == "linux" {
-		ytDlpURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/yt-dlp_linux"
+		ytDlpURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/yt-dlp_linux"
 	} else if runtime.GOOS == "darwin" {
-		ytDlpURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/yt-dlp_macos"
+		ytDlpURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/yt-dlp_macos"
 	} else if runtime.GOOS == "windows" {
-		ytDlpURL = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/yt-dlp.exe"
+		ytDlpURL = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/yt-dlp.exe"
 	} else {
 		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
 		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
@@ -304,9 +300,9 @@ func checkFasterWhisper() error {
 		}
 		var downloadUrl string
 		if runtime.GOOS == "windows" {
-			downloadUrl = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/Faster-Whisper-XXL_r194.5_windows.zip"
+			downloadUrl = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/Faster-Whisper-XXL_r194.5_windows.zip"
 		} else {
-			downloadUrl = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/Faster-Whisper-XXL_r192.3.1_linux.zip"
+			downloadUrl = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/Faster-Whisper-XXL_r192.3.1_linux.zip"
 		}
 		err = util.DownloadFile(downloadUrl, "./bin/faster-whisper.zip", config.Conf.App.Proxy)
 		if err != nil {
@@ -379,11 +375,11 @@ func checkWhisperX() error {
 		// }
 		// var downloadUrl string
 		// if runtime.GOOS == "windows" {
-		// 	downloadUrl = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/WhisperX_win.zip"
+		// 	downloadUrl = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/WhisperX_win.zip"
 		// } else if runtime.GOOS == "darwin" {
-		// 	downloadUrl = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/WhisperX_linux.zip"
+		// 	downloadUrl = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/WhisperX_linux.zip"
 		// } else {
-		// 	downloadUrl = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/WhisperX_mac.zip"
+		// 	downloadUrl = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/WhisperX_mac.zip"
 		// }
 		// err = util.DownloadFile(downloadUrl, "./bin/WhisperX.zip", config.Conf.App.Proxy)
 		// if err != nil {
@@ -444,7 +440,7 @@ func checkWhispercpp() error {
 		}
 		var downloadUrl string
 		if runtime.GOOS == "windows" {
-			downloadUrl = "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/whispercpp-windows-cuda.zip"
+			downloadUrl = "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/whispercpp-windows-cuda.zip"
 		}
 		zipFilePath := filepath.Join("bin", "whispercpp-windows-cuda.zip")
 		err = util.DownloadFile(downloadUrl, zipFilePath, config.Conf.App.Proxy)
@@ -491,7 +487,7 @@ func checkModel(whisperType string) error {
 		if _, err = os.Stat(modelPath); os.IsNotExist(err) {
 			// Download
 			log.GetLogger().Info(fmt.Sprintf("Model file %s not found, starting automatic download...", modelPath))
-			downloadUrl := fmt.Sprintf("https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/faster-whisper-%s.zip", model)
+			downloadUrl := fmt.Sprintf("https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/faster-whisper-%s.zip", model)
 			err = util.DownloadFile(downloadUrl, fmt.Sprintf("./models/faster-whisper-%s.zip", model), config.Conf.App.Proxy)
 			if err != nil {
 				log.GetLogger().Error("Failed to download fasterwhisper model", zap.Error(err))
@@ -510,7 +506,7 @@ func checkModel(whisperType string) error {
 	//	modelDir := fmt.Sprintf("./models/whisperx/models--Systran--faster-whisper-%s", model)
 	//	if _, err = os.Stat(modelDir); os.IsNotExist(err) {
 	//		log.GetLogger().Info(fmt.Sprintf("WhisperX model %s not found, starting automatic download", modelDir))
-	//		// downloadUrl := fmt.Sprintf("https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/WhisperX_models_%s.zip", model)
+	//		// downloadUrl := fmt.Sprintf("https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/WhisperX_models_%s.zip", model)
 	//		// err = util.DownloadFile(downloadUrl, fmt.Sprintf("./models/WhisperX_models_%s.zip", model), config.Conf.App.Proxy)
 	//		// if err != nil {
 	//		// 	log.GetLogger().Info("Failed to download WhisperX model", zap.Error(err))
@@ -542,7 +538,7 @@ func checkModel(whisperType string) error {
 		files, _ := os.ReadDir(modelPath)
 		if len(files) == 0 {
 			log.GetLogger().Info("whisperkit model not found, starting automatic download...")
-			downloadUrl := "https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/whisperkit-large-v2.zip"
+			downloadUrl := "https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/whisperkit-large-v2.zip"
 			err = util.DownloadFile(downloadUrl, "./models/whisperkit/openai_whisper-large-v2.zip", config.Conf.App.Proxy)
 			if err != nil {
 				log.GetLogger().Info("Failed to download whisperkit model", zap.Error(err))
@@ -560,64 +556,4 @@ func checkModel(whisperType string) error {
 	log.GetLogger().Info("Model check complete", zap.String("Path", modelPath))
 	return nil
 }
-
-func checkEdgeTts() error {
-	// Check if edge-tts is already installed
-	_, err := exec.LookPath("edge-tts")
-	if err == nil {
-		log.GetLogger().Info("Found edge-tts")
-		storage.EdgeTtsPath = "edge-tts"
-		return nil
-	}
-
-	EdgeTtsBinFilePath := "./bin/edge-tts"
-	if runtime.GOOS == "windows" {
-		EdgeTtsBinFilePath += ".exe"
-	}
-	// Previous download
-	if _, err = os.Stat(EdgeTtsBinFilePath); err == nil {
-		log.GetLogger().Info("Found edge-tts")
-		storage.EdgeTtsPath = EdgeTtsBinFilePath
-		return nil
-	}
-	log.GetLogger().Info("edge-tts not found, starting automatic installation...")
-	// Ensure ./bin directory exists
-	err = os.MkdirAll("./bin", 0755)
-	if err != nil {
-		log.GetLogger().Error("Failed to create ./bin directory", zap.Error(err))
-	}
-
-	var downloadUrl string
-	if runtime.GOOS == "windows" {
-		downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-windows.exe"
-	} else if runtime.GOOS == "linux" {
-		if runtime.GOARCH == "amd64" {
-			downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-linux-amd64"
-		} else if runtime.GOARCH == "arm64" {
-			downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-linux-arm64"
-		} else {
-			log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
-			return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
-		}
-	} else if runtime.GOOS == "darwin" {
-		if runtime.GOARCH == "amd64" {
-			downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-macos-intel"
-		} else if runtime.GOARCH == "arm64" {
-			downloadUrl = "https://github.com/puji4810/edge-tts-pkg/releases/download/v0.0.1/edge-tts-macos-apple"
-		} else {
-			log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
-			return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
-		}
-	} else {
-		log.GetLogger().Error("Unsupported OS", zap.String("Current OS", runtime.GOOS))
-		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
-	}
-	err = util.DownloadFile(downloadUrl, EdgeTtsBinFilePath, config.Conf.App.Proxy)
-	if err != nil {
-		log.GetLogger().Error("Failed to download edge-tts", zap.Error(err))
-		return err
-	}
-	storage.EdgeTtsPath = EdgeTtsBinFilePath
-	log.GetLogger().Info("edge-tts installation complete", zap.String("Path", EdgeTtsBinFilePath))
-	return nil
-}
+

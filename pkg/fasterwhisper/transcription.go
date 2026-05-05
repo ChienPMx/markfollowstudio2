@@ -2,11 +2,11 @@ package fasterwhisper
 
 import (
 	"encoding/json"
-	"krillin-ai/config"
-	"krillin-ai/internal/storage"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/pkg/util"
+	"markflow-studio/config"
+	"markflow-studio/internal/storage"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/pkg/util"
 	"os"
 	"os/exec"
 	"strings"

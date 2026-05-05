@@ -1,16 +1,15 @@
 package service
 
 import (
-	"krillin-ai/config"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/pkg/fasterwhisper"
-	"krillin-ai/pkg/localtts"
-	"krillin-ai/pkg/openai"
-	"krillin-ai/pkg/vclip"
-	"krillin-ai/pkg/whisper"
-	"krillin-ai/pkg/whispercpp"
-	"krillin-ai/pkg/whisperkit"
+	"markflow-studio/config"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/pkg/fasterwhisper"
+	"markflow-studio/pkg/openai"
+	"markflow-studio/pkg/vclip"
+	"markflow-studio/pkg/whisper"
+	"markflow-studio/pkg/whispercpp"
+	"markflow-studio/pkg/whisperkit"
 
 	"go.uber.org/zap"
 )
@@ -45,8 +44,6 @@ func NewService() *Service {
 	switch config.Conf.Tts.Provider {
 	case "openai":
 		ttsClient = openai.NewClient(config.Conf.Tts.Openai.BaseUrl, config.Conf.Tts.Openai.ApiKey, config.Conf.App.Proxy)
-	case "edge-tts":
-		ttsClient = localtts.NewEdgeTtsClient()
 	case "vclip":
 		ttsClient = vclip.NewClient(config.Conf.Tts.VClip.ApiKey, config.Conf.Tts.VClip.VoiceID, config.Conf.Tts.VClip.Speed)
 	}

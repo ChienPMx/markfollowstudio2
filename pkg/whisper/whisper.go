@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
 	"strings"
 )
 

@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"krillin-ai/config"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/pkg/util"
+	"markflow-studio/config"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/pkg/util"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -205,7 +205,7 @@ func (s Service) splitTextAndTranslateV2(basePath, inputText string, originLang,
 				}
 			}
 
-			prompt := fmt.Sprintf(types.SplitTextWithContextPrompt, types.GetStandardLanguageName(targetLang), previousSentences, originText, nextSentences)
+			prompt := fmt.Sprintf(types.SplitTextWithContextPrompt, types.GetStandardLanguageName(targetLang), types.GetStandardLanguageName(targetLang), previousSentences, originText, nextSentences)
 
 			translatedText, err := s.ChatCompleter.ChatCompletion(prompt)
 			if err != nil {
@@ -249,6 +249,9 @@ func (s Service) audioToSrt(ctx context.Context, stepParam *types.SubtitleTaskSt
 	// Update subtitle task info
 	stepParam.TaskPtr.ProcessPct = 15
 	segmentNum := len(timePoints) - 1
+	if segmentNum <= 0 {
+		return nil
+	}
 
 	type DataWithId[T any] struct {
 		Data T
@@ -643,6 +646,8 @@ func splitSrt(stepParam *types.SubtitleTaskStepParam) error {
 		Path:               originLanguageSrtFilePath,
 		LanguageIdentifier: string(stepParam.OriginLanguage),
 	}
+	if stepParam.UserUILanguage == types.LanguageNameEnglish {
+		subtitleInfo.Name = types.GetStandardLanguageName(stepParam.OriginLanguage) + " Subtitle"
 	} else if stepParam.UserUILanguage == types.LanguageNameSimplifiedChinese {
 		subtitleInfo.Name = types.GetStandardLanguageName(stepParam.OriginLanguage) + " Monolingual Subtitle"
 	}
@@ -675,7 +680,11 @@ func splitSrt(stepParam *types.SubtitleTaskStepParam) error {
 	}
 
 	// For generating voiceover
-	stepParam.TtsSourceFilePath = stepParam.BilingualSrtFilePath
+	if targetLanguageSrtFilePath != "" {
+		stepParam.TtsSourceFilePath = targetLanguageSrtFilePath
+	} else {
+		stepParam.TtsSourceFilePath = stepParam.BilingualSrtFilePath
+	}
 
 	log.GetLogger().Info("audioToSubtitle.splitSrt end", zap.Any("task id", stepParam.TaskId))
 	return nil

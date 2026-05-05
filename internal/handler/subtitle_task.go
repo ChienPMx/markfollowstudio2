@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"krillin-ai/internal/dto"
-	"krillin-ai/internal/response"
-	"krillin-ai/internal/service"
-	"krillin-ai/internal/deps"
-	"krillin-ai/log"
+	"markflow-studio/internal/dto"
+	"markflow-studio/internal/response"
+	"markflow-studio/internal/service"
+	"markflow-studio/internal/deps"
+	"markflow-studio/log"
 	"os"
 	"path/filepath"
 

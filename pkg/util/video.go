@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"krillin-ai/internal/storage"
+	"markflow-studio/internal/storage"
 	"os/exec"
 )
 

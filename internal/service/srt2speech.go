@@ -3,14 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
-	"krillin-ai/internal/storage"
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
-	"krillin-ai/pkg/util"
+	"markflow-studio/config"
+	"markflow-studio/internal/storage"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
+	"markflow-studio/pkg/util"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -24,7 +24,7 @@ func (s Service) srtFileToSpeech(ctx context.Context, stepParam *types.SubtitleT
 		return nil
 	}
 	// Step 1: Parse subtitle file
-	subtitles, err := parseSRT(stepParam.TtsSourceFilePath)
+	subtitles, err := parseSRT(stepParam.TtsSourceFilePath, stepParam.SubtitleResultType)
 	if err != nil {
 		log.GetLogger().Error("srtFileToSpeech parseSRT error", zap.Any("stepParam", stepParam), zap.Error(err))
 		return fmt.Errorf("srtFileToSpeech parseSRT error: %w", err)
@@ -150,6 +150,9 @@ func (s Service) processSubtitlesConcurrently(subtitles []types.SrtSentenceWithS
 	}
 
 	maxConcurrency := 3 // Reduce concurrency to lower network load
+	if config.Conf.Tts.Provider == "vclip" {
+		maxConcurrency = 1 // VClip only allows 1 concurrent export
+	}
 	semaphore := make(chan struct{}, maxConcurrency)
 	var wg sync.WaitGroup
 	resultCh := make(chan processingResult, len(subtitles))
@@ -250,21 +253,56 @@ func (s Service) processSubtitlesConcurrently(subtitles []types.SrtSentenceWithS
 	return nil
 }
 
-func parseSRT(filePath string) ([]types.SrtSentenceWithStrTime, error) {
+func parseSRT(filePath string, resultType types.SubtitleResultType) ([]types.SrtSentenceWithStrTime, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("parseSRT read file error: %w", err)
 	}
 
 	var subtitles []types.SrtSentenceWithStrTime
-	re := regexp.MustCompile(`(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\s+(.+?)\n`)
-	matches := re.FindAllStringSubmatch(string(data), -1)
+	
+	// Normalize newlines
+	dataStr := strings.ReplaceAll(string(data), "\r\n", "\n")
+	blocks := strings.Split(dataStr, "\n\n")
 
-	for _, match := range matches {
+	for _, block := range blocks {
+		block = strings.TrimSpace(block)
+		if block == "" {
+			continue
+		}
+		lines := strings.Split(block, "\n")
+		if len(lines) < 3 {
+			continue
+		}
+
+		// Line 1 is Time
+		timeLine := lines[1]
+		timeParts := strings.Split(timeLine, " --> ")
+		if len(timeParts) != 2 {
+			continue
+		}
+
+		// Text lines
+		textLines := lines[2:]
+		var targetText string
+
+		if len(textLines) == 1 {
+			targetText = textLines[0]
+		} else {
+			// Bilingual block
+			if resultType == types.SubtitleResultTypeBilingualTranslationOnTop {
+				targetText = textLines[0]
+			} else if resultType == types.SubtitleResultTypeBilingualTranslationOnBottom {
+				targetText = textLines[1]
+			} else {
+				targetText = textLines[0] // fallback
+			}
+		}
+
 		subtitles = append(subtitles, types.SrtSentenceWithStrTime{
-			Start: match[1],
-			End:   match[2],
-			Text:  strings.Replace(match[3], "\n", " ", -1), // Remove newlines
+			Start: strings.TrimSpace(timeParts[0]),
+			End:   strings.TrimSpace(timeParts[1]),
+			Text:  targetText,
 		})
 	}
 

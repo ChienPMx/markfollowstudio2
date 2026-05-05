@@ -4,7 +4,7 @@ import (
 	"context"
 	goopenai "github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
-	"krillin-ai/log"
+	"markflow-studio/log"
 )
 
 type ChatClient struct {

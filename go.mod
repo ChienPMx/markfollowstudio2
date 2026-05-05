@@ -1,4 +1,4 @@
-module krillin-ai
+module markflow-studio
 
 go 1.22
 

@@ -9,7 +9,7 @@
   ```
   /── config/
   │   └── config.toml
-  └── krillinai.exe(실행 파일)
+  └── MarkFlow Studio.exe(실행 파일)
   ```
 * **Windows 사용자:** 잠재적인 권한 문제를 피하기 위해 전체 소프트웨어 디렉토리를 C: 드라이브가 아닌 폴더에 두는 것이 좋습니다.
 
@@ -34,7 +34,7 @@
 
 이는 거의 항상 시스템에 필요한 글꼴이 누락되어 발생하며, 특히 중국어 문자를 지원하는 글꼴이 필요합니다. 이를 해결하려면 필요한 글꼴을 설치해야 합니다.
 
-1. [Microsoft YaHei](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) 및 [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc)와 같은 필요한 글꼴을 다운로드합니다.
+1. [Microsoft YaHei](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) 및 [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc)와 같은 필요한 글꼴을 다운로드합니다.
 2. 새 글꼴 디렉토리를 생성합니다: `sudo mkdir -p /usr/share/fonts/msyh`.
 3. 다운로드한 `.ttc` 글꼴 파일을 이 새 디렉토리에 복사합니다.
 4. 다음 명령을 실행하여 글꼴 캐시를 재구성합니다:
@@ -45,14 +45,14 @@
     sudo fc-cache -fv
     ```
 
-### 4. macOS에서 애플리케이션이 시작되지 않고 "KrillinAI가 손상되어 열 수 없습니다"라는 오류가 표시됩니다.
+### 4. macOS에서 애플리케이션이 시작되지 않고 "MarkFlow Studio가 손상되어 열 수 없습니다"라는 오류가 표시됩니다.
 
 이는 macOS의 보안 기능인 Gatekeeper로 인해 발생하며, 이는 확인되지 않은 개발자의 앱을 제한합니다. 이를 해결하려면 수동으로 격리 속성을 제거해야 합니다.
 
 1. **터미널** 앱을 엽니다.
-2. `xattr -cr` 명령을 입력한 후 공백을 추가하고, Finder 창에서 `KrillinAI.app` 파일을 터미널로 드래그합니다. 명령은 다음과 비슷하게 보일 것입니다:
+2. `xattr -cr` 명령을 입력한 후 공백을 추가하고, Finder 창에서 `MarkFlow Studio.app` 파일을 터미널로 드래그합니다. 명령은 다음과 비슷하게 보일 것입니다:
     ```
-    xattr -cr /Applications/KrillinAI.app
+    xattr -cr /Applications/MarkFlow Studio.app
     ```
 3. Enter 키를 누릅니다. 이제 애플리케이션을 열 수 있어야 합니다.
 
@@ -86,7 +86,7 @@
 
 ### 9. Ollama에서 실행 중인 로컬 대형 언어 모델(LLM)을 번역에 어떻게 사용할 수 있나요?
 
-예, KrillinAI를 OpenAI 호환 API 엔드포인트를 제공하는 로컬 LLM을 사용하도록 구성할 수 있습니다.
+예, MarkFlow Studio를 OpenAI 호환 API 엔드포인트를 제공하는 로컬 LLM을 사용하도록 구성할 수 있습니다.
 
 1. **로컬 LLM 시작:** 로컬 서비스(예: Ollama에서 Llama3 실행)가 활성화되고 접근 가능해야 합니다.
 2. **`config.toml` 편집:** 대형 언어 모델(번역기) 섹션에서:
@@ -98,13 +98,13 @@
 
 ### 10. 최종 비디오에서 자막 스타일(글꼴, 크기, 색상)을 사용자 정의할 수 있나요?
 
-아니요. 현재 KrillinAI는 **하드코딩된 자막**을 생성하므로 자막이 비디오 프레임에 직접 삽입됩니다. 애플리케이션은 자막 스타일을 사용자 정의할 수 있는 옵션을 제공하지 않으며, 미리 설정된 스타일을 사용합니다.
+아니요. 현재 MarkFlow Studio는 **하드코딩된 자막**을 생성하므로 자막이 비디오 프레임에 직접 삽입됩니다. 애플리케이션은 자막 스타일을 사용자 정의할 수 있는 옵션을 제공하지 않으며, 미리 설정된 스타일을 사용합니다.
 
 고급 사용자 정의를 위해 권장되는 우회 방법은:
 
-1. KrillinAI를 사용하여 번역된 `.srt` 자막 파일을 생성합니다.
+1. MarkFlow Studio를 사용하여 번역된 `.srt` 자막 파일을 생성합니다.
 2. 원본 비디오와 이 `.srt` 파일을 전문 비디오 편집기(예: Premiere Pro, Final Cut Pro, DaVinci Resolve)에 가져와서 렌더링 전에 사용자 정의 스타일을 적용합니다.
 
-### 11. 이미 번역된 `.srt` 파일이 있습니다. KrillinAI가 이를 사용하여 더빙만 수행할 수 있나요?
+### 11. 이미 번역된 `.srt` 파일이 있습니다. MarkFlow Studio가 이를 사용하여 더빙만 수행할 수 있나요?
 
 아니요, 현재 이 기능은 지원되지 않습니다. 애플리케이션은 전사에서 최종 비디오 생성까지 전체 파이프라인을 실행합니다.

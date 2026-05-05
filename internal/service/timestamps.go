@@ -5,10 +5,10 @@ import (
 	"strings"
 	"unicode"
 
-	"krillin-ai/internal/types"
-	"krillin-ai/log"
+	"markflow-studio/internal/types"
+	"markflow-studio/log"
 
-	"krillin-ai/pkg/util"
+	"markflow-studio/pkg/util"
 
 	"go.uber.org/zap"
 )
@@ -71,7 +71,13 @@ func (tg *TimestampGenerator) GenerateTimestamps(srtBlocks []*util.SrtBlock, wor
 		updatedBlocks[i] = block
 
 		if block.OriginLanguageSentence == "" {
-			// Skip empty sentences
+			// If origin sentence is empty, inherit the timestamp from the previous block
+			// to ensure the SRT format remains valid.
+			if i > 0 {
+				updatedBlocks[i].Timestamp = updatedBlocks[i-1].Timestamp
+			} else {
+				updatedBlocks[i].Timestamp = util.ConvertTimes(float32(tsOffset), float32(tsOffset))
+			}
 			continue
 		}
 

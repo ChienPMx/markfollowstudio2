@@ -9,7 +9,7 @@ C'est un problème de configuration courant. Il y a plusieurs raisons pour lesqu
   ```
   /── config/
   │   └── config.toml
-  └── krillinai.exe(votre fichier exécutable)
+  └── MarkFlow Studio.exe(votre fichier exécutable)
   ```
 * **Pour les utilisateurs de Windows :** Il est recommandé de placer l'ensemble du répertoire logiciel dans un dossier qui n'est pas sur le disque C: pour éviter d'éventuels problèmes de permission.
 
@@ -34,7 +34,7 @@ Cette erreur indique un problème avec le téléchargeur de vidéos, qui est gé
 
 Cela est presque toujours causé par des polices manquantes sur le système, en particulier celles qui prennent en charge les caractères chinois. Pour résoudre ce problème, vous devez installer les polices nécessaires.
 
-1. Téléchargez les polices requises, telles que [Microsoft YaHei](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) et [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/KrillinAI_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
+1. Téléchargez les polices requises, telles que [Microsoft YaHei](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyh.ttc) et [Microsoft YaHei Bold](https://modelscope.cn/models/Maranello/MarkFlow Studio_dependency_cn/resolve/master/%E5%AD%97%E4%BD%93/msyhbd.ttc).
 2. Créez un nouveau répertoire de polices : `sudo mkdir -p /usr/share/fonts/msyh`.
 3. Copiez les fichiers de police `.ttc` téléchargés dans ce nouveau répertoire.
 4. Exécutez les commandes suivantes pour reconstruire le cache des polices :
@@ -45,14 +45,14 @@ Cela est presque toujours causé par des polices manquantes sur le système, en 
     sudo fc-cache -fv
     ```
 
-### 4. Sur macOS, l'application ne démarre pas et affiche une erreur comme "KrillinAI est endommagé et ne peut pas être ouvert."
+### 4. Sur macOS, l'application ne démarre pas et affiche une erreur comme "MarkFlow Studio est endommagé et ne peut pas être ouvert."
 
 Cela est causé par la fonctionnalité de sécurité de macOS, Gatekeeper, qui restreint les applications des développeurs non identifiés. Pour résoudre ce problème, vous devez supprimer manuellement l'attribut de quarantaine.
 
 1. Ouvrez l'application **Terminal**.
-2. Tapez la commande `xattr -cr` suivie d'un espace, puis faites glisser le fichier `KrillinAI.app` de votre fenêtre Finder dans le Terminal. La commande ressemblera à ceci :
+2. Tapez la commande `xattr -cr` suivie d'un espace, puis faites glisser le fichier `MarkFlow Studio.app` de votre fenêtre Finder dans le Terminal. La commande ressemblera à ceci :
     ```
-    xattr -cr /Applications/KrillinAI.app
+    xattr -cr /Applications/MarkFlow Studio.app
     ```
 3. Appuyez sur Entrée. Vous devriez maintenant pouvoir ouvrir l'application.
 
@@ -86,7 +86,7 @@ Les voix disponibles et leurs codes correspondants sont définis par le fourniss
 
 ### 9. Comment puis-je utiliser un modèle de langage large (LLM) local, comme celui fonctionnant sur Ollama, pour la traduction ?
 
-Oui, vous pouvez configurer KrillinAI pour utiliser n'importe quel LLM local qui fournit un point de terminaison API compatible avec OpenAI.
+Oui, vous pouvez configurer MarkFlow Studio pour utiliser n'importe quel LLM local qui fournit un point de terminaison API compatible avec OpenAI.
 
 1. **Démarrez votre LLM local :** Assurez-vous que votre service local (par exemple, Ollama exécutant Llama3) est actif et accessible.
 2. **Modifier `config.toml` :** Dans la section pour le modèle de langage large (traducteur) :
@@ -98,13 +98,13 @@ Oui, vous pouvez configurer KrillinAI pour utiliser n'importe quel LLM local qui
 
 ### 10. Puis-je personnaliser le style des sous-titres (police, taille, couleur) dans la vidéo finale ?
 
-Non. Actuellement, KrillinAI génère des **sous-titres codés en dur**, ce qui signifie qu'ils sont intégrés directement dans les images de la vidéo. L'application **n'offre pas d'options pour personnaliser le style des sous-titres** ; elle utilise un style prédéfini.
+Non. Actuellement, MarkFlow Studio génère des **sous-titres codés en dur**, ce qui signifie qu'ils sont intégrés directement dans les images de la vidéo. L'application **n'offre pas d'options pour personnaliser le style des sous-titres** ; elle utilise un style prédéfini.
 
 Pour une personnalisation avancée, la solution de contournement recommandée est de :
 
-1. Utiliser KrillinAI pour générer le fichier de sous-titres `.srt` traduit.
+1. Utiliser MarkFlow Studio pour générer le fichier de sous-titres `.srt` traduit.
 2. Importer votre vidéo originale et ce fichier `.srt` dans un éditeur vidéo professionnel (par exemple, Premiere Pro, Final Cut Pro, DaVinci Resolve) pour appliquer des styles personnalisés avant le rendu.
 
-### 11. J'ai déjà un fichier `.srt` traduit. KrillinAI peut-il l'utiliser pour effectuer uniquement le doublage ?
+### 11. J'ai déjà un fichier `.srt` traduit. MarkFlow Studio peut-il l'utiliser pour effectuer uniquement le doublage ?
 
 Non, cette fonctionnalité n'est pas actuellement prise en charge. L'application exécute un pipeline complet de la transcription à la génération de la vidéo finale.

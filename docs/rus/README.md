@@ -1,23 +1,23 @@
 <div align="center">
-  <img src="/docs/images/logo.jpg" alt="KrillinAI" height="90">
+  <img src="/docs/images/logo.jpg" alt="MarkFlow Studio" height="90">
 
 # Минималистичный инструмент для перевода и дубляжа видео с использованием ИИ
 
-<a href="https://trendshift.io/repositories/13360" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13360" alt="KrillinAI%2FKrillinAI | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/13360" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13360" alt="MarkFlow Studio%2FMarkFlow Studio | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 **[English](/README.md)｜[简体中文](/docs/zh/README.md)｜[日本語](/docs/jp/README.md)｜[한국어](/docs/kr/README.md)｜[Tiếng Việt](/docs/vi/README.md)｜[Français](/docs/fr/README.md)｜[Deutsch](/docs/de/README.md)｜[Español](/docs/es/README.md)｜[Português](/docs/pt/README.md)｜[Русский](/docs/rus/README.md)｜[اللغة العربية](/docs/ar/README.md)**
 
-[![Twitter](https://img.shields.io/badge/Twitter-KrillinAI-orange?logo=twitter)](https://x.com/KrillinAI)
+[![Twitter](https://img.shields.io/badge/Twitter-MarkFlow Studio-orange?logo=twitter)](https://x.com/MarkFlow Studio)
 [![QQ 群](https://img.shields.io/badge/QQ%20群-754069680-green?logo=tencent-qq)](https://jq.qq.com/?_wv=1027&k=754069680)
 [![Bilibili](https://img.shields.io/badge/dynamic/json?label=Bilibili&query=%24.data.follower&suffix=粉丝&url=https%3A%2F%2Fapi.bilibili.com%2Fx%2Frelation%2Fstat%3Fvmid%3D242124650&logo=bilibili&color=00A1D6&labelColor=FE7398&logoColor=FFFFFF)](https://space.bilibili.com/242124650)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/krillinai/KrillinAI)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MarkFlow Studio/MarkFlow Studio)
 
 </div>
 
 ## Введение в проект  ([Попробуйте онлайн-версию сейчас!](https://www.klic.studio/))
 [**Быстрый старт**](#-quick-start)
 
-KrillinAI — это универсальное решение для локализации и улучшения аудио и видео, разработанное Krillin AI. Этот минималистичный, но мощный инструмент объединяет перевод видео, дубляж и клонирование голоса, поддерживая как горизонтальный, так и вертикальный форматы, чтобы обеспечить идеальное представление на всех основных платформах (Bilibili, Xiaohongshu, Douyin, WeChat Video, Kuaishou, YouTube, TikTok и др.). С помощью рабочего процесса от начала до конца вы можете преобразовать исходные материалы в красиво готовый кроссплатформенный контент всего за несколько кликов.
+MarkFlow Studio — это универсальное решение для локализации и улучшения аудио и видео, разработанное MarkFlow Studio. Этот минималистичный, но мощный инструмент объединяет перевод видео, дубляж и клонирование голоса, поддерживая как горизонтальный, так и вертикальный форматы, чтобы обеспечить идеальное представление на всех основных платформах (Bilibili, Xiaohongshu, Douyin, WeChat Video, Kuaishou, YouTube, TikTok и др.). С помощью рабочего процесса от начала до конца вы можете преобразовать исходные материалы в красиво готовый кроссплатформенный контент всего за несколько кликов.
 
 ## Ключевые особенности и функции:
 
@@ -119,11 +119,11 @@ _**Все локальные модели в таблице ниже подде�
 
 ## 🚀 Быстрый старт
 
-Вы можете задать вопросы на [Deepwiki KrillinAI](https://deepwiki.com/krillinai/KrillinAI). Он индексирует файлы в репозитории, так что вы можете быстро найти ответы.
+Вы можете задать вопросы на [Deepwiki MarkFlow Studio](https://deepwiki.com/MarkFlow Studio/MarkFlow Studio). Он индексирует файлы в репозитории, так что вы можете быстро найти ответы.
 
 ### Основные шаги
 
-Сначала загрузите исполняемый файл, соответствующий вашей системе, из раздела [Release](https://github.com/KrillinAI/KrillinAI/releases), затем следуйте приведенному ниже руководству, чтобы выбрать между настольной версией или версией без интерфейса. Поместите загруженное программное обеспечение в пустую папку, так как его запуск создаст некоторые директории, и хранение в пустой папке упростит управление.
+Сначала загрузите исполняемый файл, соответствующий вашей системе, из раздела [Release](https://github.com/MarkFlow Studio/MarkFlow Studio/releases), затем следуйте приведенному ниже руководству, чтобы выбрать между настольной версией или версией без интерфейса. Поместите загруженное программное обеспечение в пустую папку, так как его запуск создаст некоторые директории, и хранение в пустой папке упростит управление.
 
 【Если это настольная версия, т.е. файл релиза с "desktop", смотрите здесь】
 _Настольная версия была недавно выпущена, чтобы решить проблемы новых пользователей с правильным редактированием конфигурационных файлов, и в ней есть некоторые ошибки, которые постоянно обновляются._
@@ -142,24 +142,24 @@ _Версия без интерфейса — это начальная верс
 【Если это настольная версия, т.е. файл релиза с "desktop", смотрите здесь】
 Из-за проблем с подписью настольная версия в настоящее время не может быть запущена двойным щелчком или установлена через dmg; вам нужно вручную доверять приложению. Метод следующий:
 
-1. Откройте терминал в директории, где находится исполняемый файл (предполагая, что имя файла KrillinAI_1.0.0_desktop_macOS_arm64)
+1. Откройте терминал в директории, где находится исполняемый файл (предполагая, что имя файла MarkFlow Studio_1.0.0_desktop_macOS_arm64)
 2. Выполните следующие команды по порядку:
 
 ```
-sudo xattr -cr ./KrillinAI_1.0.0_desktop_macOS_arm64
-sudo chmod +x ./KrillinAI_1.0.0_desktop_macOS_arm64 
-./KrillinAI_1.0.0_desktop_macOS_arm64
+sudo xattr -cr ./MarkFlow Studio_1.0.0_desktop_macOS_arm64
+sudo chmod +x ./MarkFlow Studio_1.0.0_desktop_macOS_arm64 
+./MarkFlow Studio_1.0.0_desktop_macOS_arm64
 ```
 
 【Если это версия без интерфейса, т.е. файл релиза без "desktop", смотрите здесь】
 Это программное обеспечение не подписано, поэтому при запуске на macOS, после завершения настройки файла в "Основных шагах", вам также нужно вручную доверять приложению. Метод следующий:
 
-1. Откройте терминал в директории, где находится исполняемый файл (предполагая, что имя файла KrillinAI_1.0.0_macOS_arm64)
+1. Откройте терминал в директории, где находится исполняемый файл (предполагая, что имя файла MarkFlow Studio_1.0.0_macOS_arm64)
 2. Выполните следующие команды по порядку:
    ```
-   sudo xattr -rd com.apple.quarantine ./KrillinAI_1.0.0_macOS_arm64
-   sudo chmod +x ./KrillinAI_1.0.0_macOS_arm64
-   ./KrillinAI_1.0.0_macOS_arm64
+   sudo xattr -rd com.apple.quarantine ./MarkFlow Studio_1.0.0_macOS_arm64
+   sudo chmod +x ./MarkFlow Studio_1.0.0_macOS_arm64
+   ./MarkFlow Studio_1.0.0_macOS_arm64
    ```
    
    Это запустит службу
@@ -215,4 +215,4 @@ sudo chmod +x ./KrillinAI_1.0.0_desktop_macOS_arm64
 
 ## История звезд
 
-[![График истории звезд](https://api.star-history.com/svg?repos=KrillinAI/KrillinAI&type=Date)](https://star-history.com/#KrillinAI/KrillinAI&Date)
+[![График истории звезд](https://api.star-history.com/svg?repos=MarkFlow Studio/MarkFlow Studio&type=Date)](https://star-history.com/#MarkFlow Studio/MarkFlow Studio&Date)

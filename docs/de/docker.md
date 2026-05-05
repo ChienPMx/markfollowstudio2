@@ -9,7 +9,7 @@ docker run -d \
   -p 8888:8888 \
   -v /path/to/config.toml:/app/config/config.toml \
   -v /path/to/tasks:/app/tasks \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### docker-compose starten
@@ -17,7 +17,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:
@@ -26,7 +26,7 @@ services:
 ```
 
 ## Modellpersistenz
-Wenn das fasterwhisper-Modell verwendet wird, lädt KrillinAI automatisch die benötigten Dateien in das Verzeichnis `/app/models` und das Verzeichnis `/app/bin`. Diese Dateien gehen verloren, wenn der Container gelöscht wird. Um das Modell zu persistieren, können Sie diese beiden Verzeichnisse auf ein Verzeichnis des Hosts abbilden.
+Wenn das fasterwhisper-Modell verwendet wird, lädt MarkFlow Studio automatisch die benötigten Dateien in das Verzeichnis `/app/models` und das Verzeichnis `/app/bin`. Diese Dateien gehen verloren, wenn der Container gelöscht wird. Um das Modell zu persistieren, können Sie diese beiden Verzeichnisse auf ein Verzeichnis des Hosts abbilden.
 
 ### docker run starten
 ```bash
@@ -36,7 +36,7 @@ docker run -d \
   -v /path/to/tasks:/app/tasks \
   -v /path/to/models:/app/models \
   -v /path/to/bin:/app/bin \
-  asteria798/krillinai
+  asteria798/MarkFlow Studio
 ```
 
 ### docker-compose starten
@@ -44,7 +44,7 @@ docker run -d \
 version: '3'
 services:
   krillin:
-    image: asteria798/krillinai
+    image: asteria798/MarkFlow Studio
     ports:
       - "8888:8888"
     volumes:

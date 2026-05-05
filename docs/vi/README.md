@@ -1,23 +1,23 @@
 <div align="center">
-  <img src="/docs/images/logo.jpg" alt="KrillinAI" height="90">
+  <img src="/docs/images/logo.jpg" alt="MarkFlow Studio" height="90">
 
 # Công Cụ Dịch và Lồng Ghép Video AI Tối Giản
 
-<a href="https://trendshift.io/repositories/13360" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13360" alt="KrillinAI%2FKrillinAI | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/13360" target="_blank"><img src="https://trendshift.io/api/badge/repositories/13360" alt="MarkFlow Studio%2FMarkFlow Studio | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 **[English](/README.md)｜[简体中文](/docs/zh/README.md)｜[日本語](/docs/jp/README.md)｜[한국어](/docs/kr/README.md)｜[Tiếng Việt](/docs/vi/README.md)｜[Français](/docs/fr/README.md)｜[Deutsch](/docs/de/README.md)｜[Español](/docs/es/README.md)｜[Português](/docs/pt/README.md)｜[Русский](/docs/rus/README.md)｜[اللغة العربية](/docs/ar/README.md)**
 
-[![Twitter](https://img.shields.io/badge/Twitter-KrillinAI-orange?logo=twitter)](https://x.com/KrillinAI)
+[![Twitter](https://img.shields.io/badge/Twitter-MarkFlow Studio-orange?logo=twitter)](https://x.com/MarkFlow Studio)
 [![QQ 群](https://img.shields.io/badge/QQ%20群-754069680-green?logo=tencent-qq)](https://jq.qq.com/?_wv=1027&k=754069680)
 [![Bilibili](https://img.shields.io/badge/dynamic/json?label=Bilibili&query=%24.data.follower&suffix=粉丝&url=https%3A%2F%2Fapi.bilibili.com%2Fx%2Frelation%2Fstat%3Fvmid%3D242124650&logo=bilibili&color=00A1D6&labelColor=FE7398&logoColor=FFFFFF)](https://space.bilibili.com/242124650)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/krillinai/KrillinAI)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MarkFlow Studio/MarkFlow Studio)
 
 </div>
 
 ## Giới Thiệu Dự Án  ([Thử phiên bản trực tuyến ngay!](https://www.klic.studio/))
 [**Khởi Đầu Nhanh**](#-quick-start)
 
-KrillinAI là một giải pháp đa năng cho việc địa phương hóa và nâng cao âm thanh và video được phát triển bởi Krillin AI. Công cụ tối giản nhưng mạnh mẽ này tích hợp dịch video, lồng ghép và nhân bản giọng nói, hỗ trợ cả định dạng ngang và dọc để đảm bảo trình bày hoàn hảo trên tất cả các nền tảng chính (Bilibili, Xiaohongshu, Douyin, WeChat Video, Kuaishou, YouTube, TikTok, v.v.). Với quy trình làm việc từ đầu đến cuối, bạn có thể biến nguyên liệu thô thành nội dung đa nền tảng sẵn sàng sử dụng chỉ với vài cú nhấp chuột.
+MarkFlow Studio là một giải pháp đa năng cho việc địa phương hóa và nâng cao âm thanh và video được phát triển bởi MarkFlow Studio. Công cụ tối giản nhưng mạnh mẽ này tích hợp dịch video, lồng ghép và nhân bản giọng nói, hỗ trợ cả định dạng ngang và dọc để đảm bảo trình bày hoàn hảo trên tất cả các nền tảng chính (Bilibili, Xiaohongshu, Douyin, WeChat Video, Kuaishou, YouTube, TikTok, v.v.). Với quy trình làm việc từ đầu đến cuối, bạn có thể biến nguyên liệu thô thành nội dung đa nền tảng sẵn sàng sử dụng chỉ với vài cú nhấp chuột.
 
 ## Tính Năng và Chức Năng Chính:
 
@@ -119,11 +119,11 @@ Ngôn ngữ dịch được hỗ trợ: Tiếng Anh, Tiếng Trung, Tiếng Nga,
 
 ## 🚀 Khởi Đầu Nhanh
 
-Bạn có thể đặt câu hỏi trên [Deepwiki của KrillinAI](https://deepwiki.com/krillinai/KrillinAI). Nó lập chỉ mục các tệp trong kho, vì vậy bạn có thể tìm câu trả lời nhanh chóng.
+Bạn có thể đặt câu hỏi trên [Deepwiki của MarkFlow Studio](https://deepwiki.com/MarkFlow Studio/MarkFlow Studio). Nó lập chỉ mục các tệp trong kho, vì vậy bạn có thể tìm câu trả lời nhanh chóng.
 
 ### Các Bước Cơ Bản
 
-Đầu tiên, tải xuống tệp thực thi phù hợp với hệ điều hành của bạn từ [Release](https://github.com/KrillinAI/KrillinAI/releases), sau đó làm theo hướng dẫn dưới đây để chọn giữa phiên bản máy tính để bàn hoặc phiên bản không phải máy tính để bàn. Đặt tệp tải xuống phần mềm vào một thư mục trống, vì việc chạy nó sẽ tạo ra một số thư mục, và giữ nó trong một thư mục trống sẽ giúp quản lý dễ dàng hơn.
+Đầu tiên, tải xuống tệp thực thi phù hợp với hệ điều hành của bạn từ [Release](https://github.com/MarkFlow Studio/MarkFlow Studio/releases), sau đó làm theo hướng dẫn dưới đây để chọn giữa phiên bản máy tính để bàn hoặc phiên bản không phải máy tính để bàn. Đặt tệp tải xuống phần mềm vào một thư mục trống, vì việc chạy nó sẽ tạo ra một số thư mục, và giữ nó trong một thư mục trống sẽ giúp quản lý dễ dàng hơn.
 
 【Nếu là phiên bản máy tính để bàn, tức là tệp phát hành có "desktop," xem ở đây】
 _Version máy tính để bàn được phát hành mới để giải quyết các vấn đề của người dùng mới gặp khó khăn trong việc chỉnh sửa tệp cấu hình đúng cách, và có một số lỗi đang được cập nhật liên tục._
@@ -142,24 +142,24 @@ _Version không phải máy tính để bàn là phiên bản ban đầu, có c�
 【Nếu là phiên bản máy tính để bàn, tức là tệp phát hành có "desktop," xem ở đây】
 Do vấn đề ký, phiên bản máy tính để bàn hiện tại không thể nhấp đúp để chạy hoặc cài đặt qua dmg; bạn cần phải tin tưởng ứng dụng một cách thủ công. Phương pháp như sau:
 
-1. Mở terminal trong thư mục nơi tệp thực thi (giả sử tên tệp là KrillinAI_1.0.0_desktop_macOS_arm64) nằm
+1. Mở terminal trong thư mục nơi tệp thực thi (giả sử tên tệp là MarkFlow Studio_1.0.0_desktop_macOS_arm64) nằm
 2. Thực hiện các lệnh sau theo thứ tự:
 
 ```
-sudo xattr -cr ./KrillinAI_1.0.0_desktop_macOS_arm64
-sudo chmod +x ./KrillinAI_1.0.0_desktop_macOS_arm64 
-./KrillinAI_1.0.0_desktop_macOS_arm64
+sudo xattr -cr ./MarkFlow Studio_1.0.0_desktop_macOS_arm64
+sudo chmod +x ./MarkFlow Studio_1.0.0_desktop_macOS_arm64 
+./MarkFlow Studio_1.0.0_desktop_macOS_arm64
 ```
 
 【Nếu là phiên bản không phải máy tính để bàn, tức là tệp phát hành không có "desktop," xem ở đây】
 Phần mềm này không được ký, vì vậy khi chạy trên macOS, sau khi hoàn thành cấu hình tệp trong "Các Bước Cơ Bản," bạn cũng cần phải tin tưởng ứng dụng một cách thủ công. Phương pháp như sau:
 
-1. Mở terminal trong thư mục nơi tệp thực thi (giả sử tên tệp là KrillinAI_1.0.0_macOS_arm64) nằm
+1. Mở terminal trong thư mục nơi tệp thực thi (giả sử tên tệp là MarkFlow Studio_1.0.0_macOS_arm64) nằm
 2. Thực hiện các lệnh sau theo thứ tự:
    ```
-   sudo xattr -rd com.apple.quarantine ./KrillinAI_1.0.0_macOS_arm64
-   sudo chmod +x ./KrillinAI_1.0.0_macOS_arm64
-   ./KrillinAI_1.0.0_macOS_arm64
+   sudo xattr -rd com.apple.quarantine ./MarkFlow Studio_1.0.0_macOS_arm64
+   sudo chmod +x ./MarkFlow Studio_1.0.0_macOS_arm64
+   ./MarkFlow Studio_1.0.0_macOS_arm64
    ```
    
    Điều này sẽ khởi động dịch vụ
@@ -215,4 +215,4 @@ Vui lòng truy cập [Câu Hỏi Thường Gặp](./faq.md)
 
 ## Lịch Sử Sao
 
-[![Biểu Đồ Lịch Sử Sao](https://api.star-history.com/svg?repos=KrillinAI/KrillinAI&type=Date)](https://star-history.com/#KrillinAI/KrillinAI&Date)
+[![Biểu Đồ Lịch Sử Sao](https://api.star-history.com/svg?repos=MarkFlow Studio/MarkFlow Studio&type=Date)](https://star-history.com/#MarkFlow Studio/MarkFlow Studio&Date)

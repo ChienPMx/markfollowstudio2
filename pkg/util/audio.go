@@ -2,8 +2,8 @@ package util
 
 import (
 	"go.uber.org/zap"
-	"krillin-ai/internal/storage"
-	"krillin-ai/log"
+	"markflow-studio/internal/storage"
+	"markflow-studio/log"
 	"os/exec"
 	"path/filepath"
 	"strings"
